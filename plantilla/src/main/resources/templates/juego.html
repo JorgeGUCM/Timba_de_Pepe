@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html class="h-100" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{fragments/head :: header}" />
+    <title>Timba de Pepe - En Partida</title>
+</head>
+<body class="d-flex flex-column h-100 bg-dark text-white">
+    <header th:replace="~{fragments/nav.html :: nav}"></header>
+    <main class="flex-shrink-0">
+        <div class="container text-center">
+            <h1 class="mt-5">Tablero de Juego</h1>
+            <div class="row mt-5" style="min-height: 200px; border: 2px dashed green; border-radius: 20px;">
+                <p class="mt-5">Las cartas se mostrarán aquí.</p>
+            </div>
+            <div class="mt-4">
+                <button class="btn btn-warning">Pedir Carta</button>
+                <button class="btn btn-danger">Plantarse</button>
+            </div>
+            <div class="mt-4">
+                <h5>Eventos de Churros </h5>
+                <button class="btn btn-outline-info btn-sm">Poner Sonido (5 churros)</button>
+            </div>
+        </div>
+    </main>
+    <th:block th:replace="~{fragments/footer.html :: footer}" />
+</body>
+</html>

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html class="h-100" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{fragments/head :: header}" />
+    <title>Timba de Pepe - Mi Perfil</title>
+</head>
+<body class="d-flex flex-column h-100">
+    <header th:replace="~{fragments/nav.html :: nav}"></header>
+    <main class="flex-shrink-0">
+        <div class="container">
+            <h1 class="mt-5">Mi Perfil</h1>
+            <div class="card mt-4" style="width: 18rem;">
+                <div class="card-body">
+                    <h5 class="card-title" th:text="${u != null ? u.username : 'Usuario'}">Nombre</h5>
+                    <p class="card-text">Saldo actual: <strong>500 fichas</strong></p>
+                    <p class="card-text">Churros totales: <strong>50</strong></p>
+                    <button class="btn btn-primary mb-2">Ingresar Dinero</button>
+                    <button class="btn btn-outline-danger btn-sm">Borrar Cuenta</button>
+                </div>
+            </div>
+        </div>
+    </main>
+    <th:block th:replace="~{fragments/footer.html :: footer}" />
+</body>
+</html>

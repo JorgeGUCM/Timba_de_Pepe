@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html class="h-100" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{fragments/head :: header}" />
+    <title>Timba de Pepe - Autores</title>
+</head>
+<body class="d-flex flex-column h-100">
+    <header th:replace="~{fragments/nav.html :: nav}"></header>
+    <main class="flex-shrink-0">
+        <div class="container text-center">
+            <h1 class="mt-5">Equipo de Desarrollo</h1>
+            <div class="row mt-5 justify-content-center">
+                <div class="col-md-4 mb-4">
+                    <img th:src="@{/img/default-pic.jpg}" class="rounded-circle shadow" width="120" alt="Foto">
+                    <h5 class="mt-2">PABLO ARLANDIS OCAÑA</h5>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <img th:src="@{/img/default-pic.jpg}" class="rounded-circle shadow" width="120" alt="Foto">
+                    <h5 class="mt-2">LUCAS ARRANZ CORRAL</h5>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <img th:src="@{/img/default-pic.jpg}" class="rounded-circle shadow" width="120" alt="Foto">
+                    <h5 class="mt-2">ALICIA CASTRO MESQUIDA</h5>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <img th:src="@{/img/default-pic.jpg}" class="rounded-circle shadow" width="120" alt="Foto">
+                    <h5 class="mt-2">JORGE GÓMEZ NAVARRO</h5>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <img th:src="@{/img/default-pic.jpg}" class="rounded-circle shadow" width="120" alt="Foto">
+                    <h5 class="mt-2">GUILLERMO GÓNZALEZ HERRERA</h5>
+                </div>
+            </div>
+        </div>
+    </main>
+    <th:block th:replace="~{fragments/footer.html :: footer}" />
+</body>
+</html>

@@ -55,20 +55,24 @@ public class SecurityConfig {
 		}
 
     http
-			.csrf(csrf -> csrf
-				.ignoringRequestMatchers("/api/**")
-			)
-      .authorizeHttpRequests(authorize -> authorize
-				.requestMatchers("/css/**", "/js/**", "/img/**", "/", "/error").permitAll()
-				.requestMatchers("/api/**").permitAll()            // <-- public api access
-				.requestMatchers("/admin/**").hasRole("ADMIN")	   // <-- administration
-				.requestMatchers("/user/**").hasRole("USER")	     // <-- logged-in users
-				.anyRequest().authenticated()
+            .csrf(csrf -> csrf
+                .ignoringRequestMatchers("/api/**")
+            )
+            .authorizeHttpRequests(authorize -> authorize
+                // AÑADE LAS RUTAS AQUÍ (junto a las otras rutas públicas):
+                .requestMatchers("/css/**", "/js/**", "/img/**", "/", "/error", 
+                                 "/autores", "/ranking", "/perfil-usuario", 
+                                 "/salas", "/juego", "/reglas").permitAll()
+                
+                .requestMatchers("/api/**").permitAll()
+                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/user/**").hasRole("USER")
+                .anyRequest().authenticated()
             )
             .formLogin(formLogin -> formLogin
                 .loginPage("/login")
                 .permitAll()
-				.successHandler(loginSuccessHandler)  // <-- called when login Ok; can redirect
+                .successHandler(loginSuccessHandler)
             );
 
         return http.build();

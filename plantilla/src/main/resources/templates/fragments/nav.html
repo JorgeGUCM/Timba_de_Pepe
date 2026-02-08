@@ -21,6 +21,14 @@
             </button>
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav ms-auto">
+
+                        <li class="nav-item"><a class="nav-link" th:href="@{/ranking}">Ranking</a></li>
+                        <li class="nav-item"><a class="nav-link" th:href="@{/perfil-usuario}">Perfil</a></li>
+                        <li class="nav-item"><a class="nav-link" th:href="@{/salas}">Salas</a></li>
+                       <!-- <li class="nav-item"><a class="nav-link" th:href="@{/juego}">Juego</a></li> -->
+                        <li class="nav-item"><a class="nav-link" th:href="@{/reglas}">Reglas</a></li>
+                        <li class="nav-item"><a class="nav-link" th:href="@{/autores}">Autores</a></li>
+
                         <th:block th:if="${u}">
                             <li class="nav-item mx-3">
                                 <a class="nav-link" th:if="${u.hasRole('ADMIN')}" th:href="@{/admin/}">Administrar</a>
