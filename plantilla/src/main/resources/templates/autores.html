@@ -1,38 +1,100 @@
 <!DOCTYPE html>
 <html class="h-100" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <th:block th:replace="~{fragments/head :: header}" />
-    <title>Timba de Pepe - Autores</title>
+    <title>IW: Equipo de Desarrollo</title>
+    <style>
+        .card-profile {
+            transition: transform 0.3s;
+            margin-bottom: 2rem;
+        }
+        .card-profile:hover {
+            transform: translateY(-10px);
+        }
+        .profile-img {
+            width: 140px;
+            height: 140px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 5px solid #ffc107; /* Color dorado/churro */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .dedication-card {
+            background: #fffdf5;
+            border: 2px dashed #f1c40f;
+        }
+    </style>
 </head>
+
 <body class="d-flex flex-column h-100">
     <header th:replace="~{fragments/nav.html :: nav}"></header>
+
     <main class="flex-shrink-0">
-        <div class="container text-center">
-            <h1 class="mt-5">Equipo de Desarrollo</h1>
-            <div class="row mt-5 justify-content-center">
-                <div class="col-md-4 mb-4">
-                    <img th:src="@{/img/default-pic.jpg}" class="rounded-circle shadow" width="120" alt="Foto">
-                    <h5 class="mt-2">PABLO ARLANDIS OCAÑA</h5>
+        <div class="container mt-5">
+            <div class="text-center mb-5">
+                <h1 class="display-4 fw-bold">Los 5 del BlackJack</h1>
+                <p class="lead">Creadores de la versión más "churrera" de la ingeniería web.</p>
+            </div>
+
+            <div class="row justify-content-center text-center">
+                <div class="col-md-4">
+                    <div class="card-profile">
+                        <img th:src="@{/img/equipo/jorge.jpg}" class="profile-img mb-3" alt="Integrante 1">
+                        <h5>Jorge Gómez Navarro</h5>
+                        <small class="text-muted">Desarrollador Backend</small>
+                    </div>
                 </div>
-                <div class="col-md-4 mb-4">
-                    <img th:src="@{/img/default-pic.jpg}" class="rounded-circle shadow" width="120" alt="Foto">
-                    <h5 class="mt-2">LUCAS ARRANZ CORRAL</h5>
+                <div class="col-md-4">
+                    <div class="card-profile">
+                        <img th:src="@{/img/equipo/Lucas.jpg}" class="profile-img mb-3" alt="Integrante 2">
+                        <h5>Lucas Arranz Corral</h5>
+                        <small class="text-muted">Especialista en WebSockets</small>
+                    </div>
                 </div>
-                <div class="col-md-4 mb-4">
-                    <img th:src="@{/img/default-pic.jpg}" class="rounded-circle shadow" width="120" alt="Foto">
-                    <h5 class="mt-2">ALICIA CASTRO MESQUIDA</h5>
+                <div class="col-md-4">
+                    <div class="card-profile">
+                        <img th:src="@{/img/equipo/alicia.jpg}" class="profile-img mb-3" alt="Integrante 3">
+                        <h5>Alicia Castro Mesquida</h5>
+                        <small class="text-muted">Diseño UI/UX</small>
+                    </div>
                 </div>
-                <div class="col-md-4 mb-4">
-                    <img th:src="@{/img/default-pic.jpg}" class="rounded-circle shadow" width="120" alt="Foto">
-                    <h5 class="mt-2">JORGE GÓMEZ NAVARRO</h5>
+            </div>
+
+            <div class="row justify-content-center text-center mt-3">
+                <div class="col-md-4">
+                    <div class="card-profile">
+                        <img th:src="@{/img/equipo/guille.jpg}" class="profile-img mb-3" alt="Integrante 4">
+                        <h5>Guillermo Gónzalez</h5>
+                        <small class="text-muted">Gestión de Datos</small>
+                    </div>
                 </div>
-                <div class="col-md-4 mb-4">
-                    <img th:src="@{/img/default-pic.jpg}" class="rounded-circle shadow" width="120" alt="Foto">
-                    <h5 class="mt-2">GUILLERMO GÓNZALEZ HERRERA</h5>
+                <div class="col-md-4">
+                    <div class="card-profile">
+                        <img th:src="@{/img/equipo/pablo.jpg}" class="profile-img mb-3" alt="Integrante 5">
+                        <h5>Pablo Arlandis Ocaña</h5>
+                        <small class="text-muted">Administración y Seguridad</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row justify-content-center my-5">
+                <div class="col-lg-10">
+                    <div class="card dedication-card shadow-sm p-4">
+                        <div class="card-body text-center">
+                            <h2 class="card-title">Nuestra Dedicatoria ❤️</h2>
+                            <p class="card-text fs-5">
+                                "A todos los que disfrutan de un buen chocolate con churros mientras pican código. 
+                                Gracias a los profesores de la asignatura por guiarnos en el mundo de Spring y 
+                                a cada uno de nosotros por aguantar los 'bugs' nocturnos."
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </main>
+
     <th:block th:replace="~{fragments/footer.html :: footer}" />
 </body>
 </html>
