@@ -25,3 +25,9 @@ img.preview {
     height: 100px;
     border-radius: 10px;
 }
+
+.btn-center{
+    display: block;
+    margin: auto;
+    margin-top: 1em;
+}
