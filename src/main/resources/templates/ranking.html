@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html class="h-100" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{fragments/head :: header}" />
+    <title>Timba de Pepe - Ranking</title>
+</head>
+<body class="d-flex flex-column h-100">
+    <header th:replace="~{fragments/nav.html :: nav}"></header>
+    <main class="flex-shrink-0">
+        <div class="container">
+            <h1 class="mt-5">Ranking de Jugadores</h1>
+            <p>Aquí puedes ver quién ha ganado más "churros" en la Timba de Pepe.</p>
+            <table class="table table-striped mt-4">
+                <thead>
+                    <tr>
+                        <th>Posición</th>
+                        <th>Usuario</th>
+                        <th>Churros Ganados</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>Pepe (El Maestro)</td>
+                        <td>9999</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+    <th:block th:replace="~{fragments/footer.html :: footer}" />
+</body>
+</html>

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html class="h-100" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{fragments/head :: header}" />
+    <title>Timba de Pepe - Salas</title>
+</head>
+<body class="d-flex flex-column h-100">
+    <header th:replace="~{fragments/nav.html :: nav}"></header>
+    <main class="flex-shrink-0">
+        <div class="container">
+            <h1 class="mt-5">Salas de Juego</h1>
+            <p>Únete a una sala existente o crea la tuya propia.</p>
+            <div class="list-group mt-4">
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    Sala de los Expertos (4/8 jugadores)
+                    <a th:href="@{/juego}" class="btn btn-success btn-sm">Entrar a Jugar</a>
+                </div>
+            </div>
+            <button class="btn btn-primary mt-3">Crear Nueva Sala</button>
+        </div>
+    </main>
+    <th:block th:replace="~{fragments/footer.html :: footer}" />
+</body>
+</html>

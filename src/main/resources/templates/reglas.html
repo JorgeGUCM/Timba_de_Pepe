@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html class="h-100" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{fragments/head :: header}" />
+    <title>Timba de Pepe - Reglas</title>
+</head>
+<body class="d-flex flex-column h-100">
+    <header th:replace="~{fragments/nav.html :: nav}"></header>
+    <main class="flex-shrink-0">
+        <div class="container">
+            <h1 class="mt-5">Reglas del Siete y Medio</h1>
+            <div class="mt-4">
+                <ul>
+                    <li>El objetivo es acercarse lo más posible a 7 y medio sin pasarse.</li>
+                    <li>Las cartas del 1 al 7 valen su valor nominal.</li>
+                    <li>Las figuras (Sota, Caballo, Rey) valen medio punto.</li>
+                    <li>Al ganar apuestas obtienes "churros" para gastar en eventos.</li>
+                </ul>
+            </div>
+        </div>
+    </main>
+    <th:block th:replace="~{fragments/footer.html :: footer}" />
+</body>
+</html>
