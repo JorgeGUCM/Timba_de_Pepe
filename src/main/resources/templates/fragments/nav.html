@@ -23,8 +23,14 @@
                     <ul class="navbar-nav ms-auto">
 
                         <li class="nav-item"><a class="nav-link" th:href="@{/ranking}">Ranking</a></li>
-                        <li class="nav-item"><a class="nav-link" th:href="@{/perfil-usuario}">Perfil</a></li>
-                        <li class="nav-item"><a class="nav-link" th:href="@{/salas}">Salas</a></li>
+                        <li class="nav-item" th:if="${session.u != null}">
+                            <a class="nav-link" th:href="@{/perfil-usuario}">Perfil</a>
+                        </li>
+                        
+                        <li class="nav-item" th:if="${session.u != null}">
+                            <a class="nav-link" th:href="@{/salas}">Salas de Juego</a>
+                        </li>
+                       
                        <!-- <li class="nav-item"><a class="nav-link" th:href="@{/juego}">Juego</a></li> -->
                         <li class="nav-item"><a class="nav-link" th:href="@{/reglas}">Reglas</a></li>
                         <li class="nav-item"><a class="nav-link" th:href="@{/autores}">Autores</a></li>
