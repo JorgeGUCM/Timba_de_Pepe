@@ -31,3 +31,15 @@ img.preview {
     margin: auto;
     margin-top: 1em;
 }
+
+.feature-icon{
+    width: 300px;
+    height: auto;
+    object-fit: contain;
+}
+
+.feature-reglas{
+    width: 200px;
+    height: 300px;
+    object-fit: contain;
+}
