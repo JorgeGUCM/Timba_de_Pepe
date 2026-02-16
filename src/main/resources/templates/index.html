@@ -6,57 +6,59 @@
     <title>IW: Welcome</title>
 </head>
 
-<body class="d-flex flex-column h-100">
+<body class="d-flex flex-column h-100 index-img">
     <header th:replace="~{fragments/nav.html :: nav}"></header>
 
-    <main class="flex-shrink-0">
-        <div class="hero-section text-center">
-            <div class="container">
-                <h1 class="display-3 fw-bold">¡Bienvenido al Siete y Medio!</h1>
-                <p class="lead">La timba española más auténtica. Apuesta tus fichas, gana cervezas y no te pases de 7.5.</p>
-                <div class="d-grid gap-2 d-md-flex justify-content-center mt-4">
-                    <a th:href="${u != null} ? @{/juego} : @{/login}" 
-                       class="btn btn-warning btn-lg px-5 py-3 fw-bold">
-                       🎰 ¡EMPIEZA A JUGAR!
-                    </a>
+    <main class="text-white d-flex align-items-center" style="height:100%;">
+        <div style="width:100%; height:fit-content;">
+            <div class="hero-section text-center mb-5">
+                <div class="container">
+                    <h1 class="display-3 fw-bold">¡Bienvenido al Siete y Medio!</h1>
+                    <p class="lead">La timba española más auténtica. Apuesta tus fichas, gana cervezas y no te pases de 7.5.</p>
+                    <div class="d-grid gap-2 d-md-flex justify-content-center mt-4">
+                        <a th:href="${u != null} ? @{/juego} : @{/login}" 
+                           class="btn btn-warning btn-lg px-5 py-3 fw-bold">
+                           🎰 ¡EMPIEZA A JUGAR!
+                        </a>
+                    </div>
                 </div>
             </div>
+    
+            <section class="pb-5">
+                <div class="container">
+                    <div class="row justify-content-center text-center gap-4">
+                        
+                        <div class="blur-max col-md-3 p-2 rounded-4 border border-3">
+                            <div class="feature-card">
+                                <img th:src="@{/img/playing-cards.gif}" src="/img/playing-cards.gif" alt="Jugar" class="img-xl mb-3 rounded-5">
+                                <h2>Multijugador</h2>
+                                <p class="muted">Crea salas o únete a partidas de 2 a 8 jugadores en tiempo real.</p>
+                                <a th:href="@{/juego}" class="btn btn-success btn-custom">Ver Mesas</a>
+                            </div>
+                        </div>
+    
+                        <div class="blur-max col-md-5 p-2 rounded-4 border border-3">
+                            <div class="feature-card">
+                                <img th:src="@{/img/reglas.png}" src="/img/reglas.png" alt="Reglas" class="img-xl ">
+                                <h2>Cómo Jugar</h2>
+                                <p class="muted">¿Dudas con el valor de las figuras? Repasa las reglas del 7 y medio.</p>
+                                <a th:href="@{/reglas}" class="btn btn-primary btn-custom">Ver Reglas</a>
+                            </div>
+                        </div>
+    
+                        <div class="blur-max col-md-3 p-2 rounded-4 border border-3">
+                            <div class="feature-card">
+                                <img th:src="@{/img/equipo.png}" src="/img/equipo.png" alt="Equipo" class="img-xl mb-3 rounded-5">
+                                <h2>El Equipo</h2>
+                                <p class="muted">Conoce a los desarrolladores detrás de esta versión "churrera".</p>
+                                <a th:href="@{/creditos}" class="btn btn-dark btn-custom">Créditos</a>
+                            </div>
+                        </div>
+    
+                    </div>
+                </div>
+            </section>
         </div>
-
-        <section class="pb-5">
-            <div class="container">
-                <div class="row text-center">
-                    
-                    <div class="col-md-4 mb-4">
-                        <div class="feature-card">
-                            <img th:src="@{/img/playing-cards.gif}" src="/img/playing-cards.gif" alt="Jugar" class="feature-icon mb-3">
-                            <h4>Multijugador</h4>
-                            <p class="text-muted">Crea salas o únete a partidas de 2 a 8 jugadores en tiempo real.</p>
-                            <a th:href="@{/juego}" class="btn btn-outline-success btn-custom">Ver Mesas</a>
-                        </div>
-                    </div>
-
-                    <div class="col-md-4 mb-4">
-                        <div class="feature-card">
-                            <img th:src="@{/img/reglas.png}" src="/img/reglas.png" alt="Reglas" class="feature-reglas">
-                            <h4>Cómo Jugar</h4>
-                            <p class="text-muted">¿Dudas con el valor de las figuras? Repasa las reglas del 7 y medio.</p>
-                            <a th:href="@{/reglas}" class="btn btn-outline-primary btn-custom">Ver Reglas</a>
-                        </div>
-                    </div>
-
-                    <div class="col-md-4 mb-4">
-                        <div class="feature-card">
-                            <img th:src="@{/img/equipo.png}" src="/img/equipo.png" alt="Equipo" class="feature-icon mb-3">
-                            <h4>El Equipo</h4>
-                            <p class="text-muted">Conoce a los desarrolladores detrás de esta versión "churrera".</p>
-                            <a th:href="@{/creditos}" class="btn btn-outline-dark btn-custom">Créditos</a>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </section>
     </main>
     <th:block th:replace="~{fragments/footer.html :: footer}" />
 </body>
