@@ -24,8 +24,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         // allowedOrigins allows proxying; see https://stackoverflow.com/questions/33977803
     }
 
+
+
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
         config.enableSimpleBroker("/topic", "/queue");
     }
+
+    
 }
