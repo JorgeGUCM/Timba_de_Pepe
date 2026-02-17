@@ -39,6 +39,7 @@ img.preview {
 }
 
 .index-img{
+    position: relative;
     background-image: url(../img/antonio-sanchez-635x358.jpg);
     background-repeat: no-repeat;
     background-attachment: fixed;
@@ -55,6 +56,13 @@ img.preview {
     z-index: -1;
 }
 
+.img-rules {
+    background-image: url(../img/Reglas/Crupier.webp);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
+}
+
 .text-white{
     color:white !important;
 }
@@ -65,4 +73,8 @@ img.preview {
 
 .blur-max{
     backdrop-filter: blur(1em);
+}
+
+.test div div {
+    border: .2em solid rgb(255, 255, 255);
 }
