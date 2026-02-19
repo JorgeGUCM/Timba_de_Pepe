@@ -1,27 +1,307 @@
 <!DOCTYPE html>
 <html class="h-100" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <th:block th:replace="~{fragments/head :: header}" />
     <title>Timba de Pepe - En Partida</title>
+    <style>
+        /* ── Tablero ── */
+        .game-board {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            min-height: 420px;
+            border: 2px solid #198754;
+            border-radius: 20px;
+            padding: 1.2rem;
+            background: radial-gradient(ellipse at center, #1a472a 0%, #0d1f15 100%);
+            box-shadow: inset 0 0 40px rgba(0, 0, 0, .5), 0 4px 24px rgba(0, 0, 0, .4);
+        }
+
+        /* ── Slot de jugador ── */
+        .player-slot {
+            border: 1px solid rgba(255, 255, 255, .15);
+            border-radius: 14px;
+            padding: 1rem;
+            background: rgba(255, 255, 255, .06);
+            backdrop-filter: blur(4px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: box-shadow .3s, border-color .3s;
+        }
+
+        .player-slot:hover {
+            border-color: rgba(255, 255, 255, .3);
+            box-shadow: 0 0 12px rgba(25, 135, 84, .35);
+        }
+
+        .player-slot.empty {
+            opacity: .4;
+            border-style: dashed;
+        }
+
+        .player-slot .player-name {
+            font-weight: 600;
+            font-size: 1.05rem;
+            margin-bottom: .5rem;
+        }
+
+        .player-slot .player-name .badge {
+            font-size: .7rem;
+            vertical-align: middle;
+            margin-left: .35rem;
+        }
+
+        /* ── Zona de cartas ── */
+        .card-zone {
+            display: flex;
+            gap: .4rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            min-height: 80px;
+            width: 100%;
+            padding: .5rem;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, .2);
+        }
+
+        .card-zone .playing-card {
+            width: 70px;
+            height: auto;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .4);
+            transition: transform .2s;
+            cursor: default;
+        }
+
+        .card-zone .playing-card:hover {
+            transform: translateY(-4px) scale(1.05);
+        }
+
+        .player-score {
+            margin-top: .5rem;
+            font-size: .9rem;
+            color: #adb5bd;
+        }
+
+        .player-score strong {
+            color: #ffc107;
+            font-size: 1.1rem;
+        }
+
+        /* ── Panel de apuesta ── */
+        .bet-panel {
+            display: none;
+            background: rgba(0, 0, 0, .85);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 193, 7, .4);
+            border-radius: 14px;
+            padding: 1.2rem 1.5rem;
+            animation: slideUp .25s ease-out;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .bet-panel.show {
+            display: block;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .bet-panel .quick-btn {
+            min-width: 60px;
+        }
+
+        .bet-panel input[type="number"] {
+            background: rgba(255, 255, 255, .1);
+            border: 1px solid rgba(255, 255, 255, .25);
+            color: #fff;
+            text-align: center;
+            font-size: 1.3rem;
+            border-radius: 8px;
+        }
+
+        .bet-panel input[type="number"]:focus {
+            border-color: #ffc107;
+            box-shadow: 0 0 0 .2rem rgba(255, 193, 7, .25);
+            outline: none;
+        }
+
+        /* ── Mensaje de estado ── */
+        .game-status {
+            padding: .6rem 1rem;
+            border-radius: 10px;
+            font-weight: 600;
+            display: none;
+        }
+
+        .game-status.show {
+            display: block;
+        }
+
+        /* ── Apuesta actual ── */
+        .current-bet-display {
+            display: none;
+            font-size: .95rem;
+        }
+
+        .current-bet-display.show {
+            display: inline-block;
+        }
+
+        /* ── Wallet bar ── */
+        .wallet-bar {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            padding: .6rem 1.2rem;
+            background: rgba(0, 0, 0, .4);
+            border: 1px solid rgba(255, 255, 255, .12);
+            border-radius: 12px;
+            font-size: 1.05rem;
+        }
+
+        .wallet-bar .wallet-item {
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+        }
+
+        .wallet-bar .wallet-value {
+            font-weight: 700;
+            font-size: 1.15rem;
+        }
+
+        .wallet-bar .fichas-value {
+            color: #ffc107;
+        }
+
+        .wallet-bar .cervezas-value {
+            color: #f59e0b;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 576px) {
+            .game-board {
+                grid-template-columns: 1fr;
+            }
+
+            .wallet-bar {
+                flex-direction: column;
+                gap: .5rem;
+                align-items: center;
+            }
+        }
+    </style>
 </head>
+
 <body class="d-flex flex-column h-100 bg-dark text-white">
     <header th:replace="~{fragments/nav.html :: nav}"></header>
     <main class="flex-shrink-0">
         <div class="container text-center">
-            <h1 class="mt-5">Tablero de Juego</h1>
-            <div class="row mt-5" style="min-height: 200px; border: 2px dashed green; border-radius: 20px;">
-                <p class="mt-5">Las cartas se mostrarán aquí.</p>
+            <h1 class="mt-4 mb-2">Tablero de Juego</h1>
+
+            <!-- ═══ Fichas & Cervezas ═══ -->
+            <div class="wallet-bar mb-3">
+                <div class="wallet-item">
+                    💰 Fichas: <span class="wallet-value fichas-value" id="fichasDisplay">0</span>
+                </div>
+                <div class="wallet-item">
+                    🍺 Cervezas: <span class="wallet-value cervezas-value" id="cervezasDisplay">0</span>
+                </div>
             </div>
-            <div class="mt-4">
-                <button class="btn btn-warning">Pedir Carta</button>
-                <button class="btn btn-danger">Plantarse</button>
+
+            <!-- ═══ Tablero 4 jugadores ═══ -->
+            <div class="game-board" id="gameBoard">
+                <!-- Jugador 1 (Tú) -->
+                <div class="player-slot" id="slot-0">
+                    <div class="player-name">
+                        🃏 Tú <span class="badge bg-success">Activo</span>
+                    </div>
+                    <div class="card-zone" id="cards-0"></div>
+                    <div class="player-score">Puntos: <strong id="score-0">0</strong></div>
+                </div>
+                <!-- Jugador 2 -->
+                <div class="player-slot" id="slot-1">
+                    <div class="player-name">
+                        🃏 Jugador 2 <span class="badge bg-success">Activo</span>
+                    </div>
+                    <div class="card-zone" id="cards-1"></div>
+                    <div class="player-score">Puntos: <strong id="score-1">0</strong></div>
+                </div>
+                <!-- Jugador 3 -->
+                <div class="player-slot empty" id="slot-2">
+                    <div class="player-name">Esperando…</div>
+                    <div class="card-zone" id="cards-2"></div>
+                    <div class="player-score">Puntos: <strong id="score-2">–</strong></div>
+                </div>
+                <!-- Jugador 4 -->
+                <div class="player-slot empty" id="slot-3">
+                    <div class="player-name">Esperando…</div>
+                    <div class="card-zone" id="cards-3"></div>
+                    <div class="player-score">Puntos: <strong id="score-3">–</strong></div>
+                </div>
             </div>
-            <div class="mt-4">
-                <h5>Eventos de Cervezas </h5>
-                <button class="btn btn-outline-info btn-sm">Poner Sonido (5 cervezas)</button>
+
+            <!-- ═══ Mensaje de estado ═══ -->
+            <div class="game-status mt-3 mx-auto" id="gameStatus" style="max-width:500px;"></div>
+
+            <!-- ═══ Botones de acción ═══ -->
+            <div class="mt-4 d-flex flex-wrap justify-content-center gap-2 align-items-center" id="gameActions">
+                <button class="btn btn-warning px-4" id="btnPedirCarta" onclick="pedirCarta()">
+                    🂠 Pedir Carta
+                </button>
+                <button class="btn btn-danger px-4" id="btnPlantarse" onclick="plantarse()">
+                    ✋ Plantarse
+                </button>
+                <button class="btn btn-info px-4" id="btnApostar" onclick="toggleBetPanel()">
+                    💰 Apostar
+                </button>
+                <span class="current-bet-display badge bg-warning text-dark fs-6" id="currentBetDisplay"></span>
+            </div>
+
+            <!-- ═══ Panel de apuesta ═══ -->
+            <div class="bet-panel mt-3" id="betPanel">
+                <h6 class="text-warning mb-3">¿Cuánto quieres apostar?</h6>
+                <div class="d-flex gap-2 justify-content-center mb-3">
+                    <button class="btn btn-outline-warning btn-sm quick-btn" onclick="ajustarApuesta(5)">+5</button>
+                    <button class="btn btn-outline-warning btn-sm quick-btn" onclick="ajustarApuesta(10)">+10</button>
+                    <button class="btn btn-outline-warning btn-sm quick-btn" onclick="ajustarApuesta(25)">+25</button>
+                    <button class="btn btn-outline-warning btn-sm quick-btn" onclick="ajustarApuesta(50)">+50</button>
+                </div>
+                <div class="d-flex gap-2 justify-content-center align-items-center mb-3">
+                    <button class="btn btn-outline-light btn-sm" onclick="ajustarApuesta(-5)">−5</button>
+                    <input type="number" class="form-control" id="betAmount" value="10" min="1" max="1000"
+                        style="width:120px;">
+                    <button class="btn btn-outline-light btn-sm" onclick="ajustarApuesta(5)">+5</button>
+                </div>
+                <div class="d-flex gap-2 justify-content-center">
+                    <button class="btn btn-warning px-4" onclick="confirmarApuesta()">Confirmar Apuesta</button>
+                    <button class="btn btn-outline-secondary" onclick="toggleBetPanel()">Cancelar</button>
+                </div>
+            </div>
+
+            <!-- ═══ Eventos de Cervezas ═══ -->
+            <div class="mt-4 mb-4">
+                <h5>Eventos de Cervezas</h5>
+                <button class="btn btn-outline-info btn-sm" onclick="gastarCervezas(5, 'Poner Sonido')">🍺 Poner Sonido
+                    (5 cervezas)</button>
             </div>
         </div>
     </main>
     <th:block th:replace="~{fragments/footer.html :: footer}" />
+    <script th:src="@{/js/juego.js}" src="/js/juego.js"></script>
 </body>
+
 </html>
