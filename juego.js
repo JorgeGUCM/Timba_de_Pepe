@@ -68,7 +68,7 @@ const SieteYMedio = (() => {
 
     const players = [
         { name: 'Tú', cards: [], score: 0, standing: false, active: true, bet: 0 },
-        { name: null, cards: [], score: 0, standing: false, active: false, bet: 0 },
+        { name: 'Jugador 2', cards: [], score: 0, standing: false, active: true, bet: 0 },
         { name: null, cards: [], score: 0, standing: false, active: false, bet: 0 },
         { name: null, cards: [], score: 0, standing: false, active: false, bet: 0 }
     ];
@@ -136,7 +136,8 @@ const SieteYMedio = (() => {
         if (!zone || !p.active) return;
         zone.innerHTML = '';
         p.cards.forEach((c, i) => {
-            // Tú siempre ves tus cartas; los demás no jugarán pero el código lo soporta
+            // Tú (MY_INDEX) siempre ves tus cartas.
+            // Los demás: TODAS las cartas se muestran como reverso hasta que la partida termine.
             const faceDown = (idx !== MY_INDEX && !gameOver);
             zone.appendChild(createCardImg(c, faceDown));
         });
@@ -150,10 +151,10 @@ const SieteYMedio = (() => {
         // Solo mostrar tu puntuación; los demás oculta hasta que termine
         if (idx === MY_INDEX) {
             el.textContent = p.score % 1 === 0 ? p.score : p.score.toFixed(1);
-        } else if (gameOver && p.active) {
+        } else if (gameOver) {
             el.textContent = p.score % 1 === 0 ? p.score : p.score.toFixed(1);
         } else {
-            el.textContent = p.active ? '?' : '–';
+            el.textContent = '?';
         }
     }
 
@@ -237,28 +238,109 @@ const SieteYMedio = (() => {
         });
     }
 
-    /* IA logic removed for delivery version */
+    /* ═══════════════════════════════════════
+       IA sencilla para los oponentes
+       ═══════════════════════════════════════ */
+
+    function iaApostar(idx) {
+        const p = players[idx];
+        if (!p.active) return;
+        // La IA apuesta entre 5 y 50 fichas
+        p.bet = Math.floor(Math.random() * 10) * 5 + 5; // 5, 10, 15 ... 50
+        boteTotal += p.bet;
+    }
+
+    function iaJugar(idx) {
+        const p = players[idx];
+        if (!p.active || p.standing || p.score > LIMITE) return;
+
+        // Estrategia simple: pedir carta si score < 5, luego probabilidad decreciente
+        while (p.score <= LIMITE && !p.standing) {
+            if (p.score >= 6) {
+                if (Math.random() < 0.75) {
+                    p.standing = true;
+                    break;
+                }
+            } else if (p.score >= 5) {
+                if (Math.random() < 0.4) {
+                    p.standing = true;
+                    break;
+                }
+            }
+
+            const carta = robarCarta();
+            if (!carta) { p.standing = true; break; }
+
+            p.cards.push(carta);
+            p.score += valorCarta(carta);
+            p.score = Math.round(p.score * 10) / 10;
+
+            if (p.score > LIMITE) break;
+            if (p.score === LIMITE) { p.standing = true; break; }
+        }
+    }
 
     /* ═══════════════════════════════════════
        Determinar ganador
        ═══════════════════════════════════════ */
 
     function determinarResultado() {
+        // Hacer que los oponentes activos jueguen
+        for (let i = 1; i < 4; i++) {
+            if (players[i].active) iaJugar(i);
+        }
+
         gameOver = true;
+
+        // Revelar todas las cartas
         renderAll();
 
-        const p = players[MY_INDEX];
-        const scoreStr = p.score % 1 === 0 ? p.score : p.score.toFixed(1);
+        // Buscar el mejor score que no se pase
+        let mejorScore = -1;
+        let ganadores = [];
 
-        if (p.score > LIMITE) {
-            showStatus('😞 Te has pasado con ' + scoreStr + ' puntos. Pierdes tu apuesta.', 'danger');
+        for (let i = 0; i < 4; i++) {
+            const p = players[i];
+            if (!p.active) continue;
+            if (p.score > LIMITE) continue;
+
+            if (p.score > mejorScore) {
+                mejorScore = p.score;
+                ganadores = [i];
+            } else if (p.score === mejorScore) {
+                ganadores.push(i);
+            }
+        }
+
+        // Repartir fichas
+        if (ganadores.length === 0) {
+            // Nadie gana, fichas perdidas
+            showStatus('💀 ¡Todos se pasaron! Se pierden ' + boteTotal + ' fichas del bote.', 'danger');
+        } else if (ganadores.length === 1) {
+            const g = players[ganadores[0]];
+            const scoreStr = g.score % 1 === 0 ? g.score : g.score.toFixed(1);
+            if (ganadores[0] === MY_INDEX) {
+                // ¡Ganaste! Recibes todo el bote
+                fichas += boteTotal;
+                guardarFichas(fichas);
+                // Bonus: ganar una cerveza
+                cervezas += 1;
+                guardarCervezas(cervezas);
+                showStatus('🎉 ¡Has ganado con ' + scoreStr + ' puntos! Ganas <strong>' + boteTotal + ' fichas</strong> y 🍺 1 cerveza.', 'success');
+            } else {
+                showStatus('😞 Ha ganado <strong>' + g.name + '</strong> con ' + scoreStr + ' puntos. Pierdes tu apuesta de ' + players[MY_INDEX].bet + ' fichas.', 'warning');
+            }
         } else {
-            // En esta versión solo, si no te pasas, ganas el doble
-            fichas += boteTotal * 2;
-            guardarFichas(fichas);
-            cervezas += 1;
-            guardarCervezas(cervezas);
-            showStatus('🎉 ¡Has sacado ' + scoreStr + ' puntos! Ganas <strong>' + (boteTotal * 2) + ' fichas</strong> y 🍺 1 cerveza.', 'success');
+            // Empate: se reparte el bote
+            const nombres = ganadores.map(i => players[i].name).join(', ');
+            const parte = Math.floor(boteTotal / ganadores.length);
+            if (ganadores.includes(MY_INDEX)) {
+                fichas += parte;
+                guardarFichas(fichas);
+                showStatus('🤝 Empate entre ' + nombres + '. Te llevas <strong>' + parte + ' fichas</strong> del bote.', 'info');
+            } else {
+                showStatus('🤝 Empate entre ' + nombres + ' con ' + mejorScore + ' puntos. Pierdes tu apuesta.', 'info');
+            }
         }
 
         updateWalletDisplay();
@@ -323,8 +405,11 @@ const SieteYMedio = (() => {
             return;
         }
 
+        me.standing = true;
+        updateSlotStatus(MY_INDEX);
+
         const scoreStr = me.score % 1 === 0 ? me.score : me.score.toFixed(1);
-        showStatus('✋ Te has plantado con ' + scoreStr + ' puntos.', 'warning');
+        showStatus('✋ Te has plantado con ' + scoreStr + ' puntos. Los rivales juegan…', 'warning');
 
         setTimeout(() => {
             determinarResultado();
@@ -379,7 +464,12 @@ const SieteYMedio = (() => {
         const btnApostar = document.getElementById('btnApostar');
         if (btnApostar) btnApostar.disabled = true;
 
-        /* IA betting removed */
+        // Disparar apuestas de la IA
+        for (let i = 1; i < 4; i++) {
+            if (players[i].active) {
+                iaApostar(i);
+            }
+        }
 
         // Habilitar botones de juego
         gameStarted = true;
