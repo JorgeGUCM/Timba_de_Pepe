@@ -8,42 +8,44 @@
 
 <body class="d-flex flex-column h-100">
     <header th:replace="~{fragments/nav.html :: nav}"></header>
-    <main class="d-flex align-items-center" style="height: 100%;">
-        <container class="perfil-grid">
-            <div class="p-3 d-flex flex-column justify-content-center">
-                <div class="mb-3 d-flex gap-4 align-items-center">
-                    <img class="ms-0 img-perfil" th:src="@{/user/{id}/pic(id=${u.id})}" alt="Profile image">
-                    <h2 th:text="${u != null ? u.username : 'Usuario'}">Usuario</h2>
+    <main class="m-auto mt-5 flex-shrink-0 perfil-rel" style="width:65%;">
+        <container class="d-flex flex-column justify-content-center gap-5">
+            <div class="d-flex justify-content-between align-items-center">
+                <img class="ms-0 img-perfil" th:src="@{/user/{id}/pic(id=${u.id})}" alt="Profile image">
+                <h2 class="ms-3 fs-1" th:text="${u != null ? u.username : 'Usuario'}">Usuario</h2>
+                <p class="ms-3 fs-1">[Titulo]</p>
+                <a class="fs-2 ms-auto btn btn-secondary" th:href="@{/user/{id}(id=${u.id})}">⚙️</a>
+            </div>
+            <p class="p-3 ms-2 me-2 border border-3">Descripcion</p>
+            <div class="d-flex align justify-content-center gap-3">
+                <div class="flex-grow-1 p-3 d-flex flex-column justify-content-center align-items-around border border-3 border-success rounded-3">
+                    <h2 class="text-center">Saldo actual</h2>
+                    <p class="fs-1 text-center"><strong>500</strong>
+                        <svg
+                            style="width: 1.2em; transform: translateY(-0.15em);" xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 640 640">
+                            <path
+                                d="M471.9 324.8L320 417.6L168 324.8L320 64L471.9 324.8zM320 447.4L168 354.6L320 576L472 354.6L320 447.4z" />
+                        </svg>
+                    </p>
+                    <div class="text-center">
+                        <button class="btn btn-primary">Ingresar Dinero</button>
+                        <button class="btn btn-warning">Sacar Dinero</button>
+                    </div>
                 </div>
-                <p class="p-3 ms-2 me-2 border border-3">Description</p>
-            </div>
-            <div class="p-3 d-flex flex-column justify-content-center align-items-around border border-3 border-success rounded-3">
-                <h2 class="text-center">Saldo actual</h2>
-                <p class="fs-1 text-center"><strong>500</strong>
-                    <svg
-                        style="width: 1.2em; transform: translateY(-0.15em);" xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 640 640">
-                        <path
-                            d="M471.9 324.8L320 417.6L168 324.8L320 64L471.9 324.8zM320 447.4L168 354.6L320 576L472 354.6L320 447.4z" />
-                    </svg>
-                </p>
-                <div class="mt-5 text-center">
-                    <button class="btn btn-primary">Ingresar Dinero</button>
-                    <button class="btn btn-warning">Sacar Dinero</button>
+                <div class="flex-grow-1 p-3 d-flex flex-column justify-content-center border border-3 border-warning rounded-3">
+                    <h2 class="text-center">Cervezas</h2>
+                    <p class="fs-1 text-center"><strong>5000</strong>
+                        <svg
+                            style="width: 1.2em; transform: translateY(-0.1em);" xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 640 640">
+                            <path
+                                d="M96 144C96 117.5 117.5 96 144 96L432 96C458.5 96 480 117.5 480 144L480 160L544 160C579.3 160 608 188.7 608 224L608 332.2C608 356.4 594.3 378.6 572.6 389.4L480 435.8L480 448C480 501 437 544 384 544L192 544C139 544 96 501 96 448L96 144zM480 364.2L544 332.2L544 224L480 224L480 364.2zM224 216C224 202.7 213.3 192 200 192C186.7 192 176 202.7 176 216L176 424C176 437.3 186.7 448 200 448C213.3 448 224 437.3 224 424L224 216zM312 216C312 202.7 301.3 192 288 192C274.7 192 264 202.7 264 216L264 424C264 437.3 274.7 448 288 448C301.3 448 312 437.3 312 424L312 216zM400 216C400 202.7 389.3 192 376 192C362.7 192 352 202.7 352 216L352 424C352 437.3 362.7 448 376 448C389.3 448 400 437.3 400 424L400 216z" />
+                        </svg>
+                    </p>
                 </div>
             </div>
-            <div class="p-3 d-flex flex-column justify-content-center border border-3 border-warning rounded-3">
-                <h2 class="text-center">Cervezas</h2>
-                <p class="fs-1 text-center"><strong>5000</strong>
-                    <svg
-                        style="width: 1.2em; transform: translateY(-0.1em);" xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 640 640">
-                        <path
-                            d="M96 144C96 117.5 117.5 96 144 96L432 96C458.5 96 480 117.5 480 144L480 160L544 160C579.3 160 608 188.7 608 224L608 332.2C608 356.4 594.3 378.6 572.6 389.4L480 435.8L480 448C480 501 437 544 384 544L192 544C139 544 96 501 96 448L96 144zM480 364.2L544 332.2L544 224L480 224L480 364.2zM224 216C224 202.7 213.3 192 200 192C186.7 192 176 202.7 176 216L176 424C176 437.3 186.7 448 200 448C213.3 448 224 437.3 224 424L224 216zM312 216C312 202.7 301.3 192 288 192C274.7 192 264 202.7 264 216L264 424C264 437.3 274.7 448 288 448C301.3 448 312 437.3 312 424L312 216zM400 216C400 202.7 389.3 192 376 192C362.7 192 352 202.7 352 216L352 424C352 437.3 362.7 448 376 448C389.3 448 400 437.3 400 424L400 216z" />
-                    </svg>
-                </p>
-            </div>
-            <div class="p-3 d-flex flex-column justify-content-center border border-3 border-warning rounded-3">
+            <div class="m-auto p-3 d-flex flex-column justify-content-center border border-3 border-info rounded-3" style="width:50%;">
                 <h2 class="text-center">Ranking</h2>
                 <p class="fs-2 text-center">Puesto: <strong>5</strong></p>
                 <p class="fs-3 text-center">Puntos: <strong>5000</strong>
@@ -56,8 +58,32 @@
                 </p>
             </div>
         </container>
+        <div class="pop-up">
+            <div class="pop-inner">
+                <h1 class="mb-3 text-center">Ingresar dinero</h1>
+                <form class="d-flex flex-column align-items-center justify-content-between" action="post">
+                    <div class="d-flex flex-column align-items-center justify-content-between">
+                        <label class="fs-4 mb-1" for="importe">Importe</label>
+                        <input class="fs-4 mb-3 text-center" type="number" name="importe" id="importe" placeholder="0">
+                        <label class="fs-4">Fichas <strong>100</strong>
+                            <svg
+                                style="width: 1.2em; transform: translateY(-0.15em);" xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 640 640">
+                                <path
+                                    d="M471.9 324.8L320 417.6L168 324.8L320 64L471.9 324.8zM320 447.4L168 354.6L320 576L472 354.6L320 447.4z" />
+                            </svg>
+                        </label>
+                    </div>
+                    <div class="mt-3 text-center">
+                        <button class="btn btn-success" type="submit" id="ingresar">Ingresar</button>
+                        <button class="btn btn-danger" type="button" id="cancelar-ing">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </main>
     <th:block th:replace="~{fragments/footer.html :: footer}" />
+    <script th:src="@{/js/perfil.js}" src="/js/perfil.js"></script>
 </body>
 
 </html>
