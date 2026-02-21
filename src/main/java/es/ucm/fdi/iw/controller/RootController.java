@@ -58,7 +58,10 @@ public class RootController {
     }
 
     @GetMapping("/juego")
-    public String juego(Model model) {
+    public String juego(HttpSession session) {
+        if(session.getAttribute("u") == null){
+            return "redirect:/login";
+        }
         return "juego";
     }
 

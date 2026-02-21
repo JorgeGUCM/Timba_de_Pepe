@@ -14,6 +14,7 @@ import java.util.List;
 /**
  * An authorized user of the system.
  */
+
 @Entity
 @Data
 @NoArgsConstructor
@@ -29,6 +30,7 @@ import java.util.List;
 })
 @Table(name = "IWUser")
 public class User implements Transferable<User.Transfer> {
+
 
   public enum Role {
     USER, // normal users
