@@ -29,8 +29,8 @@
                         </svg>
                     </p>
                     <div class="text-center">
-                        <button class="btn btn-primary">Ingresar Dinero</button>
-                        <button class="btn btn-warning">Sacar Dinero</button>
+                        <button class="btn btn-primary" id="open-ing">Ingresar Dinero</button>
+                        <button class="btn btn-warning" id="open-sac">Sacar Dinero</button>
                     </div>
                 </div>
                 <div class="flex-grow-1 p-3 d-flex flex-column justify-content-center border border-3 border-warning rounded-3">
@@ -58,7 +58,7 @@
                 </p>
             </div>
         </container>
-        <div class="pop-up">
+        <div class="pop-up" id="pop-ing">
             <div class="pop-inner">
                 <h1 class="mb-3 text-center">Ingresar dinero</h1>
                 <form class="d-flex flex-column align-items-center justify-content-between" action="post">
@@ -75,7 +75,7 @@
                         </label>
                     </div>
                     <div class="mt-3 text-center">
-                        <button class="btn btn-success" type="submit" id="ingresar">Ingresar</button>
+                        <button class="btn btn-success" type="button" id="ingresar">Ingresar</button>
                         <button class="btn btn-danger" type="button" id="cancelar-ing">Cancelar</button>
                     </div>
                 </form>
