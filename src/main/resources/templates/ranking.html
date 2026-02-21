@@ -2,32 +2,147 @@
 <html class="h-100" xmlns:th="http://www.thymeleaf.org">
 <head>
     <th:block th:replace="~{fragments/head :: header}" />
-    <title>Timba de Pepe - Ranking</title>
+    <title>Timba de Pepe - Salón de la Fama</title>
+    <style>
+        /* Mural de botellines de fondo */
+        .bg-bottle {
+            position: fixed;
+            top: 0;
+            height: 100vh;
+            width: 150px;
+            z-index: -1; 
+            opacity: 0.3; 
+            background-repeat: repeat-y;
+            background-size: contain;
+        }
+        .bottle-left { left: 20px; }
+        .bottle-right { right: 20px; }
+        
+        .card { transition: transform 0.2s; }
+        .card:hover { transform: scale(1.02); }
+
+        .titulo-cervecero {
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-left: 8px;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+    </style>
 </head>
-<body class="d-flex flex-column h-100">
+
+<body class="d-flex flex-column h-100 bg-light">
+    <div class="bg-bottle bottle-left" th:style="'background-image: url(' + @{/img/botellin1.png} + ');'"></div>
+    <div class="bg-bottle bottle-right" th:style="'background-image: url(' + @{/img/botellin1.png} + ');'"></div>
+
     <header th:replace="~{fragments/nav.html :: nav}"></header>
+
     <main class="flex-shrink-0">
-        <div class="container">
-            <h1 class="mt-5">Ranking de Jugadores</h1>
-            <p>Aquí puedes ver quién ha ganado más "churros" en la Timba de Pepe.</p>
-            <table class="table table-striped mt-4">
-                <thead>
-                    <tr>
-                        <th>Posición</th>
-                        <th>Usuario</th>
-                        <th>Churros Ganados</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>1</td>
-                        <td>Pepe (El Maestro)</td>
-                        <td>9999</td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="container py-5">
+            <div class="text-center mb-5">
+                <h1 class="display-4 fw-bold text-primary">🍻 Salón de la Fama 🍻</h1>
+                <p class="lead text-muted">Los maestros cerveceros que más han ganado en la Timba de Pepe.</p>
+            </div>
+
+            <div class="row justify-content-center align-items-end mb-5 text-center">
+                <div class="col-md-3 mb-3">
+                    <div class="card border-0 shadow-sm pt-4" style="border-radius: 15px;">
+                        <img th:src="@{/img/equipo/lucas.jpg}" class="rounded-circle mx-auto border border-secondary" width="70" alt="2nd">
+                        <div class="card-body">
+                            <h4 class="card-title h5">LUCAS ARRANZ</h4>
+                            <span class="titulo-cervecero bg-light text-secondary">[Catador Experto 🍻]</span>
+                            <p class="badge bg-secondary d-block mt-2">2ª Posición</p>
+                            <p class="text-primary fw-bold mt-2">1.250 Cervezas 🍺</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card border-primary shadow-lg pt-4" style="border-radius: 20px; border-width: 3px;">
+                        <div class="position-absolute top-0 start-50 translate-middle">
+                            <span class="fs-1">👑</span>
+                        </div>
+                        <img th:src="@{/img/equipo/pepe.jpg}" class="rounded-circle mx-auto border border-warning" width="100" alt="1st">
+                        <div class="card-body">
+                            <h4 class="card-title h4">Pepe (Maestro)</h4>
+                            <span class="titulo-cervecero bg-warning text-dark">[Maestro Cervecero 🏆]</span>
+                            <p class="badge bg-warning text-dark d-block mt-2">1ª Posición</p>
+                            <p class="display-6 fw-bold text-primary mt-2">9.999 Cervezas 🍺</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card border-0 shadow-sm pt-4" style="border-radius: 15px;">
+                        <img th:src="@{/img/equipo/alicia.jpg}" class="rounded-circle mx-auto border border-danger" width="70" alt="3rd">
+                        <div class="card-body">
+                            <h4 class="card-title h5">ALICIA CASTRO</h4>
+                            <span class="titulo-cervecero bg-light text-danger">[Catador Experto 🍻]</span>
+                            <p class="badge bg-danger d-block mt-2">3ª Posición</p>
+                            <p class="text-primary fw-bold mt-2">980 Cervezas 🍺</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0" style="border-radius: 15px;">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">Clasificación Completa</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4">#</th>
+                                <th>Usuario y Rango</th>
+                                <th class="text-end pe-4">Cervezas Ganadas</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="ps-4 fw-bold">4</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <img th:src="@{/img/equipo/jorge.jpg}" class="rounded-circle me-3" width="35">
+                                        <div>
+                                            <span class="fw-bold">JORGE GÓMEZ</span>
+                                            <span class="titulo-cervecero text-info bg-light">[Aprendiz de Barra 🍺]</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-end pe-4 fw-bold">850 🍺</td>
+                            </tr>
+                            <tr>
+                                <td class="ps-4 fw-bold">5</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <img th:src="@{/img/equipo/guille.jpg}" class="rounded-circle me-3" width="35">
+                                        <div>
+                                            <span class="fw-bold">GUILLERMO GONZÁLEZ</span>
+                                            <span class="titulo-cervecero text-info bg-light">[Aprendiz de Barra 🍺]</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-end pe-4 fw-bold">720 🍺</td>
+                            </tr>
+                            <tr>
+                                <td class="ps-4 fw-bold">6</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <img th:src="@{/img/equipo/pablo.jpg}" class="rounded-circle me-3" width="35">
+                                        <div>
+                                            <span class="fw-bold">PABLO ARLANDIS</span>
+                                            <span class="titulo-cervecero text-muted bg-light">[Abstemio 💧]</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-end pe-4 fw-bold">60 🍺</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </main>
+
     <th:block th:replace="~{fragments/footer.html :: footer}" />
 </body>
 </html>
