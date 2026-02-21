@@ -26,43 +26,243 @@ img.preview {
     border-radius: 10px;
 }
 
-.btn-center{
+.btn-center {
     display: block;
     margin: auto;
     margin-top: 1em;
 }
 
-.img-xl{
+.img-xl {
     width: 12em;
     height: 12em;
     object-fit: contain;
 }
 
-.index-img{
+.index-img {
     background-image: url(../img/antonio-sanchez-635x358.jpg);
     background-repeat: no-repeat;
     background-attachment: fixed;
     background-size: cover;
 }
 
-.index-img::after{
+.index-img::after {
     content: "";
     position: absolute;
     width: 100%;
     height: 100vh;
-    background-color: rgba(0,0,0, 0.5);
+    background-color: rgba(0, 0, 0, 0.5);
 
     z-index: -1;
 }
 
-.text-white{
-    color:white !important;
+.text-white {
+    color: white !important;
 }
 
-.muted{
+.muted {
     color: rgb(208, 208, 208);
 }
 
-.blur-max{
+.blur-max {
     backdrop-filter: blur(1em);
+}
+
+
+/* ── Tablero ── */
+.tablero {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    min-height: 420px;
+    border: 2px solid #198754;
+    border-radius: 20px;
+    padding: 1.2rem;
+    background: radial-gradient(ellipse at center, #1a472a 0%, #0d1f15 100%);
+    box-shadow: inset 0 0 40px rgba(0, 0, 0, .5), 0 4px 24px rgba(0, 0, 0, .4);
+}
+
+/* ── hueco de jugador ── */
+.jugador-hueco {
+    border: 1px solid rgba(255hueco 255, 255, .15);
+    border-radius: 14px;
+    padding: 1rem;
+    background: rgba(255, 255, 255, .06);
+    backdrop-filter: blur(4px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: box-shadow .3s, border-color .3s;
+}
+
+.jugador-hueco:hover {
+    border-color: rgba(255, 255, 255, .3);
+    box-shadow: 0 0 12px rgba(25, 135, 84, .35);
+}
+
+.jugador-hueco.empty {
+    opacity: .4;
+    border-style: dashed;
+}
+
+.jugador-hueco .jugador-nombre {
+    font-weight: 600;
+    font-size: 1.05rem;
+    margin-bottom: .5rem;
+}
+
+.jugador-hueco .jugador-nombre .jugador-badge {
+    font-size: .7rem;
+    vertical-align: middle;
+    margin-left: .35rem;
+}
+
+/* ── Zona de cartas ── */
+.zona-cartas {
+    display: flex;
+    gap: .4rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    min-height: 80px;
+    width: 100%;
+    padding: .5rem;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, .2);
+}
+
+.zona-cartas .carta-jugador {
+    width: 70px;
+    height: auto;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .4);
+    transition: transform .2s;
+    cursor: default;
+}
+
+.zona-cartas .carta-jugador:hover {
+    transform: translateY(-4px) scale(1.05);
+}
+
+.jugador-puntuacion {
+    margin-top: .5rem;
+    font-size: .9rem;
+    color: #adb5bd;
+}
+
+.jugador-puntuacion strong {
+    color: #ffc107;
+    font-size: 1.1rem;
+}
+
+/* ── Panel de apuesta ── */
+.panel-apuesta {
+    display: none;
+    background: rgba(0, 0, 0, .85);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 193, 7, .4);
+    border-radius: 14px;
+    padding: 1.2rem 1.5rem;
+    animation: slideUp .25s ease-out;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.panel-apuesta.show {
+    display: block;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.panel-apuesta .quick-btn {
+    min-width: 60px;
+}
+
+.panel-apuesta input[type="number"] {
+    background: rgba(255, 255, 255, .1);
+    border: 1px solid rgba(255, 255, 255, .25);
+    color: #fff;
+    text-align: center;
+    font-size: 1.3rem;
+    border-radius: 8px;
+}
+
+.panel-apuesta input[type="number"]:focus {
+    border-color: #ffc107;
+    box-shadow: 0 0 0 .2rem rgba(255, 193, 7, .25);
+    outline: none;
+}
+
+/* ── Mensaje de estado ── */
+.estado-juego {
+    padding: .6rem 1rem;
+    border-radius: 10px;
+    font-weight: 600;
+    display: none;
+}
+
+.estado-juego.show {
+    display: block;
+}
+
+/* ── Apuesta actual ── */
+.apuesta-actual-mostar {
+    display: none;
+    font-size: .95rem;
+}
+
+.apuesta-actual-mostar.show {
+    display: inline-block;
+}
+
+/* ── Wallet bar ── */
+.cartera {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    padding: .6rem 1.2rem;
+    background: rgba(0, 0, 0, .4);
+    border: 1px solid rgba(255, 255, 255, .12);
+    border-radius: 12px;
+    font-size: 1.05rem;
+}
+
+.cartera .cartera-item {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+}
+
+.cartera .cartera-value {
+    font-weight: 700;
+    font-size: 1.15rem;
+}
+
+.cartera .fichas-value {
+    color: #ffc107;
+}
+
+.cartera .cervezas-value {
+    color: #f59e0b;
+}
+
+/* ── Responsive ── */
+@media (max-width: 576px) {
+    .game-board {
+        grid-template-columns: 1fr;
+    }
+
+    .cartera {
+        flex-direction: column;
+        gap: .5rem;
+        align-items: center;
+    }
 }
