@@ -2,42 +2,58 @@
 
 const SieteYMedio = (() => {
 
+    /* Cartas */
     const PALOS = ['B', 'C', 'E', 'O'];
     const PALO_NOMBRES = { B: 'Bastos', C: 'Copas', E: 'Espadas', O: 'Oros' };
     const NUMS = ['1', '2', '3', '4', '5', '6', '7', 'S', 'C', 'R'];
     const FIGURAS = ['S', 'C', 'R'];
     const IMG_BASE = '/img/baraja/';
     const REVERSO = IMG_BASE + 'reverso1.png';
+
+    // Limite de puntos
     const LIMITE = 7.5;
+
+    /* Monedas  */
     const FICHAS_ESTATICAS = 500;
     const CERVEZAS_ESTATICAS = 10;
+    const MIN_BET = 10;
     let fichas = FICHAS_ESTATICAS;
     let cervezas = CERVEZAS_ESTATICAS;
 
-    let mesa = [];
+    // Estado del juego
+    const ESTADO_JUEGO = {ESPERA: 0, COMPLETA: 1, JUGANDO: 2, FINALIZADO: 3};
+    let estado;
+
+    // Resultado
     let gameOver = false;
-    let gameStarted = false;
+
+    // Jugadores 4 maximo
     const players = [
-        { name: 'Tú', cards: [], score: 0, standing: false, active: true },
-        { name: null, cards: [], score: 0, standing: false, active: false },
-        { name: null, cards: [], score: 0, standing: false, active: false },
-        { name: null, cards: [], score: 0, standing: false, active: false }
+        { name: null, cards: [], score: 0, bet: 0, standing: false, active: true },
+        { name: null, cards: [], score: 0, bet: 0, standing: false, active: false },
+        { name: null, cards: [], score: 0, bet: 0, standing: false, active: false },
+        { name: null, cards: [], score: 0, bet: 0, standing: false, active: false }
     ];
+
     const MY_INDEX = 0;
 
-    function crearBaraja() {
-        mesa = [];
-        for (const p of PALOS) {
-            for (const n of NUMS) {
-                mesa.push({ code: n + p, num: n, palo: p });
-            }
-        }
-        for (let i = mesa.length - 1; i > 0; i--) {
+    function barajar(baraja){
+        for (let i = baraja.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
-            [mesa[i], mesa[j]] = [mesa[j], mesa[i]];
+            [baraja[i], baraja[j]] = [baraja[j], baraja[i]];
         }
     }
-    function robarCarta() { return mesa.pop(); }
+
+    function crearBaraja(baraja) {
+        baraja = [];
+        for (const p of PALOS) {
+            for (const n of NUMS) {
+                baraja.push({ code: n + p, num: n, palo: p });
+            }
+        }
+        barajar(baraja)
+    }
+    function robarCarta() { return baraja.pop(); }
 
     function valorCarta(carta) {
         if (FIGURAS.includes(carta.num)) return 0.5;
@@ -148,14 +164,25 @@ const SieteYMedio = (() => {
         if (cDisplay) cDisplay.innerText = cervezas;
     }
 
+    function staticStart(){
+        for (let i = 0; i < 4; i++) {
+            players[i].name = "Player " + i;
+            players[i].active = true;
+            players[i].standing = false;
+            players[i].score = 0;
+            player[i].bet = 0;
+            players[i].cards = [];
+        }
+    }
 
     function nuevaPartida() {
         gameOver = false;
-        gameStarted = true;
-        players[0].cards = [];
-        players[0].score = 0;
-        players[0].standing = false;
-        crearBaraja();
+        estado = ESTADO_JUEGO.ESPERA;
+
+        staticStart();
+
+        let baraja = [];
+        crearBaraja(baraja);
         actualizarCartera();
         const btnN = document.getElementById('btnNuevaPartida');
         if (btnN) btnN.remove();
