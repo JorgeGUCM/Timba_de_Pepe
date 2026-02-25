@@ -43,7 +43,7 @@ let playerEsperando = `<span class="badge bg-secondary">Esperando...</span>`;
 let playerActivo = `<span class="badge bg-success">Activo</span>`;
 let playerPlantado = `<span class="badge bg-warning">Plantado</span>`;
 let playerOver = `<span class="badge bg-danger">Sobrepuntos</span>`;
-let playerCards = "card-";
+let playerCards = "cards-";
 let playerScore = "score-";
 
 let elemMensaje = document.querySelector("#mensaje");
@@ -53,7 +53,6 @@ let btnPedir = document.querySelector("#btnPedir");
 let btnPlantarse = document.querySelector("#btnPlantarse");
 let btnApostar = document.querySelector("#btnApostar");
 let targetBtn = document.querySelector("#target-btnNueva");
-let elemBtnNueva = `<button class="btn btn-success px-4 mt-2" id="btnNueva">🔄 Iniciar Partida</button>`;
 
 let elemPanelApuesta = document.querySelector("#panelApuesta");
 let elemCantApuesta = document.querySelector("#cantApuesta");
@@ -80,16 +79,17 @@ function mostrarMonedas(f, c){
 // Para jugadores
 function loadPlayers(){
     // Recibira info de BD o algo y cargara datos
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 2; i++) {
         players[i].name = "Player " + i;
         players[i].bet = 0;
         players[i].score = 0;
         players[i].active = true;
-        players[i].standing = false;
+        players[i].standing = true;
         players[i].cards = [];
         num_players++;
     }
 
+    players[0].standing = false;
     // Se recibira el numero de jugador de este usuario
     playerIndex = 1;
 }
@@ -100,10 +100,18 @@ function mostarJugadores(){
         let display = "#"+playerDisplay+i;
         let slot = "#"+playerSlot+i;
         let score = "#"+playerScore+i;
-        if(p.active){
+        if(p.score >= LIMITE){
+            document.querySelector(display).innerHTML = `Player ` + i + " " + playerOver;
+            document.querySelector(slot).classList.remove("empty");
+            document.querySelector(score).innerHTML = p.score;
+        }else if(p.standing){
+            document.querySelector(display).innerHTML = `Player ` + i + " " + playerPlantado;
+            document.querySelector(slot).classList.remove("empty");
+            document.querySelector(score).innerHTML = p.score;
+        }else if(p.active){
             document.querySelector(display).innerHTML = `Player ` + i + " " + playerActivo;
             document.querySelector(slot).classList.remove("empty");
-            document.querySelector(score).innerHTML = 0;
+            document.querySelector(score).innerHTML = p.score;
         }else{
             document.querySelector(display).innerHTML = playerEsperando;
             document.querySelector(slot).classList.add("empty");
@@ -113,14 +121,30 @@ function mostarJugadores(){
     });
 }
 
+// Comprobar si e juega a acabado
+function gameEnded(){
+    let ended = true;
+    players.forEach((p) => {
+        if(!p.standing && p.score <= LIMITE && p.active){
+            ended = false;
+        }
+    });
+
+    if(ended){
+        estado = ESTADO_JUEGO.FINALIZADO;
+        resultado();
+    }
+}
+
 // Botones
-function crearBtnNueva(){
-    targetBtn.innerHTML = elemBtnNueva;
+function crearBtnNueva(texto){
+    targetBtn.innerHTML =
+    `<button class="btn btn-success px-4" id="btnNueva">`+ texto +`</button>`;;
     return document.querySelector("#btnNueva");
 }
 
 function eliminarBtnNueva(){
-    targetBtn.inner = null;
+    targetBtn.innerHTML = null;
 }
 
 // Para UI de mensajes
@@ -130,6 +154,9 @@ function mensaje(texto, tipo = "info"){
 }
 function mensajeHide(){
     elemMensaje.classList.remove("show");
+}
+function playerEstado(index, texto){
+    document.querySelector("#"+playerDisplay+index).innerHTML = texto;
 }
 
 // Para la baraja
@@ -169,12 +196,12 @@ function ajustarApuesta(n){
 
 function apuestaComfirm(){
     let bet = parseInt(elemCantApuesta.value, 10);
-    let total_bet = players[playerIndex].bet + bet;
+    let total_bet = players[playerIndex-1].bet + bet;
     if(total_bet > 0 && fichas >= total_bet){
         fichas -= bet;
         mostrarMonedas(fichas, cervezas);
 
-        players[playerIndex].bet = total_bet;
+        players[playerIndex-1].bet = total_bet;
         elemApuesta.innerHTML = total_bet;
 
         mensajeHide();
@@ -200,7 +227,7 @@ function apuestaInicial(){
     fichas -= bet;
     mostrarMonedas(fichas, cervezas);
 
-    players[playerIndex].bet = bet;
+    players[playerIndex-1].bet = bet;
     elemApuesta.innerHTML = bet;
 
     mensajeHide();
@@ -213,35 +240,75 @@ function apuestaInicial(){
 // Plantarse y fin del juego
 function resultado(){
     mensaje("Has ganado / perdido, esto es estatico no lo sabemos!", "success");
+
+    crearBtnNueva("🔄 Reiniciar Tablero").onclick = () => gameController();
 }
 
 function plantarse(){
-    players[playerIndex].standing = true;
+    players[playerIndex-1].standing = true;
 
     btnPedir.disabled = true;
     btnPlantarse.disabled = true;
 
-    mensaje("Te has plantado con: " + players[playerIndex].score + ". Esperando al resto de jugadores...", "info");
+    mensaje("Te has plantado con: " + players[playerIndex-1].score + ". Esperando al resto de jugadores...", "info");
 
-    document.querySelector("#"+playerDisplay+playerIndex).innerHTML = "Player " + playerIndex + " " + playerPlantado;
+    playerEstado(playerIndex, "Player " + playerIndex + " " + playerPlantado)
 
     // Comprobamos si todos los jugadores se han plantado o perdido
-    let ended = true;
-    players.forEach((p) => {
-        if(!p.standing || p.score <= LIMITE){
-            ended = false;
-        }
-    });
-
-    if(ended){
-        estado = ESTADO_JUEGO.FINALIZADO;
-        resultado();
-    }
+    gameEnded();
 }
 
 // Sistema de cartas
+function valorCarta(carta){
+    if(FIGURAS.includes(carta.num))
+        return 0.5;
+    else
+        return parseInt(carta.num, 10);
+}
+
+function nombreCarta(carta){
+    let numNombre = { '1': 'As', 'S': 'Sota', 'C': 'Caballo', 'R': 'Rey' };
+    return (numNombre[carta.num] || carta.num) + ' de ' + PALO_NOMBRES[carta.palo];
+}
+
+function createCardImg(carta){
+    let img = document.createElement('img');
+    img.src = IMG_BASE + carta.code + '.png';
+    img.className = 'carta-jugador';
+    img.alt = nombreCarta(carta);
+    return img;
+}
+
+function renderCards(cards, indexPlayer){
+    let target = document.querySelector("#"+playerCards + indexPlayer);
+    target.innerHTML = '';
+    cards.forEach(c => target.appendChild(createCardImg(c)));
+}
+
+function actualizarPuntos(score, indexPlayer){
+    document.querySelector("#"+playerScore+indexPlayer).innerHTML = score;
+}
+
 function pedir(baraja){
-    console.log("Pediste una carta");
+    let p = players[playerIndex-1];
+    if(!p.standing && p.score <= LIMITE){
+        baraja = barajar(baraja);
+        let carta = baraja.pop();
+        p.cards.push(carta);
+        p.score += valorCarta(carta);
+        p.score = Math.round(p.score * 10) / 10;
+
+        actualizarPuntos(p.score, playerIndex);
+        renderCards(p.cards, playerIndex);
+    }
+
+    if(p.score > LIMITE){
+        btnPedir.disabled = true;
+        btnPlantarse.disabled = true;
+        mensaje("Te has pasado de puntos. Has perdido!", "danger");
+        playerEstado(playerIndex, "Player " + playerIndex + " " + playerOver);
+        gameEnded();
+    }
 }
 
 /*
@@ -276,15 +343,20 @@ function gameController(){
     cervezas = CERVEZAS_ESTATICAS;
     mostrarMonedas(fichas, cervezas);
 
+    // Se reinicia la apuesta
+    elemApuesta.innerHTML = 0;
+
     // Cargamos jugadores
     loadPlayers();
     mostarJugadores();
+    let index = 1;
+    players.forEach((p) => {renderCards(p.cards, index); index++;});
 
     // Estado inicial del juego
     estado = (num_players < 4)? ESTADO_JUEGO.ESPERA : ESTADO_JUEGO.COMPLETA;
 
     // Creamos boton de iniciar partida (solo activo cuando hay apuesta minima)
-    let nueva = crearBtnNueva();
+    let nueva = crearBtnNueva("🔄 Iniciar Partida");
     nueva.disabled = true;
     nueva.onclick = () => inicioPartida();
 
