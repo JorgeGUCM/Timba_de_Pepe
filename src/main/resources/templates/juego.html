@@ -10,7 +10,7 @@
     <header th:replace="~{fragments/nav.html :: nav}"></header>
     <main class="flex-shrink-0">
         <div class="container text-center">
-            <h1 class="mt-4 mb-2">Tablero de Juego</h1>
+            <h1 class="mt-4 mb-2">Nombre del Tablero</h1>
 
             <div class="cartera mb-3">
                 <div class="cartera-item">
@@ -31,46 +31,50 @@
 
             <div class="tablero" id="tablero">
                 <div class="jugador-hueco" id="slot-0">
-                    <div class="jugador-nombre">
-                        🃏 Tú <span class="badge bg-success">Activo</span>
+                    <div class="jugador-nombre" id="active-1">
+                        🃏 Player 1 <span class="badge bg-success">Activo</span>
                     </div>
                     <div class="zona-cartas" id="cards-0"></div>
                     <div class="jugador-puntuacion">Puntos: <strong id="score-0">0</strong></div>
                 </div>
                 <div class="jugador-hueco" id="slot-1">
-                    <div class="jugador-nombre">
-                        🃏 Jugador 2 <span class="badge bg-success">Activo</span>
+                    <div class="jugador-nombre" id="active-2">
+                        🃏 Player 2 <span class="badge bg-success">Activo</span>
                     </div>
                     <div class="zona-cartas" id="cards-1"></div>
                     <div class="jugador-puntuacion">Puntos: <strong id="score-1">0</strong></div>
                 </div>
                 <div class="jugador-hueco empty" id="slot-2">
-                    <div class="jugador-nombre">Esperando…</div>
+                    <div class="jugador-nombre" id="active-3">
+                        🃏 Player 3 <span class="badge bg-success">Activo</span>
+                    </div>
                     <div class="zona-cartas" id="cards-2"></div>
                     <div class="jugador-puntuacion">Puntos: <strong id="score-2">–</strong></div>
                 </div>
                 <div class="jugador-hueco empty" id="slot-3">
-                    <div class="jugador-nombre">Esperando…</div>
+                    <div class="jugador-nombre" id="active-4">
+                        🃏 Player 4 <span class="badge bg-success">Activo</span>
+                    </div>
                     <div class="zona-cartas" id="cards-3"></div>
                     <div class="jugador-puntuacion">Puntos: <strong id="score-3">–</strong></div>
                 </div>
             </div>
 
-            <div class="estado-juego mt-3 mx-auto" id="estadoJuego" style="max-width:500px;"></div>
+            <div class="estado-juego mt-3 mx-auto" id="mensaje" style="max-width:500px;"></div>
 
             <span class="mt-3 badge bg-warning text-dark fs-6">Apuesta actual: <strong id="apuesta">0</strong></span>
 
             <div class="mt-4 d-flex flex-wrap justify-content-center gap-2 align-items-center" id="gameActions">
-                <button class="btn btn-warning px-4" id="btnPedirCarta" onclick="pedirCarta()">
+                <button class="btn btn-warning px-4" id="btnPedir">
                     🂠 Pedir Carta
                 </button>
                 <button class="btn btn-danger px-4" id="btnPlantarse">
                     ✋ Plantarse
                 </button>
-                <button class="btn btn-info px-4" id="btnApostar" onclick="mostrarApuesta()">
+                <button class="btn btn-info px-4" id="btnApostar">
                     💰 Apostar
                 </button>
-                <div id="target_btnNueva"></div>
+                <div id="target-btnNueva"></div>
             </div>
 
             <div class="panel-apuesta mt-3" id="panelApuesta">
@@ -83,20 +87,19 @@
                 </div>
                 <div class="d-flex gap-2 justify-content-center align-items-center mb-3">
                     <button class="btn btn-outline-light btn-sm" onclick="ajustarApuesta(-5)">−5</button>
-                    <input type="number" class="form-control" id="cantidadApuesta" value="10" min="1" max="1000"
+                    <input type="number" class="form-control" id="cantApuesta" value="10" min="1" max="1000"
                         style="width:120px;">
                     <button class="btn btn-outline-light btn-sm" onclick="ajustarApuesta(5)">+5</button>
                 </div>
                 <div class="d-flex gap-2 justify-content-center">
-                    <button class="btn btn-warning px-4" id="apostar">Confirmar Apuesta</button>
-                    <button class="btn btn-outline-secondary" id="btnCancelarApuesta">Cancelar</button>
+                    <button class="btn btn-warning px-4" id="btnConfirmAposta">Confirmar Apuesta</button>
+                    <button class="btn btn-outline-secondary" id="btnCancelApuesta">Cancelar</button>
                 </div>
             </div>
 
             <div class="mt-4 mb-4">
                 <h5>Eventos de Cervezas</h5>
-                <button class="btn btn-outline-info btn-sm" onclick="gastarCervezas(5, 'Poner Sonido')">🍺 Poner Sonido
-                    (5 cervezas)</button>
+                <button class="btn btn-outline-info btn-sm" id="btnSonido">🍺 Poner Sonido (5 cervezas)</button>
             </div>
         </div>
     </main>
