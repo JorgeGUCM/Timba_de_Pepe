@@ -371,6 +371,9 @@ function gameController(){
     // Estado inicial del juego
     estado = (num_players < 4)? ESTADO_JUEGO.ESPERA : ESTADO_JUEGO.COMPLETA;
 
+    // boton apostar como primera apuesta
+    btnConfirmApuesta.onclick = () => apuestaInicial();
+
     // Creamos boton de iniciar partida (solo activo cuando hay apuesta minima)
     let nueva = crearBtnNueva("🔄 Iniciar Partida");
     nueva.disabled = true;
@@ -382,5 +385,4 @@ function gameController(){
 
 btnApostar.onclick = () => apostarPanelShow();
 btnCancelApuesta.onclick = () => apostarPanelHide();
-btnConfirmApuesta.onclick = () => apuestaInicial();
 //btnSonido.onclick = () => sonido();
