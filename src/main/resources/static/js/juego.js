@@ -19,9 +19,6 @@ const MIN_BET = 10;
 const ESTADO_JUEGO = {ESPERA: 0, COMPLETA: 1, JUGANDO: 2, FINALIZADO: 3};
 let estado = ESTADO_JUEGO.ESPERA;
 
-// Resultado
-let gameOver = false;
-
 // Jugadores 4 maximo
 const players = [
     { name: null, cards: [], score: 0, bet: 0, standing: false, active: true },
@@ -82,15 +79,20 @@ function pedirCarta() {
 
     if (p.score > LIMITE) determinarResultado();
 }
-function plantarse() {
-    if (gameOver || !gameStarted) return;
-    players[MY_INDEX].standing = true;
-    determinarResultado();
-}
-function determinarResultado() {
-    gameOver = true;
 
-    const p = players[MY_INDEX];
+
+
+/*
+-------------------
+    Miscelaneos
+-------------------
+*/
+
+// Para finalizar el juego
+function determinarResultado() {
+    estado = ESTADO_JUEGO.FINALIZADO;
+
+    const p = players[0];
     if (p.score > LIMITE) {
         mostrarEstado('😞 Te has pasado con ' + p.score + '. ¡Suerte la próxima!', 'danger');
     } else {
@@ -101,12 +103,6 @@ function determinarResultado() {
     document.getElementById('btnPlantarse').disabled = true;
     mostrarBotonNuevaPartida();
 }
-
-/*
--------------------
-    Miscelaneos
--------------------
-*/
 
 // Para la baraja
 function barajar(baraja){
@@ -134,6 +130,10 @@ function mostrarBotonNuevaPartida() {
     target.innerHTML = `
     <button class="btn btn-success px-4 mt-2" id="btnNueva">🔄 Nueva Partida</button>
     `;
+
+    let nueva = document.querySelector("#btnNueva");
+    nueva.onclick = () => nuevaPartida();
+    return nueva;
 }
 
 // Para las fichas y cervezas
@@ -154,9 +154,27 @@ function staticStart(){
     }
 }
 
+/*
+---------------
+    Botones
+---------------
+*/
+
+// Plantarse
+let btnPlantarse = document.querySelector("#btnPlantarse");
+btnPlantarse.onclick = () => plantarse();
+function plantarse() {
+    if (estado == ESTADO_JUEGO.ESPERA || estado == ESTADO_JUEGO.FINALIZADO) return;
+    
+    // Recibiriamos el indice del jugador
+    players[0].standing = true;
+    console.log("El jugador se ha plantado!");
+
+    determinarResultado();
+}
+
 // Estados de mesa
 function nuevaPartida() {
-    gameOver = false;
     estado = ESTADO_JUEGO.JUGANDO;
 
     console.log("El juego a empezado")
@@ -187,11 +205,7 @@ function mesaEspera() {
     // Poner aqui fichas del usuario
     actualizarCartera(FICHAS_ESTATICAS, CERVEZAS_ESTATICAS);
 
-    mostrarBotonNuevaPartida();
-    
-    let nueva = document.querySelector("#btnNueva");
-    nueva.disabled = true;
-    nueva.onclick = () => nuevaPartida();
+    mostrarBotonNuevaPartida().disabled = true;
 
     document.querySelector("#btnPedirCarta").disabled = true;
     document.querySelector("#btnPlantarse").disabled = true;
@@ -208,20 +222,21 @@ function nuevaApuesta(){
         players[0].bet += bet;
         // Muestra la nueva apuesta
         apuesta.innerHTML = players[0].bet;
-        document.querySelector("#panelApuesta").classList.toggle("show");
+        mostrarApuesta();
     }
 }
 
 function apuestaInicial(apostar){
     let apuesta = document.querySelector("#apuesta");
     let bet = parseInt(document.getElementById('cantidadApuesta').value, 10);
-    if(bet > MIN_BET){
+    if(bet >= MIN_BET){
         players[0].bet = bet;
         // Muestra la apuesta inicial
         apuesta.innerHTML = bet;
         
         document.querySelector("#btnNueva").disabled = false;
         apostar.onclick = () => nuevaApuesta();
+        mostrarApuesta();
     }
     
 }
