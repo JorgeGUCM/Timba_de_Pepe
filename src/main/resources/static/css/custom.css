@@ -220,16 +220,6 @@ img.preview {
     display: block;
 }
 
-/* ── Apuesta actual ── */
-.apuesta-actual-mostar {
-    display: none;
-    font-size: .95rem;
-}
-
-.apuesta-actual-mostar.show {
-    display: inline-block;
-}
-
 /* ── Wallet bar ── */
 .cartera {
     display: flex;

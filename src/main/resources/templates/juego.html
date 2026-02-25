@@ -10,7 +10,7 @@
     <header th:replace="~{fragments/nav.html :: nav}"></header>
     <main class="flex-shrink-0">
         <div class="container text-center">
-            <h1 class="mt-4 mb-2">Tablero de Juego</h1>
+            <h1 class="mt-4 mb-2">Nombre del Tablero</h1>
 
             <div class="cartera mb-3">
                 <div class="cartera-item">
@@ -18,57 +18,63 @@
                         xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
                         <path
                             d="M471.9 324.8L320 417.6L168 324.8L320 64L471.9 324.8zM320 447.4L168 354.6L320 576L472 354.6L320 447.4z" />
-                    </svg> Fichas: <span class="cartera-value fichas-value" id="fichasDisplay">0</span>
+                    </svg> Fichas: <span class="cartera-value fichas-value" id="fichas">0</span>
                 </div>
                 <div class="cartera-item">
                     <svg style="filter: invert(1);   width: 1.2em; transform: translateY(-0.1em);"
                         xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
                         <path
                             d="M96 144C96 117.5 117.5 96 144 96L432 96C458.5 96 480 117.5 480 144L480 160L544 160C579.3 160 608 188.7 608 224L608 332.2C608 356.4 594.3 378.6 572.6 389.4L480 435.8L480 448C480 501 437 544 384 544L192 544C139 544 96 501 96 448L96 144zM480 364.2L544 332.2L544 224L480 224L480 364.2zM224 216C224 202.7 213.3 192 200 192C186.7 192 176 202.7 176 216L176 424C176 437.3 186.7 448 200 448C213.3 448 224 437.3 224 424L224 216zM312 216C312 202.7 301.3 192 288 192C274.7 192 264 202.7 264 216L264 424C264 437.3 274.7 448 288 448C301.3 448 312 437.3 312 424L312 216zM400 216C400 202.7 389.3 192 376 192C362.7 192 352 202.7 352 216L352 424C352 437.3 362.7 448 376 448C389.3 448 400 437.3 400 424L400 216z" />
-                    </svg> Cervezas: <span class="cartera-value cervezas-value" id="cervezasDisplay">0</span>
+                    </svg> Cervezas: <span class="cartera-value cervezas-value" id="cervezas">0</span>
                 </div>
             </div>
 
             <div class="tablero" id="tablero">
-                <div class="jugador-hueco" id="slot-0">
-                    <div class="jugador-nombre">
-                        🃏 Tú <span class="badge bg-success">Activo</span>
-                    </div>
-                    <div class="zona-cartas" id="cards-0"></div>
-                    <div class="jugador-puntuacion">Puntos: <strong id="score-0">0</strong></div>
-                </div>
                 <div class="jugador-hueco" id="slot-1">
-                    <div class="jugador-nombre">
-                        🃏 Jugador 2 <span class="badge bg-success">Activo</span>
+                    <div class="jugador-nombre" id="active-1">
+                        🃏 Player 1 <span class="badge bg-success">Activo</span>
                     </div>
                     <div class="zona-cartas" id="cards-1"></div>
                     <div class="jugador-puntuacion">Puntos: <strong id="score-1">0</strong></div>
                 </div>
-                <div class="jugador-hueco empty" id="slot-2">
-                    <div class="jugador-nombre">Esperando…</div>
+                <div class="jugador-hueco" id="slot-2">
+                    <div class="jugador-nombre" id="active-2">
+                        🃏 Player 2 <span class="badge bg-success">Activo</span>
+                    </div>
                     <div class="zona-cartas" id="cards-2"></div>
-                    <div class="jugador-puntuacion">Puntos: <strong id="score-2">–</strong></div>
+                    <div class="jugador-puntuacion">Puntos: <strong id="score-2">0</strong></div>
                 </div>
                 <div class="jugador-hueco empty" id="slot-3">
-                    <div class="jugador-nombre">Esperando…</div>
+                    <div class="jugador-nombre" id="active-3">
+                        🃏 Player 3 <span class="badge bg-success">Activo</span>
+                    </div>
                     <div class="zona-cartas" id="cards-3"></div>
                     <div class="jugador-puntuacion">Puntos: <strong id="score-3">–</strong></div>
                 </div>
+                <div class="jugador-hueco empty" id="slot-4">
+                    <div class="jugador-nombre" id="active-4">
+                        🃏 Player 4 <span class="badge bg-success">Activo</span>
+                    </div>
+                    <div class="zona-cartas" id="cards-4"></div>
+                    <div class="jugador-puntuacion">Puntos: <strong id="score-4">–</strong></div>
+                </div>
             </div>
 
-            <div class="estado-juego mt-3 mx-auto" id="estadoJuego" style="max-width:500px;"></div>
+            <div class="estado-juego mt-3 mx-auto alert" id="mensaje" style="max-width:500px;"></div>
+
+            <span class="mt-3 badge bg-warning text-dark fs-6">Apuesta actual: <strong id="apuesta">0</strong></span>
 
             <div class="mt-4 d-flex flex-wrap justify-content-center gap-2 align-items-center" id="gameActions">
-                <button class="btn btn-warning px-4" id="btnPedirCarta" onclick="pedirCarta()">
+                <button class="btn btn-warning px-4" id="btnPedir">
                     🂠 Pedir Carta
                 </button>
-                <button class="btn btn-danger px-4" id="btnPlantarse" onclick="plantarse()">
+                <button class="btn btn-danger px-4" id="btnPlantarse">
                     ✋ Plantarse
                 </button>
-                <button class="btn btn-info px-4" id="btnApostar" onclick="mostrarApuesta()">
+                <button class="btn btn-info px-4" id="btnApostar">
                     💰 Apostar
                 </button>
-                <span class="apuesta-actual-mostar badge bg-warning text-dark fs-6" id="apuestaActualDisplay"></span>
+                <div id="target-btnNueva"></div>
             </div>
 
             <div class="panel-apuesta mt-3" id="panelApuesta">
@@ -81,20 +87,19 @@
                 </div>
                 <div class="d-flex gap-2 justify-content-center align-items-center mb-3">
                     <button class="btn btn-outline-light btn-sm" onclick="ajustarApuesta(-5)">−5</button>
-                    <input type="number" class="form-control" id="cantidadApuesta" value="10" min="1" max="1000"
+                    <input type="number" class="form-control" id="cantApuesta" value="10" min="1" max="1000"
                         style="width:120px;">
                     <button class="btn btn-outline-light btn-sm" onclick="ajustarApuesta(5)">+5</button>
                 </div>
                 <div class="d-flex gap-2 justify-content-center">
-                    <button class="btn btn-warning px-4" onclick="confirmarApuesta()">Confirmar Apuesta</button>
-                    <button class="btn btn-outline-secondary" onclick="mostrarApuesta()">Cancelar</button>
+                    <button class="btn btn-warning px-4" id="btnConfirmApuesta">Confirmar Apuesta</button>
+                    <button class="btn btn-outline-secondary" id="btnCancelApuesta">Cancelar</button>
                 </div>
             </div>
 
             <div class="mt-4 mb-4">
                 <h5>Eventos de Cervezas</h5>
-                <button class="btn btn-outline-info btn-sm" onclick="gastarCervezas(5, 'Poner Sonido')">🍺 Poner Sonido
-                    (5 cervezas)</button>
+                <button class="btn btn-outline-info btn-sm" id="btnSonido">🍺 Poner Sonido (5 cervezas)</button>
             </div>
         </div>
     </main>
