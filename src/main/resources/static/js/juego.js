@@ -89,6 +89,8 @@ function loadPlayers(){
         num_players++;
     }
 
+    players[1].cards[0] = {"code": "RB","num": "R","palo": "B"};
+
     players[0].standing = false;
     // Se recibira el numero de jugador de este usuario
     playerIndex = 1;
@@ -276,13 +278,27 @@ function createCardImg(carta){
     img.src = IMG_BASE + carta.code + '.png';
     img.className = 'carta-jugador';
     img.alt = nombreCarta(carta);
+    img.draggable = false;
+    return img;
+}
+
+function createCardReverse(){
+    let img = document.createElement('img');
+    img.src = REVERSO;
+    img.className = 'carta-jugador';
+    img.alt = "Reverso de carta";
+    img.draggable = false;
     return img;
 }
 
 function renderCards(cards, indexPlayer){
     let target = document.querySelector("#"+playerCards + indexPlayer);
     target.innerHTML = '';
-    cards.forEach(c => target.appendChild(createCardImg(c)));
+    // Si es un contrincante cartas del reves
+    if(indexPlayer == playerIndex)
+        cards.forEach(c => target.appendChild(createCardImg(c)));
+    else
+        cards.forEach(() => target.appendChild(createCardReverse()));
 }
 
 function actualizarPuntos(score, indexPlayer){
