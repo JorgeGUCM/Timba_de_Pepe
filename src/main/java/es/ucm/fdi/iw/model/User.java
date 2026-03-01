@@ -50,10 +50,16 @@ public class User implements Transferable<User.Transfer> {
   private String firstName;
   private String lastName;
 
-  private String colorFavorito;
+  // private String colorFavorito;
 
   private boolean enabled;
   private String roles; // split by ',' to separate roles
+
+  private int fichas;
+  private int cervezas_actuales; 
+  private int cervezas_totales; 
+  private String descripcion;
+  private String titulo;
 
   @OneToMany
   @JoinColumn(name = "sender_id")
