@@ -9,22 +9,23 @@
 <body class="d-flex flex-column h-100">
     <header th:replace="~{fragments/nav.html :: nav}"></header>
 
-    <main class="flex-shrink-0">
-        <div class="container">
-            <form class="form-signin" method="post" th:action="@{/login}">
-                <h2 class="form-signin-heading">Please sign in</h2>
-                <p th:if="${loginError != false}" class="error">
+    <main class="d-flex align-items-center" style="height:stretch;">
+        <div class="container" style="width: 35em;">
+            <form class="form-signin d-flex flex-column justify-content-start" method="post" th:action="@{/login}">
+                <h2 class="form-signin-heading">¡Bienvienido de vuelta!</h2>
+                <p th:if="${loginError != false}" class="error text-center">
                     Error en nombre de usuario o contraseña
                 </p>
                 <p>
-                    <label for="username" class="visually-hidden">Username</label>
-                    <input type="text" id="username" name="username" class="form-control" placeholder="Username" required="required">
+                    <label for="username" class="">Nombre de usuario:</label>
+                    <input type="text" id="username" name="username" class="form-control" placeholder="Nombre" required="required">
                 </p>
                 <p>
-                    <label for="password" class="visually-hidden">Password</label>
-                    <input type="password" id="password" name="password" class="form-control" placeholder="Password" required="required">
+                    <label for="password" class="">Contraseña:</label>
+                    <input type="password" id="password" name="password" class="form-control" placeholder="Contraseña" required="required">
                 </p>
-                <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+                <button class="btn btn-lg btn-success btn-block" type="submit">Sign in</button>
+                <p>¿Eres nuevo en esta fiesta? <a href="#" class="link-primary">Registrate</a>.</p>
             </form>
         </div>
     </main>
