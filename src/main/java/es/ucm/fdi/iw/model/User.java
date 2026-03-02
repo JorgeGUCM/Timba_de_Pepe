@@ -1,15 +1,25 @@
 package es.ucm.fdi.iw.model;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import jakarta.persistence.*;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * An authorized user of the system.
@@ -60,6 +70,10 @@ public class User implements Transferable<User.Transfer> {
   private int cervezas_totales; 
   private String descripcion;
   private String titulo;
+
+  // Relaciones
+  @OneToMany(mappedBy="user")
+  private List<Jugador> jugador;
 
   @OneToMany
   @JoinColumn(name = "sender_id")
