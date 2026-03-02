@@ -1,12 +1,23 @@
 package es.ucm.fdi.iw.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.SequenceGenerator;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import jakarta.persistence.*;
 
 @Entity
 @Data
 @NoArgsConstructor
+@NamedQueries ({
+    
+})
 public class Jugador {
 
     @Id
@@ -16,8 +27,8 @@ public class Jugador {
 
     // Relación Foreign Key hacia la tabla de Usuarios
     @ManyToOne
-    @JoinColumn(name = "id_usuario")
-    private User usuario;
+    @JoinColumn(name="id_usuario")
+    private User user;
 
     private int apuesta;
     private int ganancias;
