@@ -19,12 +19,13 @@ import lombok.Data;
 
 /**
  * A group of users, with an associated chat.
+ * Es un chat
  */
 @Data
 @Entity
 @NamedQueries({
-  @NamedQuery(name = "Topic.byKey", query = "SELECT t FROM Topic t "
-      + "WHERE t.key = :key")
+    @NamedQuery(name = "Topic.byKey", query = "SELECT t FROM Topic t "
+        + "WHERE t.key = :key")
 })
 public class Topic {
 
@@ -36,7 +37,7 @@ public class Topic {
   @ManyToMany
   private List<User> members = new ArrayList<>();
   private String name;
-  @Column(nullable = false, unique = true, name="topic_key") // key is reserved
+  @Column(nullable = false, unique = true, name = "topic_key") // key is reserved
   private String key;
 
   @OneToMany

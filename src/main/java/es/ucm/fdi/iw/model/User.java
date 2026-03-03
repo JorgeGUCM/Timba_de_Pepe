@@ -41,7 +41,6 @@ import lombok.NoArgsConstructor;
 @Table(name = "IWUser")
 public class User implements Transferable<User.Transfer> {
 
-
   public enum Role {
     USER, // normal users
     ADMIN, // admin users
@@ -52,27 +51,32 @@ public class User implements Transferable<User.Transfer> {
   @SequenceGenerator(name = "gen", sequenceName = "gen")
   private long id;
 
+  /*
+   * ----------------
+   * Atributos
+   * ----------------
+   */
   @Column(nullable = false, unique = true)
   private String username;
   @Column(nullable = false)
   private String password;
 
+  @Column(nullable = false)
   private String firstName;
   private String lastName;
 
-  // private String colorFavorito;
+  private String titulo;
 
   private boolean enabled;
   private String roles; // split by ',' to separate roles
 
   private int fichas;
-  private int cervezas_actuales; 
-  private int cervezas_totales; 
+  private int cervezas_actuales;
+  private int cervezas_totales;
   private String descripcion;
-  private String titulo;
 
   // Relaciones
-  @OneToMany(mappedBy="user")
+  @OneToMany(mappedBy = "user")
   private List<Jugador> jugador;
 
   @OneToMany
@@ -110,7 +114,7 @@ public class User implements Transferable<User.Transfer> {
     StringBuilder gs = new StringBuilder();
     for (Topic g : groups) {
       gs.append(g.getName()).append(", ");
-    } 
+    }
     return new Transfer(id, username, received.size(), sent.size(), gs.toString());
   }
 
