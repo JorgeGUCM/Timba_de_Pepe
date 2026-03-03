@@ -53,13 +53,16 @@ public class RootController {
     }
 
     @GetMapping("/salas")
-    public String salas(Model model) {
+    public String salas(Model model, HttpSession session) {
+        if (session.getAttribute("u") == null) {
+            return "redirect:/login";
+        }
         return "salas";
     }
 
     @GetMapping("/juego")
     public String juego(HttpSession session) {
-        if(session.getAttribute("u") == null){
+        if (session.getAttribute("u") == null) {
             return "redirect:/login";
         }
         return "juego";
