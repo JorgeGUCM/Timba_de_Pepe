@@ -36,11 +36,14 @@ import lombok.NoArgsConstructor;
         + "WHERE u.username = :username"),
     @NamedQuery(name = "User.topics", query = "SELECT t.key "
         + "FROM Topic t JOIN t.members u "
+        + "WHERE u.id = :id"),
+    @NamedQuery(name = "User.cervezas_totales", query = "SELECT u.cervezas_totales "
+        + "FROM User u "
         + "WHERE u.id = :id")
 })
+
 @Table(name = "IWUser")
 public class User implements Transferable<User.Transfer> {
-
 
   public enum Role {
     USER, // normal users
@@ -66,13 +69,13 @@ public class User implements Transferable<User.Transfer> {
   private String roles; // split by ',' to separate roles
 
   private int fichas;
-  private int cervezas_actuales; 
-  private int cervezas_totales; 
+  private int cervezas_actuales;
+  private int cervezas_totales;
   private String descripcion;
   private String titulo;
 
   // Relaciones
-  @OneToMany(mappedBy="user")
+  @OneToMany(mappedBy = "user")
   private List<Jugador> jugador;
 
   @OneToMany
@@ -110,7 +113,7 @@ public class User implements Transferable<User.Transfer> {
     StringBuilder gs = new StringBuilder();
     for (Topic g : groups) {
       gs.append(g.getName()).append(", ");
-    } 
+    }
     return new Transfer(id, username, received.size(), sent.size(), gs.toString());
   }
 
