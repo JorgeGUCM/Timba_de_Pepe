@@ -64,16 +64,17 @@ public class User implements Transferable<User.Transfer> {
   @Column(nullable = false)
   private String firstName;
   private String lastName;
-
+  @Column(nullable = false)
   private String titulo;
+  private String descripcion;
 
-  private boolean enabled;
   private String roles; // split by ',' to separate roles
 
   private int fichas;
   private int cervezas_actuales;
   private int cervezas_totales;
-  private String descripcion;
+
+  private boolean enabled;
 
   // Relaciones
   @OneToMany(mappedBy = "user")
