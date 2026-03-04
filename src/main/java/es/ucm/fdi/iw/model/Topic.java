@@ -13,8 +13,8 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.SequenceGenerator;
-
 import lombok.Data;
 
 /**
@@ -34,16 +34,30 @@ public class Topic {
   @SequenceGenerator(name = "gen", sequenceName = "gen")
   private long id;
 
-  @ManyToMany
-  private List<User> members = new ArrayList<>();
+  /*
+  * ---------------
+  *    Atributos
+  * ---------------
+  */
   private String name;
   @Column(nullable = false, unique = true, name = "topic_key") // key is reserved
   private String key;
+
+  /*
+  !   Relaciones
+  */
+  @OneToOne(mappedBy="chat")
+  @JoinColumn(name="id_juego")
+  private Juego juego;
+
+  @ManyToMany
+  private List<User> members = new ArrayList<>();
 
   @OneToMany
   @JoinColumn(name = "topic_id")
   private List<Message> messages = new ArrayList<>();
 
+  //# Otros metodos
   @Override
   public String toString() {
     return name + " (" + key + ")";

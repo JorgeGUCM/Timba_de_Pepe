@@ -3,6 +3,9 @@ package es.ucm.fdi.iw.model;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -11,13 +14,9 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.SequenceGenerator;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
-import lombok.AllArgsConstructor;
 
 /**
  * A message that users can send each other.
@@ -34,21 +33,33 @@ public class Message implements Transferable<Message.Transfer> {
 	
 	private static Logger log = LogManager.getLogger(Message.class);	
 	
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "gen")
-    @SequenceGenerator(name = "gen", sequenceName = "gen")
+	@Id
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "gen")
+	@SequenceGenerator(name = "gen", sequenceName = "gen")
 	private long id;
+
+	/*
+	* ---------------
+	*    Atributos
+	* ---------------
+	*/
+	private String text;
+	// Sera nuestro date
+	private LocalDateTime dateSent;
+	// Se borrara
+	private LocalDateTime dateRead;
+
+	/*
+    !   Relaciones
+    */
 	@ManyToOne
 	private User sender;
+	// Se borrara recipient no tiene sentido, ya que lo sera el topic(chat) el que lo reciba
 	@ManyToOne
 	private User recipient;
-  @ManyToOne
+	@ManyToOne
 	private Topic topic;
   
-	private String text;
-	
-	private LocalDateTime dateSent;
-	private LocalDateTime dateRead;
 	
 	/**
 	 * Objeto para persistir a/de JSON
@@ -59,11 +70,15 @@ public class Message implements Transferable<Message.Transfer> {
 	public static class Transfer {
 		private String from;
 		private String to;
+		// Sera el Date
 		private String sent;
+		// Se borrara
 		private String received;
-    private String topic;
+		// Es el chat al que pertenece
+    	private String topic;
 		private String text;
 		long id;
+		
 		public Transfer(Message m) {
 			this.from = m.getSender().getUsername();
 			this.to = m.getRecipient() == null ? "null": m.getRecipient().getUsername();

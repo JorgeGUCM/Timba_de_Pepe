@@ -52,9 +52,9 @@ public class User implements Transferable<User.Transfer> {
   private long id;
 
   /*
-   * ----------------
-   * Atributos
-   * ----------------
+   * ---------------
+   *    Atributos
+   * ---------------
    */
   @Column(nullable = false, unique = true)
   private String username;
@@ -76,7 +76,9 @@ public class User implements Transferable<User.Transfer> {
 
   private boolean enabled;
 
-  // Relaciones
+  /*
+  !  Relaciones
+  */
   @OneToMany(mappedBy = "user")
   private List<Jugador> jugador;
 
