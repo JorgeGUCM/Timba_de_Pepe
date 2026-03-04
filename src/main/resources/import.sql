@@ -1,15 +1,13 @@
 -- 1. Insertamos usuarios (añadiendo los nuevos campos: fichas y cervezas)
 -- Usuario 'a' (Admin) - Contraseña: aa
-INSERT INTO IWUser (id, enabled, roles, username, password, first_name, last_name, fichas, cervezas_actuales, cervezas_totales)
-VALUES (1, TRUE, 'ADMIN,USER', 'a',
-    '{bcrypt}$2a$10$2BpNTbrsarbHjNsUWgzfNubJqBRf.0Vz9924nRSHBqlbPKerkgX.W', 
-    'Pepe', 'Admin', 1000, 5, 10);
+INSERT INTO IWUser (id, username, password, first_name, last_name, titulo,  descripcion, roles, fichas, cervezas_actuales, cervezas_totales, enabled)
+VALUES (1, 'a', '{bcrypt}$2a$10$2BpNTbrsarbHjNsUWgzfNubJqBRf.0Vz9924nRSHBqlbPKerkgX.W',
+        'Pepe', 'Gonzalez', 'Dios cervecero', NULL, 'ADMIN', 500, 100, 10000, TRUE);
 
 -- Usuario 'b' (User normal) - Contraseña: aa
-INSERT INTO IWUser (id, enabled, roles, username, password, first_name, last_name, fichas, cervezas_actuales, cervezas_totales)
-VALUES (2, TRUE, 'USER', 'b',
-    '{bcrypt}$2a$10$2BpNTbrsarbHjNsUWgzfNubJqBRf.0Vz9924nRSHBqlbPKerkgX.W', 
-    'Juan', 'Jugador', 500, 2, 5);
+INSERT INTO IWUser (id, username, password, first_name, last_name, titulo,  descripcion, roles, fichas, cervezas_actuales, cervezas_totales, enabled)
+VALUES (2, 'b', '{bcrypt}$2a$10$2BpNTbrsarbHjNsUWgzfNubJqBRf.0Vz9924nRSHBqlbPKerkgX.W', 
+    'Juan', 'Lorenzo', 'Aprendiz de barra', 'Aprendiendo del maestro Pepe', 'USER', 500, 2, 5, TRUE);
 
 -- 2. Insertamos Jugadores de prueba (Asociamos el jugador 1 al usuario 1 y el jugador 2 al usuario 2)
 INSERT INTO Jugador (id, id_usuario, apuesta, ganancias, cartas) 
