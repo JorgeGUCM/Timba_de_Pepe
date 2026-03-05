@@ -110,6 +110,16 @@ public class User implements Transferable<User.Transfer> {
     private int totalReceived;
     private int totalSent;
     private String groups;
+
+    // Nuevo
+    private String firstName;
+    private String lastName;
+    private String titulo;
+    private String descripcion;
+
+    private int fichas;
+    private int cervezas_actuales;
+    private int cervezas_totales;
   }
 
   @Override
@@ -118,7 +128,7 @@ public class User implements Transferable<User.Transfer> {
     for (Topic g : groups) {
       gs.append(g.getName()).append(", ");
     }
-    return new Transfer(id, username, received.size(), sent.size(), gs.toString());
+    return new Transfer(id, username, received.size(), sent.size(), gs.toString(), firstName, lastName, titulo, descripcion, fichas, cervezas_actuales, cervezas_totales);
   }
 
   @Override
