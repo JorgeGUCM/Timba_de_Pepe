@@ -2,7 +2,7 @@
 -- Usuario 'a' (Admin) - Contraseña: aa
 INSERT INTO IWUser (id, username, password, first_name, last_name, titulo,  descripcion, roles, fichas, cervezas_actuales, cervezas_totales, enabled)
 VALUES (1, 'a', '{bcrypt}$2a$10$2BpNTbrsarbHjNsUWgzfNubJqBRf.0Vz9924nRSHBqlbPKerkgX.W',
-        'Pepe', 'Gonzalez', 'Dios cervecero', NULL, 'ADMIN', 500, 100, 10000, TRUE);
+        'Pepe', 'Gonzalez', 'Dios cervecero', NULL, 'ADMIN', 300, 100, 10000, TRUE);
 
 -- Usuario 'b' (User normal) - Contraseña: aa
 INSERT INTO IWUser (id, username, password, first_name, last_name, titulo,  descripcion, roles, fichas, cervezas_actuales, cervezas_totales, enabled)
