@@ -36,8 +36,12 @@ import lombok.NoArgsConstructor;
         + "WHERE u.username = :username"),
     @NamedQuery(name = "User.topics", query = "SELECT t.key "
         + "FROM Topic t JOIN t.members u "
+        + "WHERE u.id = :id"),
+    @NamedQuery(name = "User.cervezas_totales", query = "SELECT u.cervezas_totales "
+        + "FROM User u "
         + "WHERE u.id = :id")
 })
+
 @Table(name = "IWUser")
 public class User implements Transferable<User.Transfer> {
 
