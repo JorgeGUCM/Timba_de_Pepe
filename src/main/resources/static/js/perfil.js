@@ -24,9 +24,10 @@ function actualizarCambio(){
 /* Funciones de para el pop-Up */
 function openIngresar(){
     btn_ingresar.onclick = e => ingresar();
+    campo_importe.value = 10;
     title.innerHTML = "Ingresar dinero";
     cambio.innerHTML = `
-    Cambio a: <strong id="cambio-target">100</strong>
+    Cambio a: <strong id="cambio-target">`+ campo_importe.value +`</strong>
     <svg
         style="width: 1.2em; transform: translateY(-0.15em);" xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 640 640">
@@ -39,8 +40,9 @@ function openIngresar(){
 
 function openSacar(){
     btn_ingresar.onclick = e => sacar();
+    campo_importe.value = 10;
     title.innerHTML = "Sacar dinero";
-    cambio.innerHTML = `Cambio a: <strong id="cambio-target">100</strong>€`;
+    cambio.innerHTML = `Cambio a: <strong id="cambio-target">`+ campo_importe.value +`</strong>€`;
     btn_ingresar.innerHTML = "Sacar";
     pop_up.classList.add("show");
 }

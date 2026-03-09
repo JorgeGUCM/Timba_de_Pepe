@@ -55,26 +55,34 @@ public class User implements Transferable<User.Transfer> {
   @SequenceGenerator(name = "gen", sequenceName = "gen")
   private long id;
 
+  /*
+   * ---------------
+   *    Atributos
+   * ---------------
+   */
   @Column(nullable = false, unique = true)
   private String username;
   @Column(nullable = false)
   private String password;
 
+  @Column(nullable = false)
   private String firstName;
   private String lastName;
+  @Column(nullable = false)
+  private String titulo;
+  private String descripcion;
 
-  // private String colorFavorito;
-
-  private boolean enabled;
   private String roles; // split by ',' to separate roles
 
   private int fichas;
   private int cervezas_actuales;
   private int cervezas_totales;
-  private String descripcion;
-  private String titulo;
 
-  // Relaciones
+  private boolean enabled;
+
+  /*
+  !  Relaciones
+  */
   @OneToMany(mappedBy = "user")
   private List<Jugador> jugador;
 
@@ -106,6 +114,16 @@ public class User implements Transferable<User.Transfer> {
     private int totalReceived;
     private int totalSent;
     private String groups;
+
+    // Nuevo
+    private String firstName;
+    private String lastName;
+    private String titulo;
+    private String descripcion;
+
+    private int fichas;
+    private int cervezas_actuales;
+    private int cervezas_totales;
   }
 
   @Override
@@ -114,7 +132,7 @@ public class User implements Transferable<User.Transfer> {
     for (Topic g : groups) {
       gs.append(g.getName()).append(", ");
     }
-    return new Transfer(id, username, received.size(), sent.size(), gs.toString());
+    return new Transfer(id, username, received.size(), sent.size(), gs.toString(), firstName, lastName, titulo, descripcion, fichas, cervezas_actuales, cervezas_totales);
   }
 
   @Override

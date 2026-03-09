@@ -303,7 +303,6 @@ img.preview {
 .pop-inner {
     padding: 3em 5em;
 
-    background: rgb(255, 255, 255);
-    border: .3em solid rgb(0, 0, 0);
+    border: .3em solid rgb(255, 255, 255);
     border-radius: .75em;
 }
