@@ -1,47 +1,51 @@
 <!DOCTYPE html>
 <html class="h-100" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <th:block th:replace="~{fragments/head :: header}" />
     <title>Timba de Pepe - Salas</title>
     <style>
         /* Fondo principal */
         body {
-            background-color: #2b3035; /* El gris oscuro que pediste */
-            color: #f8f9fa; /* Texto principal en blanco roto */
+            background-color: #2b3035;
+            color: #f8f9fa;
         }
 
         /* Tarjetas de las salas */
         .tarjeta-sala {
-            background-color: #343a40; /* Gris un poco más claro que el fondo para que resalte */
-            border: 1px solid #495057; /* Borde muy sutil para dar volumen */
+            background-color: #343a40;
+            border: 1px solid #495057;
             border-radius: 10px;
             overflow: hidden;
             transition: transform 0.2s, box-shadow 0.2s;
-            color: #e9ecef; /* Texto claro dentro de las tarjetas */
+            color: #e9ecef;
         }
+
         .tarjeta-sala:hover {
             transform: translateY(-4px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.5); /* Sombra más oscura y pronunciada para el modo oscuro */
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
         }
+
         .cabecera-sala {
             background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
             padding: 1.2rem;
-            border-bottom: 1px solid rgba(0,0,0,0.2); /* Separa un poco el color del gris */
+            border-bottom: 1px solid rgba(0, 0, 0, 0.2);
         }
 
         /* Tarjeta de crear sala adaptada al modo oscuro */
         .tarjeta-crear-sala {
-            background-color: transparent; /* Que coja el gris del fondo */
-            border: 2px dashed #6c757d;    /* Borde gris medio */
+            background-color: transparent;
+            border: 2px dashed #6c757d;
             min-height: 220px;
             cursor: pointer;
             transition: border-color 0.2s, background 0.2s;
-            color: #adb5bd; /* Texto grisáceo */
+            color: #adb5bd;
         }
+
         .tarjeta-crear-sala:hover {
             border-color: #667eea;
-            background-color: #343a40; /* Se ilumina poniéndose del color de las otras tarjetas */
+            background-color: #343a40;
             color: #ffffff;
         }
 
@@ -57,50 +61,58 @@
             border: none;
             color: white;
             font-size: 1.4rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
             z-index: 1000;
             transition: transform 0.2s;
         }
+
         .btn-chat-flotante:hover {
             transform: scale(1.1);
         }
+
         .panel-chat {
             position: fixed;
             top: 0;
             right: -400px;
             width: 380px;
             height: 100vh;
-            background-color: #343a40; /* Mismo gris que las tarjetas */
-            box-shadow: -5px 0 15px rgba(0,0,0,0.5); /* Sombra hacia la izquierda */
+            background-color: #343a40;
+            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.5);
             transition: right 0.3s ease;
             z-index: 1050;
             display: flex;
             flex-direction: column;
-            color: #e9ecef; /* Texto claro */
+            color: #e9ecef;
         }
+
         .panel-chat.abierto {
             right: 0;
         }
-        
+
         /* Zona de los mensajes (un gris más hundido/oscuro) */
         .zona-mensajes {
-            background-color: #212529; 
+            background-color: #212529;
         }
+
         /* Estilo de cada globo de mensaje */
         .mensaje-chat {
-            background-color: #2b3035; /* Color del body */
+            background-color: #2b3035;
+            /* Color del body */
             border: 1px solid #495057;
             color: #e9ecef;
         }
 
         .fondo-oscuro {
             position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.7); /* Un poco más oscuro */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
             z-index: 1040;
             display: none;
         }
+
         .fondo-oscuro.mostrar {
             display: block;
         }
@@ -113,6 +125,7 @@
         }
     </style>
 </head>
+
 <body class="d-flex flex-column h-100">
     <header th:replace="~{fragments/nav.html :: nav}"></header>
     <main style="height: 100%;">
@@ -121,54 +134,33 @@
             <p class="text-white-50 mb-4">Únete a una sala existente o crea la tuya propia.</p>
 
             <div class="row g-4 mt-2">
-                <!-- Sala 1 -->
-                <div class="col-md-6 col-lg-4">
+                <!-- Lista Dinámica de Salas -->
+                <div th:each="sala : ${salas}" class="col-md-6 col-lg-4">
                     <div class="card tarjeta-sala shadow-sm h-100">
                         <div class="cabecera-sala d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">Sala de Parlandis</h5>
-                            <span class="badge bg-success">Disponible</span>
+                            <h5 class="mb-0" th:text="${sala.nombre}">Nombre de la Sala</h5>
+                            <span class="badge bg-success" th:text="${sala.estado}">Disponible</span>
                         </div>
                         <div class="card-body border-0">
-                            <p class="mb-1"><strong>Jugadores:</strong> <span class="badge bg-primary">4/8</span></p>
-                            <p class="mb-3"><strong>Nivel:</strong> <span class="badge bg-danger px-3 py-2">Experto</span></p>
-                            <a th:href="@{/juego}" class="btn btn-success w-100">Entrar a Jugar</a>
+                            <p class="mb-1">
+                                <strong>Jugadores:</strong>
+                                <span class="badge bg-primary"
+                                    th:text="${(sala.jugadores != null ? sala.jugadores.size() : 0) + ' / 4'}">0 /
+                                    4</span>
+                            </p>
+                            <p class="mb-3">
+                                <strong>Nivel:</strong>
+                                <span class="badge bg-danger px-3 py-2" th:text="${sala.dificultad}">Experto</span>
+                            </p>
+                            <a th:href="@{/juego(id=${sala.id})}" class="btn btn-success w-100">Entrar a Jugar</a>
                         </div>
                     </div>
                 </div>
 
-                <!-- Sala 2 -->
+                <!-- Botón Crear sala -->
                 <div class="col-md-6 col-lg-4">
-                    <div class="card tarjeta-sala shadow-sm h-100">
-                        <div class="cabecera-sala d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
-                            <h5 class="mb-0">Sala de Alicas03</h5>
-                            <span class="badge bg-success">Disponible</span>
-                        </div>
-                        <div class="card-body border-0">
-                            <p class="mb-1"><strong>Jugadores:</strong> <span class="badge bg-primary">2/6</span></p>
-                            <p class="mb-3"><strong>Nivel:</strong> <span class="badge bg-success px-3 py-2">Principiante</span></p>
-                            <a th:href="@{/juego}" class="btn btn-success w-100">Entrar a Jugar</a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Sala 3 -->
-                <div class="col-md-6 col-lg-4">
-                    <div class="card tarjeta-sala shadow-sm h-100">
-                        <div class="cabecera-sala d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">
-                            <h5 class="mb-0">Sala de Jorge</h5>
-                            <span class="badge bg-success">Disponible</span>
-                        </div>
-                        <div class="card-body border-0">
-                            <p class="mb-1"><strong>Jugadores:</strong> <span class="badge bg-primary">5/8</span></p>
-                            <p class="mb-3"><strong>Nivel:</strong> <span class="badge bg-warning text-dark px-3 py-2">Intermedio</span></p>
-                            <a th:href="@{/juego}" class="btn btn-success w-100">Entrar a Jugar</a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Crear sala -->
-                <div class="col-md-6 col-lg-4">
-                    <div class="card tarjeta-crear-sala shadow-sm d-flex align-items-center justify-content-center" onclick="crearSala()">
+                    <div class="card tarjeta-crear-sala shadow-sm d-flex align-items-center justify-content-center"
+                        onclick="crearSala()">
                         <div class="text-center p-4">
                             <i class="bi bi-plus-circle" style="font-size: 3rem; color: #667eea;"></i>
                             <h5 class="mt-3 mb-1 text-white">Crear Nueva Sala</h5>
@@ -188,11 +180,12 @@
 
     <!-- Sidebar del chat -->
     <div class="panel-chat" id="menuChat">
-        <div class="p-3 text-white d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+        <div class="p-3 text-white d-flex justify-content-between align-items-center"
+            style="background: linear-gradient(135deg, #667eea, #764ba2);">
             <h5 class="mb-0">💬 Chat Global</h5>
             <button class="btn-close btn-close-white" onclick="cerrarChat()"></button>
         </div>
-        
+
         <!-- Zona de mensajes con fondo más oscuro para dar profundidad -->
         <div class="flex-grow-1 overflow-auto p-3 zona-mensajes">
             <div class="card mensaje-chat mb-2 p-2 shadow-sm">
@@ -211,27 +204,69 @@
                 <small class="text-white-50" style="font-size: 0.75rem;">14:25</small>
             </div>
         </div>
-        
+
         <!-- Input adaptado al tema oscuro -->
         <div class="p-3 border-top border-secondary">
             <div class="input-group">
-                <input type="text" class="form-control bg-dark text-white border-secondary" placeholder="Escribe un mensaje...">
-                <button class="btn btn-primary" style="background: linear-gradient(135deg, #667eea, #764ba2); border: none;">Enviar</button>
+                <input type="text" class="form-control bg-dark text-white border-secondary"
+                    placeholder="Escribe un mensaje...">
+                <button class="btn btn-primary"
+                    style="background: linear-gradient(135deg, #667eea, #764ba2); border: none;">Enviar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Crear Sala -->
+    <div class="modal fade" id="modalCrearSala" tabindex="-1" aria-hidden="true" style="color: #2b3035;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Configurar Nueva Sala</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form th:action="@{/salas/crear}" method="POST">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Nombre de la Sala</label>
+                            <input type="text" name="nombre" class="form-control" required
+                                placeholder="Ej: Sala de Pepe">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Nivel / Dificultad</label>
+                            <select name="dificultad" class="form-select">
+                                <option value="FACIL">Principiante</option>
+                                <option value="MEDIO">Intermedio</option>
+                                <option value="DIFICIL">Experto</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Apuesta Mínima</label>
+                            <input type="number" name="min_bet" class="form-control" value="10" min="1">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary"
+                            style="background: linear-gradient(135deg, #667eea, #764ba2); border: none;">Crear
+                            Sala</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 
     <th:block th:replace="~{fragments/footer.html :: footer}" />
-    
+
     <script>
         function crearSala() {
-            alert('Funcionalidad de crear sala');
+            var myModal = new bootstrap.Modal(document.getElementById('modalCrearSala'));
+            myModal.show();
         }
 
         function alternarChat() {
             const panelLateral = document.getElementById('menuChat');
             const fondo = document.getElementById('capaFondo');
-            
+
             panelLateral.classList.toggle('abierto');
             fondo.classList.toggle('mostrar');
         }
@@ -239,10 +274,11 @@
         function cerrarChat() {
             const panelLateral = document.getElementById('menuChat');
             const fondo = document.getElementById('capaFondo');
-            
+
             panelLateral.classList.remove('abierto');
             fondo.classList.remove('mostrar');
         }
     </script>
 </body>
+
 </html>
