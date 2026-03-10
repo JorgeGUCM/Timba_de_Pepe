@@ -160,7 +160,7 @@
                 <!-- Botón Crear sala -->
                 <div class="col-md-6 col-lg-4">
                     <div class="card tarjeta-crear-sala shadow-sm d-flex align-items-center justify-content-center"
-                        onclick="crearSala()">
+                        id="crear-sala" onclick="crearSala()">
                         <div class="text-center p-4">
                             <i class="bi bi-plus-circle" style="font-size: 3rem; color: #667eea;"></i>
                             <h5 class="mt-3 mb-1 text-white">Crear Nueva Sala</h5>
@@ -228,12 +228,12 @@
                     <div class="modal-body">
                         <div class="mb-3">
                             <label class="form-label">Nombre de la Sala</label>
-                            <input type="text" name="nombre" class="form-control" required
+                            <input type="text" name="nombre" class="form-control" required="required" id="nombre-sala"
                                 placeholder="Ej: Sala de Pepe">
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Nivel / Dificultad</label>
-                            <select name="dificultad" class="form-select">
+                            <select name="dificultad" class="form-select" id="dificultad">
                                 <option value="FACIL">Principiante</option>
                                 <option value="MEDIO">Intermedio</option>
                                 <option value="DIFICIL">Experto</option>
@@ -241,12 +241,12 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Apuesta Mínima</label>
-                            <input type="number" name="min_bet" class="form-control" value="10" min="1">
+                            <input type="number" name="min_bet" id="min-bet" class="form-control" value="10" min="1">
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-primary"
+                        <button type="submit" class="btn btn-primary" id="submit-sala"
                             style="background: linear-gradient(135deg, #667eea, #764ba2); border: none;">Crear
                             Sala</button>
                     </div>
