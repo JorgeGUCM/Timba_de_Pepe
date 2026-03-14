@@ -36,46 +36,6 @@ if (ws.receive) {
     }
 }
 
-// ver https://openlibrary.org/dev/docs/api/books
-// no requieren "api key", pero necesitas 1 consulta adicional por autor
-function fetchBookData(isbn, targetImg) {
-    go(`https://openlibrary.org/isbn/${isbn}.json`, "GET", {}, {}).then(bookInfo => {
-        authorLookups = bookInfo.authors.map(a =>
-            go(`https://openlibrary.org${a.key}.json`, "GET", {}, {}));
-        console.log(`title: ${bookInfo.title}`);
-        //targetImg.src = `https://covers.openlibrary.org/b/id/${bookInfo.covers[0]}-M.jpg`;
-        readImageUrlData(`https://covers.openlibrary.org/b/id/${bookInfo.covers[0]}-M.jpg`, targetImg);
-        Promise.all(authorLookups).then(authorInfos => {
-            for (let a of authorInfos) {
-                console.log(`Author: ${a.name}`);
-            }
-        });
-    })
-}
-
-// ver https://www.omdbapi.com/
-// requieren API key, pero se puede conseguir de forma gratuita
-// (no uses mucho la que hay ahí abajo, por favor!)
-function fetchMovieData(imdb, targetImg) {
-    go(`http://www.omdbapi.com/?i=${imdb}&apikey=174a19fd`, "GET", {}, {}).then(movieInfo => {
-        console.log(`title: ${movieInfo.Title}`);
-        // targetImg.src = movieInfo.Poster;
-        readImageUrlData(movieInfo.Poster, targetImg)
-    })
-}
-
-// click en boton de cargar datos libro
-document.querySelector("#fetchBook").onclick = e => {
-    let isbn = document.querySelector("#isbn").value;
-    console.log("fetching ", isbn);
-    fetchBookData(isbn, document.querySelector("#portada"));
-};
-// click en boton de cargar datos peli
-document.querySelector("#fetchMovie").onclick = e => {
-    let imdb = document.querySelector("#imdb").value;
-    console.log("fetching ", imdb);
-    fetchMovieData(imdb, document.querySelector("#poster"));
-};
 // click en botones de "usar como foto de perfil"
 document.querySelectorAll(".perfilable").forEach(o => {
     o.onclick = e => {
@@ -98,7 +58,7 @@ document.querySelector("#f_avatar").onchange = e => {
 // click en boton de enviar avatar
 document.querySelector("#postAvatar").onclick = e => {
     e.preventDefault();
-    let url = document.querySelector("#postAvatar").parentNode.action;
+    let url = document.querySelector("#img-form").action;
     let img = document.querySelector("#avatar");
     let file = document.querySelector("#f_avatar");
     postImage(img, url, "photo").then(() => {
