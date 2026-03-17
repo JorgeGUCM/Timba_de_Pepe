@@ -13,10 +13,10 @@ Scenario: crear sala como usuario
     # se espera a que carge la pagina del usuario
     Then waitForUrl(baseUrl + '/user/2')
     Then click("#salas")
-    Then click("#crear-sala")
+    Then click("#crearSala")
     And value("#nombre-sala", 'Pepe') 
     And input("#dificultad", 'Intermedio')
     And value("#min-bet",'15')
     And delay(3000)
-    And click("#submit-sala")
+    And click("#confirmar")
     Then delay(5000)
