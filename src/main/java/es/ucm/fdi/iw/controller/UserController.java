@@ -324,16 +324,34 @@ public class UserController {
     messagingTemplate.convertAndSend("/user/" + u.getUsername() + "/queue/updates", json);
     return "{\"result\": \"message sent.\"}";
   }
+  
+  /**
+  * Para actualizar el perfil que se muestra
+  */
+  @PostMapping("{id}/perfil")
+  @ResponseBody
+  @Transactional
+  public String postPerfil(@PathVariable long id,
+    @RequestBody JsonNode o, Model model, HttpSession session)
+    throws JsonProcessingException{
+    
+    String username = o.get("username").asText();
+    String title = o.get("title").asText();
+    String description = o.get("description").asText();
+    
+    User u = entityManager.find(User.class, id);
 
-}
+    u.setUsername(username);
+    u.setTitulo(title);
+    u.setDescripcion(description);
+    entityManager.merge(u);
 
-  /*
-   * Para actualizar el perfil que se muestra
-   */
-@PostMapping("/perfil")
-@ResponseBody
-@Transactional
-private String postPerfil(){
+    // TODO creo que no esta bien solko meterlo a capon, funciona pero no se. No se diferencia entre u y user
+    session.setAttribute("user", u);
+    session.setAttribute("u", u);
 
-  return "user";
+    log.info("Actualizado la información del perfil.");
+
+    return "{\"result\": \"Perfil actualizado correctamente.\"}";
+  }
 }

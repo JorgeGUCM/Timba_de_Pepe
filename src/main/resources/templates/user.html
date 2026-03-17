@@ -25,7 +25,7 @@
                     </form>
                 </div>
                 <div>
-                    <form id="perfil-form" class="d-flex flex-column justify-content-around" action="/user/perfil">
+                    <form id="perfil-form" class="d-flex flex-column justify-content-around" th:action="@{/user/__${user.id}__/perfil}">
                         <div class="mb-3 d-flex">
                             <div class="me-3" style="flex-grow:1;">
                                 <label class="fs-5" for="username">Nombre de Usuario:</label>
