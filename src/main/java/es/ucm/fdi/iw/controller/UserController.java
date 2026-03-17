@@ -70,7 +70,7 @@ public class UserController {
 
   @ModelAttribute
   public void populateModel(HttpSession session, Model model) {
-    for (String name : new String[] { "u", "url", "ws", "topics"}) {
+    for (String name : new String[] { "u", "url", "ws", "topics" }) {
       model.addAttribute(name, session.getAttribute(name));
     }
   }
@@ -324,4 +324,16 @@ public class UserController {
     messagingTemplate.convertAndSend("/user/" + u.getUsername() + "/queue/updates", json);
     return "{\"result\": \"message sent.\"}";
   }
+
+}
+
+  /*
+   * Para actualizar el perfil que se muestra
+   */
+@PostMapping("/perfil")
+@ResponseBody
+@Transactional
+private String postPerfil(){
+
+  return "user";
 }

@@ -25,7 +25,7 @@
                     </form>
                 </div>
                 <div>
-                    <form id="perfil-form" class="d-flex flex-column justify-content-around" action="">
+                    <form id="perfil-form" class="d-flex flex-column justify-content-around" action="/user/perfil">
                         <div class="mb-3 d-flex">
                             <div class="me-3" style="flex-grow:1;">
                                 <label class="fs-5" for="username">Nombre de Usuario:</label>
@@ -41,7 +41,7 @@
                         <label class="fs-5" for="description">Descripción:</label>
                         <textarea class="form-control" name="description" id="description" th:text="${user.descripcion}" style="max-height: 10em; overflow: auto;"></textarea>
 
-                        <button class="mt-3 btn btn-success" type="submit">Guardar Perfil</button>
+                        <button id="postPerfil" class="mt-3 btn btn-success" type="submit">Guardar Perfil</button>
                     </form>
                 </div>
             </article>
@@ -86,7 +86,7 @@
 
     <th:block th:replace="~{fragments/footer.html :: footer}" />
 
-    <script th:src="@{/js/ajax-demo.js}"></script>
+    <script th:src="@{/js/ajax-user.js}"></script>
 </body>
 
 </html>
