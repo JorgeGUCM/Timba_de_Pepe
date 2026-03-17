@@ -341,6 +341,14 @@ public class UserController {
     
     User u = entityManager.find(User.class, id);
 
+    // Comprobamos si hay un usario con ese username, si lo hay mal
+    Long duplicate = entityManager.createNamedQuery("User.hasUsername", Long.class)
+        .setParameter("username", username)
+        .getSingleResult();
+    if(duplicate > 0 && !username.equals(u.getUsername()))
+      return "{\"error\": \"Nombre de Usuario duplicado\"}";
+    
+
     u.setUsername(username);
     u.setTitulo(title);
     u.setDescripcion(description);

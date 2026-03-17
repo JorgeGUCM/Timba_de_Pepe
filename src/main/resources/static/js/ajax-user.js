@@ -17,6 +17,16 @@ document.querySelector("#postAvatar").onclick = e => {
     });
 };
 
+function respuestaPerfil(d){
+    console.log(d);
+    if(d.result !== undefined){
+        document.querySelector("#res-perfil").innerHTML =
+        `<p class="badge text-bg-success fs-6">` + d.result + `</p>`;
+    }else
+         document.querySelector("#res-perfil").innerHTML =
+        `<p class="badge text-bg-warning fs-6">` + d.error + `</p>`;
+}
+
 /* Para el formulario de perfil */
 document.querySelector("#postPerfil").onclick = e => {
     e.preventDefault();
@@ -25,6 +35,6 @@ document.querySelector("#postPerfil").onclick = e => {
     const description = document.querySelector("textarea[name=description]").value;
 
     go(document.querySelector("#perfil-form").action, 'POST', {username, title, description})
-        .then(d => console.log("Se ha actualizado el perfil", d))
-        .catch(e => console.log("Error: no se ha podido actualizar el perfil", e))
+        .then(d => respuestaPerfil(d))
+        .catch(e => console.log("sad", e))
 };
