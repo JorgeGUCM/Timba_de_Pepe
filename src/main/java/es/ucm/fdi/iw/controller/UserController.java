@@ -324,37 +324,37 @@ public class UserController {
     messagingTemplate.convertAndSend("/user/" + u.getUsername() + "/queue/updates", json);
     return "{\"result\": \"message sent.\"}";
   }
-  
+
   /**
-  * Para actualizar el perfil que se muestra
-  */
+   * Para actualizar el perfil que se muestra
+   */
   @PostMapping("{id}/perfil")
   @ResponseBody
   @Transactional
   public String postPerfil(@PathVariable long id,
-    @RequestBody JsonNode o, Model model, HttpSession session)
-    throws JsonProcessingException{
-    
+      @RequestBody JsonNode o, Model model, HttpSession session)
+      throws JsonProcessingException {
+
     String username = o.get("username").asText();
     String title = o.get("title").asText();
     String description = o.get("description").asText();
-    
+
     User u = entityManager.find(User.class, id);
 
     // Comprobamos si hay un usario con ese username, si lo hay mal
     Long duplicate = entityManager.createNamedQuery("User.hasUsername", Long.class)
         .setParameter("username", username)
         .getSingleResult();
-    if(duplicate > 0 && !username.equals(u.getUsername()))
-      return "{\"error\": \"Nombre de Usuario duplicado\"}";
-    
+    if (duplicate > 0 && !username.equals(u.getUsername()))
+      return "{\"warning\": \"Nombre de Usuario duplicado\"}";
 
     u.setUsername(username);
     u.setTitulo(title);
     u.setDescripcion(description);
     entityManager.merge(u);
 
-    // TODO creo que no esta bien solko meterlo a capon, funciona pero no se. No se diferencia entre u y user
+    // TODO creo que no esta bien solko meterlo a capon, funciona pero no se. No se
+    // diferencia entre u y user
     session.setAttribute("user", u);
     session.setAttribute("u", u);
 
@@ -362,4 +362,39 @@ public class UserController {
 
     return "{\"result\": \"Perfil actualizado correctamente.\"}";
   }
+
+  /**
+   * Para actualizar los datos personales y la contraseña del usuario
+   */
+  @PostMapping("{id}/personal")
+  @ResponseBody
+  @Transactional
+  public String postMethodName(@PathVariable Long id,
+      @RequestBody JsonNode o, Model model, HttpSession session)
+      throws JsonProcessingException {
+
+    String nombre = o.get("nombre").asText();
+    String apellido = o.get("apellido").asText();
+    String contra = o.get("contra").asText();
+    String repetir = o.get("repetir").asText();
+
+    User u = entityManager.find(User.class, id);
+
+    // Comprobamos si quiere cambiar la contrseña
+    if (!contra.equals("")) {
+      if (!contra.equals(repetir))
+        return "{\"warning\": \"Las contraseñas no son iguales.\"}";
+      contra = encodePassword(contra);
+      repetir = contra;
+      u.setPassword(contra);
+    }
+
+    u.setFirstName(nombre);
+    u.setLastName(apellido);
+
+    entityManager.merge(u);
+
+    return "{\"result\": \"Información personal actualizada correctamente.\"}";
+  }
+
 }

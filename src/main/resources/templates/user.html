@@ -48,7 +48,8 @@
             </article>
             <article class="ms-3 p-4 border border-2 rounded-2" style="flex-grow: 1; align-self: center;">
                 <h2 class="text-center">Información Personal</h2>
-                <form class="d-flex flex-column justify-content-around" id="personal-form" action="">
+                <div id="res-personal" class="d-flex justify-content-center"></div>
+                <form class="d-flex flex-column justify-content-around" id="personal-form" th:action="@{/user/__${user.id}__/personal}">
                     <div class="mb-3 d-flex">
                         <div class="me-3" style="flex-grow: 1;">
                             <label class="fs-5" for="nombre">Nombre:</label>
@@ -65,7 +66,7 @@
                     <label class="fs-5" for="repetir">Repetir:</label>
                     <input class="form-control" type="password" name="repetir" id="repetir">
 
-                    <button class="mt-3 btn btn-success" type="submit">Guardar</button>
+                    <button id="postPersonal" class="mt-3 btn btn-success" type="submit">Guardar</button>
                 </form>
             </article>
         </div>

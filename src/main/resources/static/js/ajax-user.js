@@ -17,24 +17,36 @@ document.querySelector("#postAvatar").onclick = e => {
     });
 };
 
-function respuestaPerfil(d){
+function resultDraw(d, targetId){
     console.log(d);
     if(d.result !== undefined){
-        document.querySelector("#res-perfil").innerHTML =
+        document.querySelector("#"+ targetId +"").innerHTML =
         `<p class="badge text-bg-success fs-6">` + d.result + `</p>`;
     }else
-         document.querySelector("#res-perfil").innerHTML =
-        `<p class="badge text-bg-warning fs-6">` + d.error + `</p>`;
+         document.querySelector("#"+ targetId +"").innerHTML =
+        `<p class="badge text-bg-warning fs-6">` + d.warning + `</p>`;
 }
 
 /* Para el formulario de perfil */
 document.querySelector("#postPerfil").onclick = e => {
     e.preventDefault();
-    const username = document.querySelector("input[name=username]").value;
-    const title = document.querySelector("input[name=title]").value;
-    const description = document.querySelector("textarea[name=description]").value;
+    const username = document.querySelector("#username").value;
+    const title = document.querySelector("#title").value;
+    const description = document.querySelector("#description").value;
 
     go(document.querySelector("#perfil-form").action, 'POST', {username, title, description})
-        .then(d => respuestaPerfil(d))
+        .then(d => resultDraw(d, "res-perfil"))
         .catch(e => console.log("sad", e))
+};
+
+document.querySelector("#postPersonal").onclick = e => {
+    e.preventDefault();
+    const nombre = document.querySelector("#nombre").value;
+    const apellido = document.querySelector("#apellido").value;
+    const contra = document.querySelector("#contra").value;
+    const repetir = document.querySelector("#repetir").value;
+
+    go(document.querySelector("#personal-form").action, 'POST', {nombre, apellido, contra, repetir})
+        .then(d => resultDraw(d, "res-personal"))
+        .catch(e => console.log("Sad", e))
 };
