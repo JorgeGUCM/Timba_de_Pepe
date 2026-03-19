@@ -397,4 +397,33 @@ public class UserController {
     return "{\"result\": \"Información personal actualizada correctamente.\"}";
   }
 
+  /*
+  * Para actualizar las fichas
+  */
+ @PostMapping("{id}/fichas")
+ @ResponseBody
+ @Transactional
+ public String updateFichas(@PathVariable Long id,
+      @RequestBody JsonNode o, Model model, HttpSession session)
+      throws JsonProcessingException {
+
+    int cant = o.get("cant").asInt();
+    log.info("La cantidada que se va asumar es: " + cant);
+    
+    User u = entityManager.find(User.class, id);
+    
+    int fichas = u.getFichas() + cant;
+    if(fichas < 0)
+      return "{\"error\": \"No tienes suficientes fichas.\"}";
+    u.setFichas(fichas);
+    entityManager.merge(u);
+
+    session.setAttribute("u", u);
+
+    log.info("Actualizado cantidad a: " + u.getFichas());
+
+    return "{\"result\": \"" + fichas + "\"}";
+ }
+ 
+
 }

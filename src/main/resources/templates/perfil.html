@@ -20,7 +20,7 @@
             <div class="d-flex align justify-content-center gap-3">
                 <div class="flex-grow-1 p-3 d-flex flex-column justify-content-center align-items-around border border-3 border-success rounded-3">
                     <h2 class="text-center">Saldo actual</h2>
-                    <p class="fs-1 text-center"><strong th:text="${u.fichas}">???</strong>
+                    <p class="mx-auto fs-1 badge text-bg-primary text-center"><strong id="fichas-perfil" th:text="${u.fichas}">???</strong>
                         <svg
                             style="filter: invert(1); width: 1.2em; transform: translateY(-0.15em);" xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 640 640">
@@ -35,7 +35,7 @@
                 </div>
                 <div class="flex-grow-1 p-3 d-flex flex-column justify-content-center border border-3 border-warning rounded-3">
                     <h2 class="text-center">Cervezas</h2>
-                    <p class="fs-1 text-center"><strong th:text="${u.cervezas_actuales}">???</strong>
+                    <p class="mx-auto fs-1 text-center text-white badge text-bg-warning"><strong th:text="${u.cervezas_actuales}">???</strong>
                         <svg
                             style="filter: invert(1);width: 1.2em; transform: translateY(-0.1em);" xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 640 640">
@@ -61,10 +61,10 @@
         <div class="pop-up" id="pop-up">
             <div class="pop-inner bg-dark">
                 <h1 class="mb-3 text-center" id="pop-title">Ingresar dinero</h1>
-                <form class="d-flex flex-column align-items-center justify-content-between" action="post">
+                <form id="fichas-form" class="d-flex flex-column align-items-center justify-content-between" th:action="@{/user/__${u.id}__/fichas}">
                     <div class="d-flex flex-column align-items-center justify-content-between">
                         <label class="fs-4 mb-1" for="importe">Importe</label>
-                        <input class="fs-4 mb-3 text-center" type="number" name="importe" id="importe" placeholder="0">
+                        <input class="fs-4 mb-3 text-center" type="number" name="importe" id="importe" min="1" max="1000">
                         <label class="fs-4" id="cambio"></label>
                     </div>
                     <div class="mt-3 text-center">
