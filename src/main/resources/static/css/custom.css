@@ -316,6 +316,10 @@ img.preview {
     visibility: hidden;
 }
 
+.invalid:invalid{
+    border-color: red;
+}
+
 .show{
     visibility: visible;
 }

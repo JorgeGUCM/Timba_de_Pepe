@@ -18,7 +18,10 @@ btn_cancelar_ing.onclick = e => cancelar_ingreso();
 campo_importe.oninput = e => actualizarCambio();
 
 function actualizarCambio(){
-    document.querySelector('#cambio-target').innerHTML = campo_importe.value;
+    if(campo_importe.value <= 1000 && campo_importe.value > 0)
+        document.querySelector('#cambio-target').innerHTML = campo_importe.value;
+    else
+        document.querySelector("#cambio-target").innerHTML = `No se puede realizar el cambio.`;
 }
 
 /* Funciones de para el pop-Up */
@@ -67,7 +70,7 @@ function updateFichas(d){
 function ingresar(e){
     /* Se ingresa el dinero */
     e.preventDefault();
-    let cant = document.querySelector("#importe").value;
+    let cant = campo_importe.value;
     if(cant > 0 && cant <= 1000){
         go(document.querySelector("#fichas-form").action, 'POST', {cant})
             .then((d) => updateFichas(d))
@@ -80,7 +83,7 @@ function ingresar(e){
 function sacar(e){
     /* Se saca dinero */
     e.preventDefault();
-    let cant = 0 - document.querySelector("#importe").value;
+    let cant = 0 - campo_importe.value;
     if(cant < 0 && cant >= 0 - 1000){
         go(document.querySelector("#fichas-form").action, 'POST', {cant})
             .then((d) => updateFichas(d))

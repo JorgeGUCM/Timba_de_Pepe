@@ -39,7 +39,7 @@
                             <li class="nav-item mx-2">
                                 <a class="nav-link" th:href="@{/perfil-usuario}">
                                     <img class="iwthumb rounded" th:src="@{/user/{id}/pic(id=${u.id})}">
-                                    <span th:text="${u.username}">Pepe</span>
+                                    <span id="username-nav" th:text="${u.username}">Pepe</span>
                                 </a>
                             </li>
                             <li class="nav-item mx-2 align-self-center">

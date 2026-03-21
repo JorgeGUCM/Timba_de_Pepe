@@ -22,6 +22,7 @@ function resultDraw(d, targetId){
     if(d.result !== undefined){
         document.querySelector("#"+ targetId +"").innerHTML =
         `<p class="badge text-bg-success fs-6">` + d.result + `</p>`;
+        document.querySelector("#username-nav").innerHTML = document.querySelector("#username").value;
     }else
          document.querySelector("#"+ targetId +"").innerHTML =
         `<p class="badge text-bg-warning fs-6">` + d.warning + `</p>`;
