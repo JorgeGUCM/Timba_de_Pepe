@@ -1,18 +1,43 @@
-# Aplicación de Plantilla de IW
+# Aplicación de Timba de Pepe: Siete y Medio
 
-Debes buscar todos los lugares donde aparece la palabra "plantilla" (incluido este párrafo) y reemplazar las ocurrencias, y el contexto circundante, por valores que tengan sentido en tu aplicación. Por ejemplo, este párrafo deberías eliminarlo de tu proyecto.
+Juega al clasico juego español SIETE Y MEDIO, donde hasta 4 jugadores podeis apostar y ganar. En la aplicación se podran crear salas para jugar al siete y medio con otras 3 personas. Por cada partida ganada, no solo ganreis fichas (moneda de la aplicación), si no tambien ganareis cervezas que se podrán gastar en efectos para la sala y otros eventos que mantendrán el entretenimiento. Además, hay un ranking de los mejores jugadores que se evalua en base a la cantidad total ganada de cervezas.
 
-## Contenido de la plantilla
+## Estructura de la BD
 
-- en [src/main/java/es/ucm/fdi/iw](https://github.com/manuel-freire/iw/tree/main/plantilla/src/main/java/es/ucm/fdi/iw) están los ficheros de configuración-mediante-código de la aplicación (ojo porque en otro sitio está el fichero principal de configuración-mediante-propiedades, [application.properties](https://github.com/manuel-freire/iw/blob/main/plantilla/src/main/resources/application.properties)):
+<img width="1809" height="1218" alt="image" src="https://github.com/user-attachments/assets/252ce9d1-b7e4-43db-bc8e-b4b2f2bed554" />
+
+## Progreso de aplicación
+
+### Vistas Completadas
+- **Welcome**: La vista "_home_" de la aplicación esta completada. Es una página de bienvenida con acceso a diferentes partes de la aplicación.
+- **Reglas**: Completado, no es más que una página estática con las normas del juego.
+- **Autores**: Completado, muestra los integrantes del equipo que han realizado el proyecto, es estática.
+- **Perfil de usuario**: Completado, pagina donde puedes insegresar y sacar dinero, además de mostrar información sobre el perfil (como fichas, cervezas y posición en el ranking).
+- **Ajustes del perfil**: Completado, permite cambiar la información del usuario (como nombre de usuario, nombre real, contraseña...)
+
+### Vistas parcialmente completas
+- **Salas de Juego**: Aunque se pueden crear salas y te deja unir a ellas, falta que tenga consistencia con multiples usuarios (que no se pueda unir un usuario 2 veces, que cuando se metan 2 usuarios en una partida se les asigne a ambos la partida, que la apuesta minima se use en el juego correspondiete...), sirve para crear salas
+- **Login**: Parcialmente completo a falta de hacer el registro de usuarios. Funciona para logearse, pero no se pueden crear nuevos usuarios.
+
+### Vistas incompletas
+- **Ranking**: Hecho de forma estática, para ver el ranking de los mejores jugadores.
+- **Juego**: El funcionamiento del juego es estático, si muestra que el usuario actual esta activo en la sala no considera otros jugadores unidos. No usa webshockets y falta el chat de juego. Es la vista principal que es para jugar al siete y medio.
+- **Administrar**: No se ha planteado nada sobre esta vista. Servirá para moderar a los usuarios y ver los chats de las salas, podrá eliminar o desabilitar a los usuarios.
+
+### Resumen
+Falta por terminar la lógica de la aplicación en el juego para completar el ~50% establecido. El resto de cosas como el chat o ranking se pueden dejar como segunda parte del proyecto.
+
+## Contenido de los archivos de la aplicación
+
+- en [src/main/java/es/ucm/fdi/iw](https://github.com/JorgeGUCM/Timba_de_Pepe/tree/main/src/main/java/es/ucm/fdi/iw) están los ficheros de configuración de Java de la aplicación. Por otra parte esta el fichero de configuración de propiedades en [application.properties](https://github.com/JorgeGUCM/Timba_de_Pepe/blob/main/src/main/resources/application.properties). En Java tenemos:
 
     * **AppConfig.java** - configura LocalData (usado para gestionar subida y bajada de ficheros de usuario) y fichero de internacionalización (que debería llamarse `Messages_XX.properties`, donde `XX` es un código como `es` para español ó `en` para inglés; y vivir en el directorio [resources](https://github.com/manuel-freire/iw/tree/main/plantilla/src/main/resources).
     * **IwApplication.java** - punto de entrada de Spring Boot
-    * **IwUserDetailsService.java** - autenticación mediante base de datos. Referenciado desde SecurityConfig.java. La base de datos se inicializa tras cada arranque desde el [import.sql](https://github.com/manuel-freire/iw/blob/main/plantilla/src/main/resources/import.sql), aunque tocando [application.properties](https://github.com/manuel-freire/iw/blob/main/plantilla/src/main/resources/application.properties) puedes hacer que se guarde y cargue de disco, ignorando el _import_.
-    * **LocalData.java** - facilita guardar y devolver ficheros de usuario (es decir, que no forman parte de los fuentes de tu aplicación). Para ello colabora con AppConfig y usa el directorio especificado en [application.properties](https://github.com/manuel-freire/iw/blob/main/plantilla/src/main/resources/application.properties)
-    * **LoginSuccessHandler.java** - añade una variable de sesión llamada `u` nada más entrar un usuario, con la información de ese usuario. Esta variable es accesible desde Thymeleaf con `${session.user}`, y desde cualquier _Mapping_ de controllador usando el argumento `HttpSession session`, y leyendo su valor vía `(User)session.getAttribute("u")`. También añade a la sesión algo de configuración para websockets (variables `ws` y `url`), que se escriben como JS en las cabeceras de las páginas en el fragmento [head.html](https://github.com/manuel-freire/iw/blob/main/plantilla/src/main/resources/templates/fragments/head.html).
+    * **IwUserDetailsService.java** - autenticación mediante base de datos. Referenciado desde SecurityConfig.java. La base de datos se inicializa tras cada arranque desde el [import.sql](https://github.com/JorgeGUCM/Timba_de_Pepe/blob/main/src/main/resources/import.sql), aunque tocando [application.properties](https://github.com/JorgeGUCM/Timba_de_Pepe/blob/main/src/main/resources/application.properties) puedes hacer que se guarde y cargue de disco, ignorando el _import_.
+    * **LocalData.java** - facilita guardar y devolver ficheros de usuario (es decir, que no forman parte de los fuentes de tu aplicación). Para ello colabora con AppConfig y usa el directorio especificado en [application.properties](https://github.com/JorgeGUCM/Timba_de_Pepe/blob/main/src/main/resources/application.properties)
+    * **LoginSuccessHandler.java** - añade una variable de sesión llamada `u` nada más entrar un usuario, con la información de ese usuario. Esta variable es accesible desde Thymeleaf con `${session.user}`, y desde cualquier _Mapping_ de controllador usando el argumento `HttpSession session`, y leyendo su valor vía `(User)session.getAttribute("u")`. También añade a la sesión algo de configuración para websockets (variables `ws` y `url`), que se escriben como JS en las cabeceras de las páginas en el fragmento [head.html](https://github.com/JorgeGUCM/Timba_de_Pepe/blob/main/src/main/resources/templates/fragments/head.html).
     * **SecurityConfig.java** - establece la configuración de seguridad. Modifica su método `configure` para decir quién puede hacer qué, mediante `hasRole` y `permitAll`. 
-    * **StartupConfig.java** - se ejecuta nada más lanzarse la aplicación. En la plantilla sólo se usa para inicializar la `debug` a partir del [application.properties](https://github.com/manuel-freire/iw/blob/main/plantilla/src/main/resources/application.properties), accesible desde Thymeleaf mediante `${application.debug}`
+    * **StartupConfig.java** - se ejecuta nada más lanzarse la aplicación. En la plantilla sólo se usa para inicializar la `debug` a partir del [application.properties](https://github.com/JorgeGUCM/Timba_de_Pepe/blob/main/src/main/resources/application.properties), accesible desde Thymeleaf mediante `${application.debug}`
     * **WebSocketConfig.java** - configura uso de websockets
     * **WebSocketSecurityConfig.java** - seguridad para websockets
 
@@ -26,13 +51,13 @@ Debes buscar todos los lugares donde aparece la palabra "plantilla" (incluido es
     + Puede devolver imágenes de avatar, y permite también subirlas. Ver métodos `getPic` (bajo `@GetMapping("{id}/pic")`) y `postPic` (bajo `@PostMapping("{id}/pic")`)
     + Puede gestionar también peticiones AJAX (= que no devuelven vistas) para consultar mensajes recibidos, consultar cuántos mensajes no-leídos tiene ese usuario, y enviar un mensaje a ese usuario (`retrieveMessages`, `checkUnread` y `postMsg`, respectivamente). Esta última función también envía el mensaje via websocket al usuario, si es que está conectado en ese momento.
     
-- en [src/main/resources](https://github.com/manuel-freire/iw/tree/main/plantilla/src/main/resources) están los recursos no-de-código-de-servidor, y en particular, las vistas, los recursos web estáticos, el contenido inicial de la BBDD, y las propiedades generales de la aplicación.
+- en [src/main/resources](https://github.com/JorgeGUCM/Timba_de_Pepe/blob/main/src/main/resources) están las vistas, los recursos web estáticos, el contenido inicial de la BBDD, y las propiedades generales de la aplicación.
 
   * **static/**  - contiene recursos estáticos web, como ficheros .js, .css, ó imágenes que no cambian
   
     - **js/stomp.js** - necesario para usar STOMP sobre websockets (que es lo que usaremos para enviar y recibir mensajes)
     - **js/iw.js** - configura websockets, y contiene funciones de utilidad para gestionar AJAX y previsualización de imágenes
-    - **js/ajax-demo.js** - ejemplos (usados desde [user.html](https://github.com/manuel-freire/iw/blob/main/plantilla/src/main/resources/templates/user.html)) de AJAX, envío y recepción de mensajes por websockets, y previsualización de imágenes
+    - **js/ajax-demo.js** - ejemplos de AJAX, envío y recepción de mensajes por websockets, y previsualización de imágenes
 
   * **templates/** - contiene vistas, y fragmentos de vista (en `templates/fragments`)
   
