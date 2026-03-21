@@ -298,13 +298,24 @@ img.preview {
     visibility: hidden;
 }
 
-.show{
-    visibility: visible;
-}
-
 .pop-inner {
     padding: 3em 5em;
-
+    
     border: .3em solid rgb(255, 255, 255);
     border-radius: .75em;
+}
+
+.floating{
+    position: absolute;
+    top: 0;
+    
+    width: 100%;
+    display: flex;
+    justify-content: center;
+
+    visibility: hidden;
+}
+
+.show{
+    visibility: visible;
 }

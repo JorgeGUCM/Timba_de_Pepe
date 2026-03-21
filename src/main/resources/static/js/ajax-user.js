@@ -27,6 +27,11 @@ function resultDraw(d, targetId){
         `<p class="badge text-bg-warning fs-6">` + d.warning + `</p>`;
 }
 
+function errorDraw(targetId){
+    document.querySelector("#"+ targetId +"").innerHTML = 
+    `<p class="badge text-bg-success fs-6">Error: No se pudo actualizar la información.</p>`;
+}
+
 /* Para el formulario de perfil */
 document.querySelector("#postPerfil").onclick = e => {
     e.preventDefault();
@@ -36,7 +41,7 @@ document.querySelector("#postPerfil").onclick = e => {
 
     go(document.querySelector("#perfil-form").action, 'POST', {username, title, description})
         .then(d => resultDraw(d, "res-perfil"))
-        .catch(e => console.log("sad", e))
+        .catch(e => errorDraw("res-perfil"))
 };
 
 document.querySelector("#postPersonal").onclick = e => {
@@ -48,5 +53,5 @@ document.querySelector("#postPersonal").onclick = e => {
 
     go(document.querySelector("#personal-form").action, 'POST', {nombre, apellido, contra, repetir})
         .then(d => resultDraw(d, "res-personal"))
-        .catch(e => console.log("Sad", e))
+        .catch(e => errorDraw("res-personal"))
 };

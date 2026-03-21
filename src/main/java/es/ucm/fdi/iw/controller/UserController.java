@@ -422,7 +422,7 @@ public class UserController {
 
     log.info("Actualizado cantidad a: " + u.getFichas());
 
-    return "{\"result\": \"" + fichas + "\"}";
+    return "{\"result\": \"" + fichas + "\", \"message\":\"Fichas actualizadas correctamente.\"}";
  }
  
 

@@ -53,7 +53,15 @@ function updateFichas(d){
         fichas = d.result;
         document.querySelector("#display-fichas").innerHTML = fichas;
     }
-    document.querySelector("#fichas-perfil").innerHTML = fichas;     
+    document.querySelector("#fichas-perfil").innerHTML = fichas;
+    let display = document.querySelector("#display-result");
+    display.innerHTML = `
+    <p class="badge text-bg-success fs-6">` + d.message + `</p>
+    `;
+    display.classList.add("show");
+    setTimeout(() => {
+        display.classList.remove("show");
+    }, 5000);
 }
 
 function ingresar(e){
