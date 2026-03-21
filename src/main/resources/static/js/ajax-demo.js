@@ -88,6 +88,7 @@ document.querySelectorAll(".perfilable").forEach(o => {
         });
 }});
 
+
 // refresca previsualizacion cuando cambias imagen
 document.querySelector("#f_avatar").onchange = e => {
     let img = document.querySelector("#avatar");
@@ -98,7 +99,7 @@ document.querySelector("#f_avatar").onchange = e => {
 // click en boton de enviar avatar
 document.querySelector("#postAvatar").onclick = e => {
     e.preventDefault();
-    let url = document.querySelector("#postAvatar").parentNode.action;
+    let url = document.querySelector("#img-form").action;
     let img = document.querySelector("#avatar");
     let file = document.querySelector("#f_avatar");
     postImage(img, url, "photo").then(() => {

@@ -6,52 +6,89 @@
     <title>IW: Perfil</title>
 </head>
 
-<body class="d-flex flex-column h-100">
+<body class="d-flex flex-column h-100 bg-dark text-white">
     <header th:replace="~{fragments/nav.html :: nav}"></header>
 
-    <main class="flex-shrink-0">
-        <div id="books" class="border border-2 border-primary rounded">
-            <label for="isbn">ISBN</label><input id="isbn" value="9780140328721" />
-            <button id="fetchBook">Buscar datos online</button>
-            <img class="preview" id="portada" alt="portada del libro" />
-            <form th:action="@{/user/__${user.id}__/pic}">
-                <button id="postPortada" class="perfilable">Usar como foto de perfil</button>
-            </form>
-        </div>
-        <div id="movies" class="border border-2 border-secondary rounded">
-            <label for="imdb">IMDB</label><input id="imdb" value="tt11286314" />
-            <button id="fetchMovie">Buscar datos online</button>
-            <img class="preview" id="poster" alt="poster de la pelicula" />
-            <form th:action="@{/user/__${user.id}__/pic}">
-                <button id="postPoster" class="perfilable">Usar como foto de perfil</button>
-            </form>
-        </div>
-        <div id="profile" class="border border-2 border-tertiary rounded">
-            <input type="file" id="f_avatar" accept="image/jpeg,image/png">
-            <img class="preview" id="avatar" alt="careto a subir" />
-            <form th:action="@{/user/__${user.id}__/pic}">
-                <button id="postAvatar">Usar como foto de perfil</button>
-            </form>
+    <main class="m-auto flex-shrink-0" style="width:90%">
+        
+        <div class="mt-5 d-flex justify-content-around">
+            <article class="me-3 p-4 border border-2 rounded-2" style="flex-grow: 2;">
+                <h2 class="text-center">Información del Perfil</h2>
+                <div class="mb-4" id="profile">
+                    <form id="img-form" class="mt-3 d-flex align-items-center" th:action="@{/user/__${user.id}__/pic}">
+                        <img class="preview" id="avatar" alt="Foto" th:src="@{/user/{id}/pic(id=${user.id})}" />
+                        <div>
+                            <label class="btn btn-primary" for="f_avatar">Cambiar foto de perfil</label>
+                            <input type="file" id="f_avatar" accept="image/jpeg,image/png" hidden>
+                            <button class="btn btn-success" id="postAvatar">Guardar Foto</button>
+                        </div>
+                    </form>
+                </div>
+                <div>
+                    <div id="res-perfil" class="d-flex justify-content-center"></div>
+                    <form id="perfil-form" class="d-flex flex-column justify-content-around" th:action="@{/user/__${user.id}__/perfil}">
+                        <div class="mb-3 d-flex">
+                            <div class="me-3" style="flex-grow:1;">
+                                <label class="fs-5" for="username">Nombre de Usuario:</label>
+                                <input class="form-control" type="text" name="username" id="username" th:value="${user.username}" required>
+                            </div>
+                            <div class="ms-3" style="flex-grow:1;">
+                                <label class="fs-5" for="title">Titulo:</label>
+                                <input class="form-control" type="text" name="title" id="title" th:value="${user.titulo}" required>
+                            </div>
+    
+                        </div>
+
+                        <label class="fs-5" for="description">Descripción:</label>
+                        <textarea class="form-control" name="description" id="description" th:text="${user.descripcion}" style="max-height: 10em; overflow: auto;"></textarea>
+
+                        <button id="postPerfil" class="mt-3 btn btn-success" type="submit">Guardar Perfil</button>
+                    </form>
+                </div>
+            </article>
+            <article class="ms-3 p-4 border border-2 rounded-2" style="flex-grow: 1; align-self: center;">
+                <h2 class="text-center">Información Personal</h2>
+                <div id="res-personal" class="d-flex justify-content-center"></div>
+                <form class="d-flex flex-column justify-content-around" id="personal-form" th:action="@{/user/__${user.id}__/personal}">
+                    <div class="mb-3 d-flex">
+                        <div class="me-3" style="flex-grow: 1;">
+                            <label class="fs-5" for="nombre">Nombre:</label>
+                            <input class="form-control" type="text" name="nombre" id="nombre" th:value="${user.firstName}" required>
+                        </div>
+                        <div class="ms-3" style="flex-grow: 1;">
+                            <label class="fs-5" for="apellido">Apellido:</label>
+                            <input class="form-control" type="text" name="apellido" id="apellido" th:value="${user.lastName}" required>
+                        </div>
+                    </div>
+
+                    <label class="fs-5" for="contra">Contraseña:</label>
+                    <input class="form-control" type="password" name="contra" id="contra">
+                    <label class="fs-5" for="repetir">Repetir:</label>
+                    <input class="form-control" type="password" name="repetir" id="repetir">
+
+                    <button id="postPersonal" class="mt-3 btn btn-success" type="submit">Guardar</button>
+                </form>
+            </article>
         </div>
 
-        <div class="container">
+        <!-- <div class="container">
             <h1 class="mt-5">Perfil de <span th:text="${user.username}">Paco</span></h1>
-            <!-- recepción de mensajes -->
+            recepción de mensajes
             <div class="py-5 row" id="mensajes">
             </div>
-            <!-- envío de mensajes -->
+            envío de mensajes
             <div class="py-5 row ">
                 <form th:action="@{/user/__${user.id}__/msg}" method="POST">
                     <input type="text" id="message" placeholder="escribe a este usuario" />
                     <button id="sendmsg" class="btn btn-secondary" type="submit">Enviar</button>
                 </form>
             </div>
-        </div>
+        </div> -->
     </main>
 
     <th:block th:replace="~{fragments/footer.html :: footer}" />
 
-    <script th:src="@{/js/ajax-demo.js}"></script>
+    <script th:src="@{/js/ajax-user.js}"></script>
 </body>
 
 </html>
