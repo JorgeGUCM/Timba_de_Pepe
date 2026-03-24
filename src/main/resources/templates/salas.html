@@ -133,7 +133,7 @@
             <h1 class="mb-2 text-white">🎮 Salas de Juego</h1>
             <p class="text-white-50 mb-4">Únete a una sala existente o crea la tuya propia.</p>
 
-            <div class="row g-4 mt-2">
+            <div id="salas-cards" class="row g-4 mt-2">  <!-- tiene id para el jugador.feature -->
                 <!-- Lista Dinámica de Salas -->
                 <div th:each="sala : ${salas}" class="col-md-6 col-lg-4">
                     <div class="card tarjeta-sala shadow-sm h-100">

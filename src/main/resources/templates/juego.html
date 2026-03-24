@@ -10,8 +10,7 @@
     <header th:replace="~{fragments/nav.html :: nav}"></header>
     <main class="flex-shrink-0">
         <div class="container text-center">
-            <h1 class="mt-4 mb-2">Nombre del Tablero</h1>
-
+        <h1 class="mt-4 mb-2" th:text="${juego.nombre}">Nombre del Tablero</h1>
             <div class="cartera mb-3">
                 <div class="cartera-item">
                     <svg style="filter:invert(1); width: 1.2em; transform: translateY(-0.15em);"
@@ -84,9 +83,9 @@
             <div class="panel-apuesta mt-3" id="panelApuesta">
                 <h6 class="text-warning mb-3">¿Cuánto quieres apostar?</h6>
                 <div class="d-flex gap-2 justify-content-center mb-3">
-                    <button class="btn btn-outline-warning btn-sm quick-btn" onclick="ajustarApuesta(5)">+5</button>
+                    <button class="btn btn-outline-warning btn-sm quick-btn" id = "btnApuesta5" onclick="ajustarApuesta(5)">+5</button>  <!-- tiene id para el jugador.feature -->
                     <button class="btn btn-outline-warning btn-sm quick-btn" onclick="ajustarApuesta(10)">+10</button>
-                    <button class="btn btn-outline-warning btn-sm quick-btn" onclick="ajustarApuesta(25)">+25</button>
+                    <button class="btn btn-outline-warning btn-sm quick-btn" id = "btnApuesta25" onclick="ajustarApuesta(25)">+25</button> <!-- tiene id para el jugador.feature -->
                     <button class="btn btn-outline-warning btn-sm quick-btn" onclick="ajustarApuesta(50)">+50</button>
                 </div>
                 <div class="d-flex gap-2 justify-content-center align-items-center mb-3">
