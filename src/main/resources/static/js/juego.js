@@ -524,3 +524,41 @@ function gameController(){
 btnApostar.onclick = () => apostarPanelShow();
 btnCancelApuesta.onclick = () => apostarPanelHide();
 //btnSonido.onclick = () => sonido();
+
+
+// Vainas de WS
+// Sobreescribimos el comportamiento por defecto al recibir un mensaje
+ws.receive = (mensaje) => {
+    console.log("¡Actualización de la partida recibida por WS!", mensaje);
+
+    // 1. Si el mensaje es de MI propio jugador, lo ignoramos 
+    // (porque mi pantalla ya se actualizó al pulsar el botón localmente)
+    if (mensaje.jugadorId === miJugadorId) {
+        return;
+    }
+
+    // 2. Buscamos qué jugador de nuestro array local es el que ha enviado el mensaje.
+    // OJO: Para que esto sea exacto en el futuro, tendrás que asegurarte de que al 
+    // inicializar el juego, guardas los IDs reales de la BBDD en el array 'players'.
+    // Por ahora, para probar, vamos a suponer que el mensaje es del Player 2.
+    let indexRival = 2; 
+    let p = players[indexRival - 1]; 
+
+    if (p) {
+        // 3. Actualizamos los datos del rival con la información del servidor
+        p.cards = mensaje.cartas || [];
+        p.score = mensaje.puntuacion || 0.0;
+        p.standing = (mensaje.estado === "PLANTADO");
+        p.active = true; // Si hace un movimiento, está activo
+
+        // 4. Refrescamos la interfaz visual solo para ese jugador
+        actualizarPuntos(p.score, indexRival);
+        renderCards(p.cards, indexRival);
+        
+        // Actualizamos las etiquetas de "Plantado", "Sobrepuntos", etc.
+        mostarJugadores();
+
+        // 5. Comprobamos si con este nuevo estado la partida entera ha terminado
+        gameEnded();
+    }
+};

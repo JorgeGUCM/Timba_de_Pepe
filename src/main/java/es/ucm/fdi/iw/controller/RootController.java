@@ -13,6 +13,8 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import es.ucm.fdi.iw.model.*;
@@ -24,6 +26,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Map;
 /**
@@ -31,6 +35,9 @@ import java.util.Map;
  */
 @Controller
 public class RootController {
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     @Autowired
     private EntityManager entityManager;
@@ -222,11 +229,36 @@ public class RootController {
             
             // 6. Guardamos los cambios en la BBDD
             entityManager.merge(j);
+
+            
+            ObjectMapper mapper = new ObjectMapper();
+            
+            // Este es nuestro "objetoConElEstado". Metemos en un Map lo que JS necesita saber:
+            Map<String, Object> estadoParaEnviar = Map.of(
+                "jugadorId", j.getId(),
+                "cartas", datos.get("cartas"), // Mandamos directamente el nodo JSON de cartas
+                "puntuacion", j.getPuntuacion(),
+                "estado", j.getEstado().toString()
+            );
+
+            // Convertimos el Map a un String JSON
+            try{
+            String json = mapper.writeValueAsString(estadoParaEnviar); 
+
+            // Lo enviamos a todos los que estén suscritos al Topic de esta partida
+            messagingTemplate.convertAndSend("/topic/partida", json);
+            } catch(Exception e){
+                System.out.println("Error enviando WebSockets: " + e.getMessage());
+            }
+            // ==========================================
+            // ======== FIN CÓDIGO WEBSOCKETS ===========
+            // ==========================================
             return Map.of("status", "ok", "message", "Estado y apuesta guardados");
         }
         
         // Si no se encuentra el jugador
         response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+
         return Map.of("error", "Jugador no encontrado");
     }
 

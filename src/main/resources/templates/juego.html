@@ -107,6 +107,14 @@
         </div>
     </main>
     <th:block th:replace="~{fragments/footer.html :: footer}" />
+
+    <!-- Cosas de WS -->
+    <script th:inline="javascript">
+        window.config = window.config || {};
+        config.socketUrl = /*[[@{/ws}]]*/ '/ws';
+        config.topics = 'partida'; 
+    </script>
+
     <script th:src="@{/js/juego.js}" src="/js/juego.js"></script>
 </body>
 
