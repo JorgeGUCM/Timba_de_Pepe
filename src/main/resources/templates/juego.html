@@ -31,7 +31,8 @@
             <input type="hidden" id="miNombreUsuario" th:value="${session.u.username}" value="Jugador" />
             <input type="hidden" id="miPosicionMesa" th:value="${jugadorActual?.posicionMesa}" value="1" />
             <input type="hidden" id="miJugadorId" th:value="${jugadorActual?.id}" />
-            
+            <input type="hidden" id="jugadoresIniciales" th:value="${jugadoresJson}" />
+
             <div class="tablero" id="tablero">
                 <div class="jugador-hueco" id="slot-1">
                     <div class="jugador-nombre" id="active-1">
@@ -107,6 +108,15 @@
         </div>
     </main>
     <th:block th:replace="~{fragments/footer.html :: footer}" />
+
+    <!-- Cosas de WS -->
+    <script th:inline="javascript">
+    window.config = window.config || {};
+    config.socketUrl = /*[[@{/ws}]]*/ '/ws';
+    // AQUÍ SEPARAMOS LAS SALAS USANDO EL ID DEL JUEGO:
+    config.topics = 'juego/' + /*[[${juego.id}]]*/ '1'; 
+</script>
+
     <script th:src="@{/js/juego.js}" src="/js/juego.js"></script>
 </body>
 
