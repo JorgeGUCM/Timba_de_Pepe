@@ -1,4 +1,3 @@
-
 /* Cartas */
 const PALOS = ['B', 'C', 'E', 'O'];
 const PALO_NOMBRES = { B: 'Bastos', C: 'Copas', E: 'Espadas', O: 'Oros' };
@@ -7,19 +6,15 @@ const FIGURAS = ['S', 'C', 'R'];
 const IMG_BASE = '/img/baraja/';
 const REVERSO = IMG_BASE + 'reverso1.png';
 
-// Limite de puntos
 const LIMITE = 7.5;
-// apuesta minima
 const MIN_BET = 10; 
 
-// Estado del juego
 const ESTADO_JUEGO = {ESPERA: 0, COMPLETA: 1, JUGANDO: 2, FINALIZADO: 3};
 let estado = ESTADO_JUEGO.ESPERA;
 let miJugadorId = null;
 
-// Jugadores 4 maximo
 const players = [
-    { name: null, cards: [], score: 0, bet: 0, standing: false, active: true },
+    { name: null, cards: [], score: 0, bet: 0, standing: false, active: false },
     { name: null, cards: [], score: 0, bet: 0, standing: false, active: false },
     { name: null, cards: [], score: 0, bet: 0, standing: false, active: false },
     { name: null, cards: [], score: 0, bet: 0, standing: false, active: false }
@@ -27,11 +22,6 @@ const players = [
 let playerIndex;
 let num_players = 0;
 
-/* 
----------------------------
-    Elementos del DOM
----------------------------
-*/
 let elemFichas = document.querySelector("#fichas");
 let elemCervezas = document.querySelector("#cervezas");
 
@@ -54,32 +44,18 @@ let targetBtn = document.querySelector("#target-btnNueva");
 
 let elemPanelApuesta = document.querySelector("#panelApuesta");
 let elemCantApuesta = document.querySelector("#cantApuesta");
-
 let btnConfirmApuesta = document.querySelector("#btnConfirmApuesta"); 
 let btnCancelApuesta = document.querySelector("#btnCancelApuesta");
 
-let btnSonido = document.querySelector("#ponerSonido");
-
-// Fichas y cervezas del jugador
 let fichas = 0;
 let cervezas = 0;
 
-/*
-------------------
-    Miscelaneo
-------------------
-*/
 function mostrarMonedas(f, c){
     elemFichas.innerHTML = f;
     elemCervezas.innerHTML = c;
 }
 
-// se hace que se actualice algo, y cada vez que se inicie el juego
-// notificacion de web sockets -> cargarPartida()
-// regenera toda la vista
-// - Referencia al archivo juego.js original proporcionado
 function cargarPartida(){
-    // 1. Leer los datos reales que el servidor (Thymeleaf) ha puesto en el HTML
     fichas = parseInt(document.querySelector("#fichas").innerText) || 0;
     cervezas = parseInt(document.querySelector("#cervezas").innerText) || 0;
     
@@ -88,48 +64,45 @@ function cargarPartida(){
 
     let inputId = document.querySelector("#miJugadorId");
     miJugadorId = inputId ? parseInt(inputId.value) : null;
-    // 2. Configurar la sesión básica del jugador
-    // Asignamos que este usuario ocupa el Slot 1 (temporalmente, para que tu frontend funcione)
-    playerIndex = 1;    
-    num_players = 1;
-    estado = ESTADO_JUEGO.ESPERA;
     
-    // 3. Registrar al jugador en la lógica del juego
-    players[playerIndex - 1] = {
-        name: miNombre,
-        cards: [],
-        score: 0,
-        bet: 0,
-        standing: false,
-        active: true
-    };
+    let inputPosicion = document.querySelector("#miPosicionMesa");
+    playerIndex = inputPosicion ? parseInt(inputPosicion.value) : 1;    
+    
+    players[playerIndex - 1].name = miNombre;
+    players[playerIndex - 1].active = true;
 
-    // 4. Pintar su nombre real en el tablero (sustituyendo el "Player 1" genérico)
-    document.querySelector("#active-" + playerIndex).innerHTML = 
-        `🃏 ${miNombre} <span class="badge bg-success">Activo</span>`;
-        
-    console.log(`Partida cargada. Usuario: ${miNombre} | Fichas: ${fichas}`);
-}
-// Para jugadores
-function loadPlayers(){
-    // Recibira info de BD o algo y cargara datos
-
-/*     for (let i = 0; i < 2; i++) {
-        players[i].name = "Player " + i;
-        players[i].bet = 0;
-        players[i].score = 0;
-        players[i].active = true;
-        players[i].standing = true;
-        players[i].cards = [];
-        num_players++;
+    let rawJugadores = document.querySelector("#jugadoresIniciales");
+    if(rawJugadores && rawJugadores.value) {
+        let jugadoresGuardados = JSON.parse(rawJugadores.value);
+        jugadoresGuardados.forEach(jDB => {
+            let idx = jDB.posicionMesa - 1;
+            if(players[idx]) {
+                // Asignamos el nombre de BBDD asegurándonos de que no sea null
+                if (jDB.nombre && jDB.nombre !== "null") {
+                    players[idx].name = jDB.nombre;
+                }
+                players[idx].score = jDB.puntuacion || 0;
+                players[idx].standing = (jDB.estado === "PLANTADO" || jDB.estado === "SOBREPUNTOS");
+                
+                // Solo activamos a los que no sean "ESPERANDO" o, al menos, los registramos
+                if (jDB.estado !== "ESPERANDO" || idx === (playerIndex - 1)) {
+                     players[idx].active = true;
+                }
+                
+                try {
+                    players[idx].cards = typeof jDB.cartas === 'string' ? JSON.parse(jDB.cartas) : jDB.cartas;
+                } catch(e) {
+                    players[idx].cards = [];
+                }
+                num_players++;
+            }
+        });
     }
 
-    players[1].cards[0] = {"code": "RB","num": "R","palo": "B"};
-
-    players[0].standing = false;
-    // Se recibira el numero de jugador de este usuario
-    playerIndex = 1; */
+    document.querySelector("#active-" + playerIndex).innerHTML = 
+        `🃏 ${miNombre} <span class="badge bg-success">Activo</span>`;
 }
+
 function mostarJugadores(){
     let i = 1;
     players.forEach((p) => {
@@ -137,21 +110,28 @@ function mostarJugadores(){
         let slot = "#"+playerSlot+i;
         let score = "#"+playerScore+i;
         
-        // Comprobamos si el jugador tiene un nombre asignado, si no, le ponemos Player X
-        let nombreJugador = p.name ? p.name : "Player " + i;
+        // Aquí arreglamos el fallo visual del Player 2
+        let nombreJugador = (p.name && p.name !== "null") ? p.name : "Jugador " + i;
 
-        if(p.score >= LIMITE){
+        // Mostrar puntos o interrogación dependiendo del estado global de la partida
+        let puntosAMostrar = "?";
+        if (estado === ESTADO_JUEGO.FINALIZADO || i === playerIndex) {
+            puntosAMostrar = p.score;
+        }
+
+        if(p.score > LIMITE){
             document.querySelector(display).innerHTML = `🃏 ` + nombreJugador + " " + playerOver;
             document.querySelector(slot).classList.remove("empty");
-            document.querySelector(score).innerHTML = p.score;
+            document.querySelector(score).innerHTML = puntosAMostrar;
         }else if(p.standing){
             document.querySelector(display).innerHTML = `🃏 ` + nombreJugador + " " + playerPlantado;
             document.querySelector(slot).classList.remove("empty");
-            document.querySelector(score).innerHTML = p.score;
-        }else if(p.active){
+            document.querySelector(score).innerHTML = puntosAMostrar;
+        }else if(p.name !== null){
+            // Si tiene nombre, está en la sala (esperando o jugando)
             document.querySelector(display).innerHTML = `🃏 ` + nombreJugador + " " + playerActivo;
             document.querySelector(slot).classList.remove("empty");
-            document.querySelector(score).innerHTML = p.score;
+            document.querySelector(score).innerHTML = puntosAMostrar;
         }else{
             document.querySelector(display).innerHTML = playerEsperando;
             document.querySelector(slot).classList.add("empty");
@@ -160,25 +140,36 @@ function mostarJugadores(){
         i++;
     });
 }
-// Comprobar si e juega a acabado
+
 function gameEnded(){
-    let ended = true;
+    let algunJugadorSigueJugando = false;
+    
     players.forEach((p) => {
-        if(!p.standing && p.score <= LIMITE && p.active){
-            ended = false;
+        // Alguien sigue jugando si tiene nombre (está en la mesa), no está plantado y sus puntos <= 7.5
+        if(p.name !== null && !p.standing && p.score <= LIMITE){
+            algunJugadorSigueJugando = true;
         }
     });
 
-    if(ended){
+    // Solo entramos aquí si estábamos jugando y ya nadie puede seguir
+    if(!algunJugadorSigueJugando && estado === ESTADO_JUEGO.JUGANDO){
         estado = ESTADO_JUEGO.FINALIZADO;
+        
+        // Revelamos cartas forzadamente ANTES de cualquier rebote de servidor
+        for(let i = 1; i <= 4; i++) {
+            let p = players[i-1];
+            if (p.name !== null) {
+                renderCards(p.cards, i);
+            }
+        }
+        mostarJugadores();
+        
         resultado();
     }
 }
 
-// Botones
 function crearBtnNueva(texto){
-    targetBtn.innerHTML =
-    `<button class="btn btn-success px-4" id="btnNueva">`+ texto +`</button>`;;
+    targetBtn.innerHTML = `<button class="btn btn-success px-4" id="btnNueva">`+ texto +`</button>`;
     return document.querySelector("#btnNueva");
 }
 
@@ -186,7 +177,6 @@ function eliminarBtnNueva(){
     targetBtn.innerHTML = null;
 }
 
-// Para UI de mensajes
 function mensaje(texto, tipo = "info"){
     elemMensaje.innerHTML = texto;
     elemMensaje.classList.value = "estado-juego mt-3 mx-auto show alert alert-"+tipo;
@@ -198,7 +188,6 @@ function playerEstado(index, texto){
     document.querySelector("#"+playerDisplay+index).innerHTML = texto;
 }
 
-// Para la baraja
 function construirBaraja(){
     let baraja = [];
     for (const p of PALOS) {
@@ -216,7 +205,6 @@ function barajar(baraja){
     return baraja;
 }
 
-// Para apostar
 function apostarPanelShow(){
     elemPanelApuesta.classList.add("show");
 }
@@ -224,8 +212,8 @@ function apostarPanelHide(){
     elemPanelApuesta.classList.remove("show");
 }
 function ajustarApuesta(n){
-    let cant =  parseInt(elemCantApuesta.value, 10) || 0;
-    if(cant + n > 0 && cant + n < 1000)
+    let cant = parseInt(elemCantApuesta.value, 10) || 0;
+    if(cant + n > 0 && cant + n <= 1000)
         elemCantApuesta.value = cant + n;
     else if(cant + n > 1000)
         elemCantApuesta.value = 1000;
@@ -245,17 +233,18 @@ function apuestaComfirm(){
 
         mensajeHide();
         guardarEstadoEnBD();
-    } else if (total_bet < 0)
+    } else if (total_bet <= 0)
         mensaje("Debe ser positiva la apuesta!");
     else
         mensaje("No tienes suficientes fichas!", "danger");
 
     apostarPanelHide();
 }
+
 function apuestaInicial(){
     let bet = parseInt(elemCantApuesta.value, 10);
     if(bet < MIN_BET){
-        mensaje("La apuesta minima es de 10", "info");
+        mensaje("La apuesta minima es de " + MIN_BET, "info");
         return;
     }
 
@@ -271,68 +260,54 @@ function apuestaInicial(){
     elemApuesta.innerHTML = bet;
 
     mensajeHide();
-    document.querySelector("#btnNueva").disabled = false;
+    
+    let btnNueva = document.querySelector("#btnNueva");
+    if(btnNueva) btnNueva.disabled = false;
+    
     btnConfirmApuesta.onclick = () => apuestaComfirm();
 
     apostarPanelHide();
     guardarEstadoEnBD();
 }
 
-// Plantarse y fin del juego// Plantarse y fin del juego
 function resultado(){
     let p = players[playerIndex-1];
-
-    // 1. Calculamos premios
+    
     if(p.score <= LIMITE) {
-        // GANA: Multiplicamos la apuesta x2. 
         let premio = p.bet * 2;
         fichas += premio;
         p.ganancias = premio;
         mostrarMonedas(fichas, cervezas);
-        mensaje("¡Has ganado la ronda! Recibes " + premio + " fichas.", "success");
+        mensaje("¡Ronda finalizada! Recibes " + premio + " fichas si el rival se pasó, o perdiste. Revisa puntuaciones.", "success");
     } else {
-        // PIERDE: No sumamos nada porque ya se descontó.
         p.ganancias = -p.bet;
         mensaje("Te has pasado de 7.5. Has perdido tus fichas apostadas.", "danger");
     }
-
-    // 2. Guardamos su dinero final en la base de datos
+    
+    // Aquí el estado ya es FINALIZADO, y aunque el servidor reenvíe un WS, la función mostarJugadores() 
+    // revelará los números de forma segura.
     guardarEstadoEnBD();
 
-    // 3. Modificamos el botón para que pida una nueva fila (de forma segura con CSRF)
-    // Creamos el botón visualmente
     crearBtnNueva("🔄 Reiniciar Tablero");
-    
-   // Lo buscamos en el DOM explícitamente y le añadimos el evento
     let btnReiniciarDOM = document.querySelector("#btnNueva");
     if (btnReiniciarDOM) {
         btnReiniciarDOM.onclick = function() {
-            console.log("Pidiendo nueva ronda al servidor...");
-            
-            // --- NUEVO: CSRF con el objeto global config ---
             let headers = { 'Content-Type': 'application/json' };
             if (typeof config !== 'undefined' && config.csrf && config.csrf.name) {
-                let csrfHeaderName = config.csrf.name === '_csrf' ? 'X-CSRF-TOKEN' : config.csrf.name;
-                headers[csrfHeaderName] = config.csrf.value;
+                headers[config.csrf.name === '_csrf' ? 'X-CSRF-TOKEN' : config.csrf.name] = config.csrf.value;
             }
-            // -----------------------------------------------
-
             fetch(`/jugador/${miJugadorId}/nueva-ronda`, { 
                 method: 'POST',
-                headers: headers // <-- Pasamos la cabecera de seguridad correcta
+                headers: headers 
             })
             .then(response => response.json())
             .then(data => {
                 if(data.nuevoId) {
-                    console.log("Nueva ronda creada con ID: " + data.nuevoId);
                     document.querySelector("#miJugadorId").value = data.nuevoId;
                     miJugadorId = data.nuevoId; 
-                    gameController(); 
-                } else {
-                    console.error("El servidor no devolvió un nuevoId", data);
+                    window.location.reload(); 
                 }
-            })
-            .catch(error => console.error("Error al pedir nueva ronda", error));
+            });
         };
     }
 }
@@ -342,28 +317,26 @@ function plantarse(){
 
     btnPedir.disabled = true;
     btnPlantarse.disabled = true;
+    btnApostar.disabled = true;
 
-    mensaje("Te has plantado con: " + players[playerIndex-1].score + ". Esperando al resto de jugadores...", "info");
-
-    playerEstado(playerIndex, "Player " + playerIndex + " " + playerPlantado)
-
-    // Comprobamos si todos los jugadores se han plantado o perdido
+    let nom = players[playerIndex-1].name || "Yo";
+    mensaje("Te has plantado con: " + players[playerIndex-1].score + ". Esperando al resto...", "info");
+    playerEstado(playerIndex, "🃏 " + nom + " " + playerPlantado);
+    
+    guardarEstadoEnBD();
     gameEnded();
 }
 
-// Sistema de cartas
 function valorCarta(carta){
     if(FIGURAS.includes(carta.num))
         return 0.5;
     else
         return parseInt(carta.num, 10);
 }
-
 function nombreCarta(carta){
     let numNombre = { '1': 'As', 'S': 'Sota', 'C': 'Caballo', 'R': 'Rey' };
     return (numNombre[carta.num] || carta.num) + ' de ' + PALO_NOMBRES[carta.palo];
 }
-
 function createCardImg(carta){
     let img = document.createElement('img');
     img.src = IMG_BASE + carta.code + '.png';
@@ -372,7 +345,6 @@ function createCardImg(carta){
     img.draggable = false;
     return img;
 }
-
 function createCardReverse(){
     let img = document.createElement('img');
     img.src = REVERSO;
@@ -385,58 +357,59 @@ function createCardReverse(){
 function renderCards(cards, indexPlayer){
     let target = document.querySelector("#"+playerCards + indexPlayer);
     target.innerHTML = '';
-    // Si es un contrincante cartas del reves
-    if(indexPlayer == playerIndex)
+    
+    // IMPORTANTE: Revelar las cartas si somos nosotros, O si el juego está finalizado.
+    if(indexPlayer == playerIndex || estado === ESTADO_JUEGO.FINALIZADO) {
         cards.forEach(c => target.appendChild(createCardImg(c)));
-    else
+    } else {
         cards.forEach(() => target.appendChild(createCardReverse()));
+    }
 }
 
 function actualizarPuntos(score, indexPlayer){
-    document.querySelector("#"+playerScore+indexPlayer).innerHTML = score;
+    if(indexPlayer == playerIndex || estado === ESTADO_JUEGO.FINALIZADO) {
+        document.querySelector("#"+playerScore+indexPlayer).innerHTML = score;
+    } else {
+        document.querySelector("#"+playerScore+indexPlayer).innerHTML = "?";
+    }
 }
+
 function guardarEstadoEnBD() {
     if (!miJugadorId) return; 
-    
     let p = players[playerIndex - 1];
     
     let estadoActual = "ACTIVO";
     if (p.score > LIMITE) estadoActual = "SOBREPUNTOS";
     else if (p.standing) estadoActual = "PLANTADO";
+    else if (!p.active) estadoActual = "ESPERANDO";
     
+    // Obtenemos el nombre del HTML, para garantizar que nunca sea "null" por culpa de un fallo de JS.
+    let inputNombre = document.querySelector("#miNombreUsuario");
+    let nombreSeguro = inputNombre ? inputNombre.value : "Jugador";
+    p.name = nombreSeguro;
+
     let datos = {
         cartas: p.cards, 
         puntuacion: p.score,
         estado: estadoActual,
         apuesta: p.bet,
         fichas: fichas,
-        // Las ganancias solamente se ven al final de la ronda/tablero, cuando ganas o pierdes al final
-        ganancias: p.ganancias !== undefined ? p.ganancias : 0
+        ganancias: p.ganancias !== undefined ? p.ganancias : 0,
+        nombre: nombreSeguro
     };
 
-    // --- NUEVO: Usamos el objeto global 'config' de tu plantilla ---
-    let headers = {
-        'Content-Type': 'application/json'
-    };
-    
-    // Añadimos el token CSRF si está disponible en la configuración
+    let headers = { 'Content-Type': 'application/json' };
     if (typeof config !== 'undefined' && config.csrf && config.csrf.name) {
-        let csrfHeaderName = config.csrf.name === '_csrf' ? 'X-CSRF-TOKEN' : config.csrf.name;
-        headers[csrfHeaderName] = config.csrf.value;
+        headers[config.csrf.name === '_csrf' ? 'X-CSRF-TOKEN' : config.csrf.name] = config.csrf.value;
     }
-    // -------------------------------------------------------------
 
     fetch(`/jugador/${miJugadorId}/actualizar`, {
         method: 'POST',
         headers: headers, 
         body: JSON.stringify(datos)
-    })
-    .then(response => {
-        if (!response.ok) console.error("Error al guardar en BD:", response.status);
-        else console.log("Apuesta y estado guardados en BD correctamente");
-    })
-    .catch(error => console.error("Error de conexión:", error));
+    }).catch(error => console.error("Error de conexión:", error));
 }
+
 function pedir(baraja){
     let p = players[playerIndex-1];
     if(!p.standing && p.score <= LIMITE){
@@ -450,115 +423,151 @@ function pedir(baraja){
         renderCards(p.cards, playerIndex);
         
         if(p.score <= LIMITE){
-        guardarEstadoEnBD();
+            guardarEstadoEnBD();
         }
     }
 
     if(p.score > LIMITE){
         btnPedir.disabled = true;
         btnPlantarse.disabled = true;
+        btnApostar.disabled = true;
         
-        playerEstado(playerIndex, "🃏 " + p.name + " " + playerOver);
-        gameEnded(); // ¡Esto llamará a resultado() automáticamente!
+        let nom = p.name || "Yo";
+        playerEstado(playerIndex, "🃏 " + nom + " " + playerOver);
+        p.standing = true; // Forzamos el "standing" lógico para que gameEnded funcione correctamente.
+        guardarEstadoEnBD();
+        gameEnded(); 
     }
 }
 
-/*
--------------------------
-    Logica del Juego
--------------------------
-*/
-function inicioPartida(){
-    estado = ESTADO_JUEGO.JUGANDO;
+function pedirInicioPartida() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const juegoId = urlParams.get('id');
 
+    let headers = { 'Content-Type': 'application/json' };
+    if (typeof config !== 'undefined' && config.csrf && config.csrf.name) {
+        headers[config.csrf.name === '_csrf' ? 'X-CSRF-TOKEN' : config.csrf.name] = config.csrf.value;
+    }
+    fetch(`/juego/${juegoId}/iniciar`, { method: 'POST', headers: headers })
+        .catch(error => console.error("Error iniciando partida", error));
+}
+
+function inicioPartidaLocal(){
+    estado = ESTADO_JUEGO.JUGANDO;
     btnPedir.disabled = false;
     btnPlantarse.disabled = false;
-
+    btnApostar.disabled = true; 
     eliminarBtnNueva();
 
-    let baraja = construirBaraja();
-    baraja = barajar(baraja);
-    console.log(baraja);
+    window.barajaLocal = barajar(construirBaraja());
 
     btnPlantarse.onclick = () => plantarse();
-    btnPedir.onclick = () => pedir(baraja);
+    btnPedir.onclick = () => pedir(window.barajaLocal);
 
     mensaje("¡¡¡Inicio del Siete y Medio!!!", "success");
 }
 
 document.addEventListener('DOMContentLoaded', () => gameController());
+
 function gameController(){
-    console.log("Iniciado controlador del juego");
-
-    // Cargamos jugadores
     cargarPartida();
-    // Se cargan las fichas y cervezas del jugador
-    // Las fichas y cervezas ya se han cargado desde el HTML en cargarPartida()
-    // Solo necesitamos refrescar la vista visualmente
     mostrarMonedas(fichas, cervezas);
-
-    // Se reinicia la apuesta
     elemApuesta.innerHTML = 0;
-
-  
-
     mostarJugadores();
+
     let index = 1;
     players.forEach((p) => {renderCards(p.cards, index); index++;});
 
-    // Estado inicial del juego
     estado = (num_players < 4)? ESTADO_JUEGO.ESPERA : ESTADO_JUEGO.COMPLETA;
-
-    // boton apostar como primera apuesta
+    
     btnConfirmApuesta.onclick = () => apuestaInicial();
+    btnApostar.onclick = () => apostarPanelShow();
+    btnCancelApuesta.onclick = () => apostarPanelHide();
 
-    // Creamos boton de iniciar partida (solo activo cuando hay apuesta minima)
     let nueva = crearBtnNueva("🔄 Iniciar Partida");
     nueva.disabled = true;
-    nueva.onclick = () => inicioPartida();
+    
+    if (playerIndex === 1) {
+        nueva.disabled = false; 
+        nueva.onclick = () => pedirInicioPartida();
+    } else {
+        nueva.style.display = 'none'; 
+    }
 
     btnPlantarse.disabled = true;
     btnPedir.disabled = true;
+
+    // AL ENTRAR, HACEMOS PING AL RESTO DE LA SALA PARA AVISAR QUE ESTAMOS.
+    // AQUÍ ES DONDE ANTES SE PERDÍA EL NOMBRE AL CREAR LA SEGUNDA SALA. AHORA NO OCURRIRÁ.
+    setTimeout(() => {
+        if(miJugadorId) guardarEstadoEnBD();
+    }, 500);
 }
 
-btnApostar.onclick = () => apostarPanelShow();
-btnCancelApuesta.onclick = () => apostarPanelHide();
-//btnSonido.onclick = () => sonido();
+ws.receive = (mensajeStr) => {
+    let payload = typeof mensajeStr === 'string' ? JSON.parse(mensajeStr) : 
+                  (mensajeStr.body ? JSON.parse(mensajeStr.body) : mensajeStr);
 
-
-// Vainas de WS
-// Sobreescribimos el comportamiento por defecto al recibir un mensaje
-ws.receive = (mensaje) => {
-    console.log("¡Actualización de la partida recibida por WS!", mensaje);
-
-    // 1. Si el mensaje es de MI propio jugador, lo ignoramos 
-    // (porque mi pantalla ya se actualizó al pulsar el botón localmente)
-    if (mensaje.jugadorId === miJugadorId) {
+    if (payload.tipo === "INICIO_PARTIDA") {
+        inicioPartidaLocal();
         return;
     }
 
-    // 2. Buscamos qué jugador de nuestro array local es el que ha enviado el mensaje.
-    // OJO: Para que esto sea exacto en el futuro, tendrás que asegurarte de que al 
-    // inicializar el juego, guardas los IDs reales de la BBDD en el array 'players'.
-    // Por ahora, para probar, vamos a suponer que el mensaje es del Player 2.
-    let indexRival = 2; 
-    let p = players[indexRival - 1]; 
+    if (payload.tipo === "JUGADOR_SALE") {
+        let idx = payload.posicionMesa - 1;
+        if(players[idx]) {
+            players[idx].name = null;
+            players[idx].active = false;
+            players[idx].standing = false;
+            players[idx].cards = [];
+            players[idx].score = 0;
+            mostarJugadores();
+        }
+        return;
+    }
 
-    if (p) {
-        // 3. Actualizamos los datos del rival con la información del servidor
-        p.cards = mensaje.cartas || [];
-        p.score = mensaje.puntuacion || 0.0;
-        p.standing = (mensaje.estado === "PLANTADO");
-        p.active = true; // Si hace un movimiento, está activo
+    // Ignoramos nuestros propios mensajes
+    if (payload.jugadorId === miJugadorId) return;
 
-        // 4. Refrescamos la interfaz visual solo para ese jugador
-        actualizarPuntos(p.score, indexRival);
-        renderCards(p.cards, indexRival);
-        
-        // Actualizamos las etiquetas de "Plantado", "Sobrepuntos", etc.
-        mostarJugadores();
+    if (payload.tipo === "ACTUALIZAR_JUGADOR") {
+        let indexRival = payload.posicionMesa; 
+        let p = players[indexRival - 1]; 
 
-        // 5. Comprobamos si con este nuevo estado la partida entera ha terminado
-        gameEnded();
+        if (p) {
+            // Guardamos el nombre que viene en el WebSocket (gracias al fix en RootController y guardarEstadoEnBD)
+            if (payload.nombre && payload.nombre !== "null") {
+                p.name = payload.nombre;
+            }
+
+            p.cards = payload.cartas || [];
+            p.score = payload.puntuacion || 0.0;
+            p.standing = (payload.estado === "PLANTADO" || payload.estado === "SOBREPUNTOS");
+            p.active = true; 
+
+            // Primero actualizamos las vistas y cartas del rival de forma normal
+            actualizarPuntos(p.score, indexRival);
+            renderCards(p.cards, indexRival);
+            mostarJugadores();
+
+            // Y finalmente comprobamos si este movimiento ha terminado la partida
+            gameEnded(); 
+        }
     }
 };
+
+window.addEventListener('beforeunload', function () {
+    const urlParams = new URLSearchParams(window.location.search);
+    const juegoId = urlParams.get('id');
+
+    if (juegoId && miJugadorId) {
+        let headers = { 'Content-Type': 'application/json' };
+        if (typeof config !== 'undefined' && config.csrf && config.csrf.name) {
+            headers[config.csrf.name === '_csrf' ? 'X-CSRF-TOKEN' : config.csrf.name] = config.csrf.value;
+        }
+        fetch(`/juego/${juegoId}/salir`, { 
+            method: 'POST', 
+            headers: headers, 
+            keepalive: true 
+        });
+    }
+});

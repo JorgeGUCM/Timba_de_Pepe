@@ -21,7 +21,6 @@ import es.ucm.fdi.iw.model.*;
 import java.util.List;
 import java.util.UUID;
 
-
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -30,6 +29,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Map;
+
 /**
  * Non-authenticated requests only.
  */
@@ -121,8 +121,8 @@ public class RootController {
 
         return "redirect:/salas";
     }
-    
-@GetMapping("/juego")
+
+    @GetMapping("/juego")
     @Transactional
     public String juego(Model model, HttpSession session, @RequestParam("id") long juegoId) {
         if (session.getAttribute("u") == null) {
@@ -137,7 +137,6 @@ public class RootController {
         int maxAsiento = 0;
         long usuariosUnicos = 0;
 
-        // Calculamos cuántos usuarios reales hay y buscamos nuestra última ronda
         if (juego.getJugadores() != null) {
             usuariosUnicos = juego.getJugadores().stream()
                     .map(j -> j.getUser().getId())
@@ -149,7 +148,6 @@ public class RootController {
                     maxAsiento = j.getPosicionMesa();
                 }
                 if (j.getUser().getId() == user.getId()) {
-                    // Si el usuario tiene varias rondas en el historial, nos quedamos con la más reciente (mayor ID)
                     if (jugadorActual == null || j.getId() > jugadorActual.getId()) {
                         jugadorActual = j;
                     }
@@ -157,7 +155,6 @@ public class RootController {
             }
         }
 
-        // Si es la PRIMERA VEZ en su vida que entra a esta sala
         if (jugadorActual == null) {
             if (usuariosUnicos < 4) {
                 jugadorActual = new Jugador();
@@ -179,6 +176,44 @@ public class RootController {
             }
         }
 
+    
+        List<Map<String, Object>> jugadoresList = new java.util.ArrayList<>();
+        if (juego.getJugadores() != null) {
+            for (Jugador j2 : juego.getJugadores()) {
+                jugadoresList.add(Map.of(
+                    "posicionMesa", j2.getPosicionMesa(),
+                    "nombre", j2.getUser().getUsername(),
+                    "puntuacion", j2.getPuntuacion(),
+                    "estado", j2.getEstado() != null ? j2.getEstado().name() : "ESPERANDO",
+                    "cartas", j2.getCartas() != null && !j2.getCartas().isEmpty() ? j2.getCartas() : "[]"
+                ));
+            }
+        }
+        
+        // Si es nuestra primera vez, forzamos meternos en el JSON
+        boolean actualEncontrado = false;
+        for(Map<String, Object> map : jugadoresList) {
+            if((Integer)map.get("posicionMesa") == jugadorActual.getPosicionMesa()) {
+                actualEncontrado = true; break;
+            }
+        }
+        if(!actualEncontrado) {
+            jugadoresList.add(Map.of(
+                "posicionMesa", jugadorActual.getPosicionMesa(),
+                "nombre", user.getUsername(),
+                "puntuacion", 0.0,
+                "estado", "ESPERANDO",
+                "cartas", "[]"
+            ));
+        }
+
+        try {
+            model.addAttribute("jugadoresJson", new ObjectMapper().writeValueAsString(jugadoresList));
+        } catch(Exception e){
+            model.addAttribute("jugadoresJson", "[]");
+        }
+     
+
         model.addAttribute("jugadorActual", jugadorActual);
         model.addAttribute("juego", juego);
         return "juego";
@@ -192,26 +227,27 @@ public class RootController {
             @RequestBody JsonNode datos, 
             HttpServletResponse response) {
             
-        // 1. Buscamos el jugador por su ID
         Jugador j = entityManager.find(Jugador.class, id);
         
         if (j != null) {
-            // 2. Extraemos los valores del JSON enviado desde juego.js
             String cartasJson = datos.has("cartas") ? datos.get("cartas").toString() : "[]"; 
             double puntuacion = datos.has("puntuacion") ? datos.get("puntuacion").asDouble() : 0.0;
             String estadoStr = datos.has("estado") ? datos.get("estado").asText() : null;
             
-            // 3. Leemos la apuesta y la guardamos en el Jugador
+            // INTENTAR LEER EL NOMBRE ENVIADO DESDE EL CLIENTE, SINO USAR EL DE LA BD
+            String nombreJugador = datos.has("nombre") && !datos.get("nombre").asText().equals("null") 
+                                   ? datos.get("nombre").asText() 
+                                   : j.getUser().getUsername();
+            
             if(datos.has("apuesta")) {
                 j.setApuesta(datos.get("apuesta").asInt());
             }
             
-            // 4. Leemos las fichas restantes y las descontamos del Usuario real (la cartera)
             if(datos.has("fichas")) {
                 User u = j.getUser();
                 if(u != null) {
                     u.setFichas(datos.get("fichas").asInt());
-                    entityManager.merge(u); // Guardamos la cartera del usuario
+                    entityManager.merge(u); 
                 }
             }
 
@@ -219,7 +255,6 @@ public class RootController {
                 j.setGanancias(datos.get("ganancias").asInt());
             }
             
-            // 5. Actualizamos el resto de datos del jugador
             j.setCartas(cartasJson);
             j.setPuntuacion(puntuacion);
             
@@ -227,39 +262,55 @@ public class RootController {
                 j.setEstado(Jugador.estadoJugador.valueOf(estadoStr));
             }
             
-            // 6. Guardamos los cambios en la BBDD
             entityManager.merge(j);
 
-            
             ObjectMapper mapper = new ObjectMapper();
             
-            // Este es nuestro "objetoConElEstado". Metemos en un Map lo que JS necesita saber:
+            // Enviamos el nombreJugador explícitamente para que la vista del jugador 1 se entere
             Map<String, Object> estadoParaEnviar = Map.of(
+                "tipo", "ACTUALIZAR_JUGADOR",
                 "jugadorId", j.getId(),
-                "cartas", datos.get("cartas"), // Mandamos directamente el nodo JSON de cartas
+                "nombre", nombreJugador, 
+                "posicionMesa", j.getPosicionMesa(), 
+                "cartas", datos.get("cartas"), 
                 "puntuacion", j.getPuntuacion(),
                 "estado", j.getEstado().toString()
             );
 
-            // Convertimos el Map a un String JSON
             try{
-            String json = mapper.writeValueAsString(estadoParaEnviar); 
-
-            // Lo enviamos a todos los que estén suscritos al Topic de esta partida
-            messagingTemplate.convertAndSend("/topic/partida", json);
+                String json = mapper.writeValueAsString(estadoParaEnviar); 
+                messagingTemplate.convertAndSend("/topic/juego/" + j.getJuego().getId(), json);
             } catch(Exception e){
                 System.out.println("Error enviando WebSockets: " + e.getMessage());
             }
-            // ==========================================
-            // ======== FIN CÓDIGO WEBSOCKETS ===========
-            // ==========================================
+            
             return Map.of("status", "ok", "message", "Estado y apuesta guardados");
         }
         
-        // Si no se encuentra el jugador
         response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-
         return Map.of("error", "Jugador no encontrado");
+    }
+
+    @PostMapping("/juego/{id}/iniciar")
+    @ResponseBody
+    @Transactional
+    public Map<String, Object> iniciarPartidaGlobal(@PathVariable long id) {
+        Juego juego = entityManager.find(Juego.class, id);
+        if (juego != null) {
+            juego.setEstado(Juego.state.JUGANDO);
+            entityManager.merge(juego);
+            
+            try {
+                ObjectMapper mapper = new ObjectMapper();
+                // Enviamos el evento de inicio a todos en la sala
+                String json = mapper.writeValueAsString(Map.of("tipo", "INICIO_PARTIDA"));
+                messagingTemplate.convertAndSend("/topic/juego/" + juego.getId(), json);
+            } catch (Exception e) {
+                log.error("Error enviando WS", e);
+            }
+            return Map.of("status", "ok");
+        }
+        return Map.of("error", "Juego no encontrado");
     }
 
     @PostMapping("/jugador/{id}/nueva-ronda")
@@ -283,6 +334,47 @@ public class RootController {
             
             // Devolvemos el ID de esta nueva fila a JavaScript
             return Map.of("status", "ok", "nuevoId", jugadorNuevo.getId());
+        }
+        return Map.of("error", "Jugador no encontrado");
+    }
+        // AÑADE ESTO DEBAJO DEL RESTO DE POSTMAPPINGS
+    @PostMapping("/juego/{id}/salir")
+    @ResponseBody
+    @Transactional
+    public Map<String, Object> salirSala(@PathVariable long id, HttpSession session) {
+        User sessionUser = (User) session.getAttribute("u");
+        if (sessionUser == null) return Map.of("error", "No autorizado");
+
+        Juego juego = entityManager.find(Juego.class, id);
+        if (juego != null && juego.getJugadores() != null) {
+            // Buscamos al jugador de este usuario en esta sala
+            Jugador jugadorAborrar = null;
+            for (Jugador j : juego.getJugadores()) {
+                if (j.getUser().getId() == sessionUser.getId()) {
+                    jugadorAborrar = j;
+                    break;
+                }
+            }
+
+            if (jugadorAborrar != null) {
+                // Notificamos por WS que el jugador se ha ido
+                try {
+                    Map<String, Object> estadoParaEnviar = Map.of(
+                        "tipo", "JUGADOR_SALE",
+                        "posicionMesa", jugadorAborrar.getPosicionMesa()
+                    );
+                    String json = new ObjectMapper().writeValueAsString(estadoParaEnviar); 
+                    messagingTemplate.convertAndSend("/topic/juego/" + juego.getId(), json);
+                } catch(Exception e) {}
+
+                entityManager.remove(jugadorAborrar);
+                juego.setNum_jugadores(Math.max(0, juego.getNum_jugadores() - 1));
+                if (juego.getNum_jugadores() == 0) {
+                    juego.setEstado(Juego.state.ESPERANDO);
+                }
+                entityManager.merge(juego);
+                return Map.of("status", "ok");
+            }
         }
         return Map.of("error", "Jugador no encontrado");
     }
