@@ -337,7 +337,7 @@ public class RootController {
         }
         return Map.of("error", "Jugador no encontrado");
     }
-        // AÑADE ESTO DEBAJO DEL RESTO DE POSTMAPPINGS
+       
     @PostMapping("/juego/{id}/salir")
     @ResponseBody
     @Transactional
