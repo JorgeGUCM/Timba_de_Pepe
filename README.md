@@ -16,13 +16,14 @@ Juega al clasico juego español SIETE Y MEDIO, donde hasta 4 jugadores podeis ap
 - **Ajustes del perfil**: Completado, permite cambiar la información del usuario (como nombre de usuario, nombre real, contraseña...)
 
 ### Vistas parcialmente completas
-- **Salas de Juego**: Aunque se pueden crear salas y te deja unir a ellas, falta que tenga consistencia con multiples usuarios (que no se pueda unir un usuario 2 veces, que cuando se metan 2 usuarios en una partida se les asigne a ambos la partida, que la apuesta minima se use en el juego correspondiete...), sirve para crear salas
-- **Login**: Parcialmente completo a falta de hacer el registro de usuarios. Funciona para logearse, pero no se pueden crear nuevos usuarios.
+- **Salas de Juego**: En las salas ya se puede meter correctamente los jugadores y reconoce cuantos jugadores hay dentro de la sala, se deberia hacer un sistema de perder automaticamente (o plantarse automaticamente) si el jugador abandona una sala durante un juego iniciado
+- **Login**: La vista de registro funciona, pero no correctamente. Falta cambiar el código para que no use ajax y redirija directamente a login con un mensaje de que se a creado el usuario correctamente.
+- **Juego**: El funcionamiento del juego esta parcialmente implementado con webshockets, falta pulir y finalizar el comportamiento del juego y jugadores. Además de implentar un mejor sistema de mensajes.
 
 ### Vistas incompletas
 - **Ranking**: Hecho de forma estática, para ver el ranking de los mejores jugadores.
-- **Juego**: El funcionamiento del juego es estático, si muestra que el usuario actual esta activo en la sala no considera otros jugadores unidos. No usa webshockets y falta el chat de juego. Es la vista principal que es para jugar al siete y medio.
 - **Administrar**: No se ha planteado nada sobre esta vista. Servirá para moderar a los usuarios y ver los chats de las salas, podrá eliminar o desabilitar a los usuarios.
+- **Chats**: Aplicado a la salas de juego, no esta implementado solo esta una demonstración de GUI.
 
 ### Resumen
 Falta por terminar la lógica de la aplicación en el juego para completar el ~50% establecido. El resto de cosas como el chat o ranking se pueden dejar como segunda parte del proyecto.
