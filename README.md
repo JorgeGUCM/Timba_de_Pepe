@@ -17,7 +17,7 @@ Juega al clasico juego español SIETE Y MEDIO, donde hasta 4 jugadores podeis ap
 
 ### Vistas parcialmente completas
 - **Salas de Juego**: En las salas ya se puede meter correctamente los jugadores y reconoce cuantos jugadores hay dentro de la sala, se deberia hacer un sistema de perder automaticamente (o plantarse automaticamente) si el jugador abandona una sala durante un juego iniciado
-- **Login**: La vista de registro funciona, pero no correctamente. Falta cambiar el código para que no use ajax y redirija directamente a login con un mensaje de que se a creado el usuario correctamente.
+- **Login**: La vista de registro funciona (rama de Registro) , pero no correctamente. Falta cambiar el código para que no use ajax y redirija directamente a login con un mensaje de que se a creado el usuario correctamente.
 - **Juego**: El funcionamiento del juego esta parcialmente implementado con webshockets, falta pulir y finalizar el comportamiento del juego y jugadores. Además de implentar un mejor sistema de mensajes.
 
 ### Vistas incompletas
