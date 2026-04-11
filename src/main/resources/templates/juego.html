@@ -8,7 +8,7 @@
 
 <body class="d-flex flex-column h-100 bg-dark text-white">
     <header th:replace="~{fragments/nav.html :: nav}"></header>
-    <main class="main">
+    <main class="mt-3 m-auto" style="width: 90%;">
         <h1 class="mt-4 mb-2 py-2 text-center bg-black rounded-3" th:text="${juego.nombre}">Nombre del Tablero</h1>
 
         <input type="hidden" id="miNombreUsuario" th:value="${session.u.username}" value="Jugador" />
@@ -16,7 +16,7 @@
         <input type="hidden" id="miJugadorId" th:value="${jugadorActual?.id}" />
         <input type="hidden" id="jugadoresIniciales" th:value="${jugadoresJson}" />
 
-        <div class="general mt-5 d-flex gap-5">
+        <div class="general mt-5 d-flex gap-4">
             <div class="tablero" id="tablero">
                 <div class="jugador-hueco" id="slot-1">
                     <div class="jugador-nombre" id="active-1">
@@ -54,16 +54,21 @@
 
                 <div class="cartera mb-3">
                     <div class="cartera-item">
-                        Fichas: <span class="cartera-value fichas-value" id="fichas" th:text="${session.u.fichas}">0</span>
+                        <span class="cartera-value fichas-value" id="fichas" th:text="${session.u.fichas}">0</span>
                         <svg style="filter:invert(1); width: 1.2em;"
                             xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
                             <path
                                 d="M471.9 324.8L320 417.6L168 324.8L320 64L471.9 324.8zM320 447.4L168 354.6L320 576L472 354.6L320 447.4z" />
                         </svg> 
                     </div>
-                    <span class="badge bg-warning text-dark fs-6">Apuesta actual: <strong id="apuesta">0</strong></span>
+                    <span class="pe-1 badge bg-warning text-dark fs-6">Apuesta actual: <strong id="apuesta">0</strong>
+                        <svg style="transform: translateX(-3px) translateY(-2px); width: 1.2em;"
+                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+                            <path d="M471.9 324.8L320 417.6L168 324.8L320 64L471.9 324.8zM320 447.4L168 354.6L320 576L472 354.6L320 447.4z" />
+                        </svg> 
+                    </span>
                     <div class="cartera-item">
-                        Cervezas: <span class="cartera-value cervezas-value" id="cervezas" th:text="${session.u.cervezas_actuales}">0</span>
+                        <span class="cartera-value cervezas-value" id="cervezas" th:text="${session.u.cervezas_actuales}">0</span>
                         <svg style="filter: invert(1); width: 1.2em;"
                             xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
                             <path
