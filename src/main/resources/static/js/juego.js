@@ -179,7 +179,7 @@ function eliminarBtnNueva(){
 
 function mensaje(texto, tipo = "info"){
     elemMensaje.innerHTML = texto;
-    elemMensaje.classList.value = "estado-juego mt-3 mx-auto show alert alert-"+tipo;
+    elemMensaje.classList.value = "estado-juego text-center mt-3 mx-auto show alert alert-"+tipo;
 }
 function mensajeHide(){
     elemMensaje.classList.remove("show");
