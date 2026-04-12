@@ -157,62 +157,32 @@ function actualizarTablero(estado){
     // Función que pintara la información del tablero
 }
 
+function entrarPartida(){
+    const urlParams = new URLSearchParams(window.location.search);
+    const idTablero = urlParams.get("id");
+
+    let headers = { 'Content-Type': 'application/json' }
+    if (typeof config !== 'undefined' && config.csrf && config.csrf.name)
+        headers[config.csrf.name === '_csrf' ? 'X-CSRF-TOKEN' : config.csrf.name] = config.csrf.value;
+
+    fetch(`/juego/${idTablero}/entrar`, {
+        method: 'POST',
+        headers: headers
+    })
+    .catch( error => console.error("Error al entrar en partida", error));
+}
+
+document.addEventListener("DOMContentLoaded", e => entrarPartida());
 
 ws.receive = (mensajeStr) => {
     let payload = typeof mensajeStr === 'string' ? JSON.parse(mensajeStr) : 
                   (mensajeStr.body ? JSON.parse(mensajeStr.body) : mensajeStr);
 
     console.log(payload);
-
-    if (payload.tipo === "INICIO_PARTIDA") {
-        inicioPartidaLocal();
-        return;
-    }
-
-    if (payload.tipo === "JUGADOR_SALE") {
-        let idx = payload.posicionMesa - 1;
-        if(players[idx]) {
-            players[idx].name = null;
-            players[idx].active = false;
-            players[idx].standing = false;
-            players[idx].cards = [];
-            players[idx].score = 0;
-            mostarJugadores();
-        }
-        return;
-    }
-
-    // Ignoramos nuestros propios mensajes
-    if (payload.jugadorId === miJugadorId) return;
-
-    if (payload.tipo === "ACTUALIZAR_JUGADOR") {
-        let indexRival = payload.posicionMesa; 
-        let p = players[indexRival - 1]; 
-
-        if (p) {
-            // Guardamos el nombre que viene en el WebSocket (gracias al fix en RootController y guardarEstadoEnBD)
-            if (payload.nombre && payload.nombre !== "null") {
-                p.name = payload.nombre;
-            }
-
-            p.cards = payload.cartas || [];
-            p.score = payload.puntuacion || 0.0;
-            p.standing = (payload.estado === "PLANTADO" || payload.estado === "SOBREPUNTOS");
-            p.active = true; 
-
-            // Primero actualizamos las vistas y cartas del rival de forma normal
-            actualizarPuntos(p.score, indexRival);
-            renderCards(p.cards, indexRival);
-            mostarJugadores();
-
-            // Y finalmente comprobamos si este movimiento ha terminado la partida
-            gameEnded(); 
-        }
-    }
 };
 
 window.addEventListener('beforeunload', function () {
-    const urlParams = new URLSearchParams(window.location.search);
+    /* const urlParams = new URLSearchParams(window.location.search);
     const juegoId = urlParams.get('id');
 
     if (juegoId && miJugadorId) {
@@ -225,5 +195,5 @@ window.addEventListener('beforeunload', function () {
             headers: headers, 
             keepalive: true 
         });
-    }
+    } */
 });

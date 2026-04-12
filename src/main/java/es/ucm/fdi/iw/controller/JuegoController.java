@@ -14,8 +14,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -51,17 +54,40 @@ public class JuegoController {
 
     @GetMapping("")
     @Transactional
-    public String juego(Model model, HttpSession session, @RequestParam("id") long juegoId) {
+    public String juego(Model model, HttpSession session, @RequestParam("id") Long idTablero) {
         if (session.getAttribute("u") == null) {
             return "redirect:/login";
         }
 
+        Juego juego = entityManager.find(Juego.class, idTablero);
+
+        Map<String, Object> estado = new HashMap<>();
+        estado.putAll(Map.of(
+            "result", "CARGADO",
+            "idTablero", juego.getId(),
+            "nombreTablero", juego.getNombre(),
+            "estadoJuego", juego.getEstado(),
+            "minBet", juego.getMin_bet(),
+            "numJugadores", juego.getNum_jugadores(),
+            "jugadores", "[]"
+        ));
+        log.info(estado);
+        model.addAttribute("estado", estado);
+        
+        return "juego";
+    }
+
+    @PostMapping("{idTablero}/entrar")
+    @ResponseBody
+    @Transactional
+    public Map<String, Object> getMethodName(Model model, HttpSession session, @PathVariable long idTablero) {
+        
         User sessionUser = (User) session.getAttribute("u");
         User user = entityManager.find(User.class, sessionUser.getId());
-        Juego juego = entityManager.find(Juego.class, juegoId);
+        Juego juego = entityManager.find(Juego.class, idTablero);
 
         if(juego.getNum_jugadores() >= 4)
-            return "redirect:salas";
+            return Map.of("error", "Sala completa");
 
         Jugador nuevo;
         boolean estaPartida = false;
@@ -109,6 +135,7 @@ public class JuegoController {
 
         Map<String, Object> estado = new HashMap<>();
         estado.putAll(Map.of(
+            "result", "ENTRADO",
             "idTablero", juego.getId(),
             "nombreTablero", juego.getNombre(),
             "estadoJuego", juego.getEstado(),
@@ -119,7 +146,7 @@ public class JuegoController {
         log.info(estado);
         model.addAttribute("estado", estado);
 
-        
-        return "juego";
+        return estado;
     }
+    
 }
