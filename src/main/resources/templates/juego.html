@@ -122,13 +122,14 @@
     </main>
     <th:block th:replace="~{fragments/footer.html :: footer}" />
 
-    <!-- Cosas de WS -->
+    <!-- Webshocket -->
     <script th:inline="javascript">
         window.config = window.config || {};
         config.socketUrl = /*[[@{/ws}]]*/ '/ws';
         // AQUÍ SEPARAMOS LAS SALAS USANDO EL ID DEL JUEGO:
-        config.topics = 'juego/' + /*[[${estado.idTablero}]]*/ '1'; 
+        config.topics = 'juego/[[${estado.idTablero}]]'; 
     </script>
+    <script th:src="@{/js/stomp.js}" src="js/stomp.js"></script>
 
     <script th:src="@{/js/juego.js}" src="/js/juego.js"></script>
 </body>

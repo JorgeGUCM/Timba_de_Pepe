@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import es.ucm.fdi.iw.model.Juego;
@@ -80,14 +79,14 @@ public class JuegoController {
     @PostMapping("{idTablero}/entrar")
     @ResponseBody
     @Transactional
-    public Map<String, Object> getMethodName(Model model, HttpSession session, @PathVariable long idTablero) {
+    public Map<String, Object> entrarPartida(Model model, HttpSession session, @PathVariable long idTablero) {
         
         User sessionUser = (User) session.getAttribute("u");
         User user = entityManager.find(User.class, sessionUser.getId());
         Juego juego = entityManager.find(Juego.class, idTablero);
 
         if(juego.getNum_jugadores() >= 4)
-            return Map.of("error", "Sala completa");
+            return Map.of("error", "Sala completa.");
 
         Jugador nuevo;
         boolean estaPartida = false;
@@ -125,6 +124,7 @@ public class JuegoController {
         juego.getJugadores().forEach((jugador) -> {
             jugadores.add(Map.of(
                 "idUsuario", jugador.getUser().getId(),
+                "nombre", jugador.getUser().getUsername(),
                 "posTablero", jugador.getPosicionMesa(),
                 "apuesta", jugador.getApuesta(),
                 "ganancias", jugador.getGanancias(),
@@ -144,9 +144,16 @@ public class JuegoController {
             "jugadores", jugadores
         ));
         log.info(estado);
-        model.addAttribute("estado", estado);
 
-        return estado;
+        try{
+            ObjectMapper mapper = new ObjectMapper();
+
+            messagingTemplate.convertAndSend("/topic/juego/"+juego.getId(), mapper.writeValueAsString(estado));
+        }catch (Exception e){
+            log.error("Error al enviar respuesta por webshocket: ", e);
+            return Map.of("error", "No se pudo recibir la información del juego.");
+        }
+        return Map.of("result", "Entrado al juego correctamente.");
     }
     
 }

@@ -7,7 +7,7 @@ const IMG_BASE = '/img/baraja/';
 const REVERSO = IMG_BASE + 'reverso1.png';
 
 const LIMITE = 7.5;
-const MIN_BET = 10; 
+let MIN_BET = 10; 
 
 const ESTADO_JUEGO = {ESPERA: 0, COMPLETA: 1, JUGANDO: 2, FINALIZADO: 3};
 let estado = ESTADO_JUEGO.ESPERA;
@@ -155,6 +155,14 @@ function renderCards(cards, indexPlayer){
 /* ------------ Pintar Estado ------------ */
 function actualizarTablero(estado){
     // Función que pintara la información del tablero
+    MIN_BET = estado.minBet;
+    num_players = estado.numJugadores;
+    let i = 0;
+    estado.jugadores.forEach((jugador) => {
+        players[i].name = jugador.nombre;
+        i++;
+    });
+    mostarJugadores();
 }
 
 function entrarPartida(){
@@ -172,19 +180,23 @@ function entrarPartida(){
     .catch( error => console.error("Error al entrar en partida", error));
 }
 
-document.addEventListener("DOMContentLoaded", e => entrarPartida());
-
-ws.receive = (mensajeStr) => {
-    let payload = typeof mensajeStr === 'string' ? JSON.parse(mensajeStr) : 
-                  (mensajeStr.body ? JSON.parse(mensajeStr.body) : mensajeStr);
-
-    console.log(payload);
-};
-
-window.addEventListener('beforeunload', function () {
+document.addEventListener("DOMContentLoaded", e => {
+    
+    ws.receive = (mensajeStr) => {
+        let estado = mensajeStr;
+        
+        console.log(estado);
+        
+        if(estado.result == "ENTRADO")
+            actualizarTablero(estado);
+    };
+    
+    entrarPartida()
+    
+    window.addEventListener('beforeunload', function () {
     /* const urlParams = new URLSearchParams(window.location.search);
     const juegoId = urlParams.get('id');
-
+    
     if (juegoId && miJugadorId) {
         let headers = { 'Content-Type': 'application/json' };
         if (typeof config !== 'undefined' && config.csrf && config.csrf.name) {
@@ -194,6 +206,8 @@ window.addEventListener('beforeunload', function () {
             method: 'POST', 
             headers: headers, 
             keepalive: true 
-        });
-    } */
+            });
+        } */
+    });
+
 });
