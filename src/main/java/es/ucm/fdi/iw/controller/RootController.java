@@ -78,49 +78,7 @@ public class RootController {
         return "perfil";
     }
 
-    @GetMapping("/salas")
-    public String salas(Model model, HttpSession session) {
-        if (session.getAttribute("u") == null) {
-            return "redirect:/login";
-        }
 
-        List<Juego> salasArr = entityManager
-                .createQuery("SELECT j FROM Juego j", Juego.class)
-                .getResultList();
-
-        model.addAttribute("salas", salasArr);
-        return "salas";
-    }
-
-    @PostMapping("/salas/crear")
-    @Transactional
-    public String crearSala(
-            @RequestParam String nombre,
-            @RequestParam Juego.dificulty dificultad,
-            @RequestParam int min_bet,
-            HttpSession session) {
-        User creador = (User) session.getAttribute("u");
-        if (creador == null)
-            return "redirect:/login";
-
-        Juego nuevoJuego = new Juego();
-        nuevoJuego.setNombre(nombre);
-        nuevoJuego.setDificultad(dificultad);
-        nuevoJuego.setMin_bet(min_bet);
-        nuevoJuego.setEstado(Juego.state.ESPERANDO);
-        nuevoJuego.setNum_jugadores(0);
-
-        entityManager.persist(nuevoJuego);
-
-        Topic chat = new Topic();
-        chat.setName("Chat de " + nombre);
-        chat.setKey(UUID.randomUUID().toString());
-        chat.setJuego(nuevoJuego);
-        entityManager.persist(chat);
-        nuevoJuego.setChat(chat);
-
-        return "redirect:/salas";
-    }
 
     @GetMapping("/reglas")
     public String reglas(Model model) {
