@@ -120,8 +120,6 @@
 
 
     </main>
-    <th:block th:replace="~{fragments/footer.html :: footer}" />
-
     <!-- Webshocket -->
     <script th:inline="javascript">
         window.config = window.config || {};
@@ -129,7 +127,8 @@
         // AQUÍ SEPARAMOS LAS SALAS USANDO EL ID DEL JUEGO:
         config.topics = 'juego/[[${estado.idTablero}]]'; 
     </script>
-    <script th:src="@{/js/stomp.js}" src="js/stomp.js"></script>
+
+    <th:block th:replace="~{fragments/footer.html :: footer}" />
 
     <script th:src="@{/js/juego.js}" src="/js/juego.js"></script>
 </body>

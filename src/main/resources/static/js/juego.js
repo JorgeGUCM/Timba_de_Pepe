@@ -153,7 +153,7 @@ function renderCards(cards, indexPlayer){
     }
 }
 /* ------------ Pintar Estado ------------ */
-function actualizarTablero(estado){
+function actualizarJuego(estado){
     // Función que pintara la información del tablero
     MIN_BET = estado.minBet;
     num_players = estado.numJugadores;
@@ -173,24 +173,20 @@ function entrarPartida(){
     if (typeof config !== 'undefined' && config.csrf && config.csrf.name)
         headers[config.csrf.name === '_csrf' ? 'X-CSRF-TOKEN' : config.csrf.name] = config.csrf.value;
 
-    fetch(`/juego/${idTablero}/entrar`, {
-        method: 'POST',
-        headers: headers
-    })
-    .catch( error => console.error("Error al entrar en partida", error));
+    go(`/juego/${idTablero}/entrar`, 'POST', {}, headers)
+    .then( res => actualizarJuego(res))
+    .catch( error => console.log("No se pudo entrar a la sal de juego: ", error));
 }
 
+ws.receive = (mensajeStr) => {
+    let estado = mensajeStr;
+    
+    console.log(estado);
+    
+    
+};
+
 document.addEventListener("DOMContentLoaded", e => {
-    
-    ws.receive = (mensajeStr) => {
-        let estado = mensajeStr;
-        
-        console.log(estado);
-        
-        if(estado.result == "ENTRADO")
-            actualizarTablero(estado);
-    };
-    
     entrarPartida()
     
     window.addEventListener('beforeunload', function () {
