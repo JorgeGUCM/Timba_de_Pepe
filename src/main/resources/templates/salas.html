@@ -171,50 +171,7 @@
         </div>
     </main>
 
-    <!-- Botón flotante del chat -->
-    <button class="btn-chat-flotante" onclick="alternarChat()">💬</button>
-
-    <!-- Overlay oscuro -->
-    <div class="fondo-oscuro" id="capaFondo" onclick="cerrarChat()"></div>
-
-    <!-- Sidebar del chat -->
-    <div class="panel-chat" id="menuChat">
-        <div class="p-3 text-white d-flex justify-content-between align-items-center"
-            style="background: linear-gradient(135deg, #667eea, #764ba2);">
-            <h5 class="mb-0">💬 Chat Global</h5>
-            <button class="btn-close btn-close-white" onclick="cerrarChat()"></button>
-        </div>
-
-        <!-- Zona de mensajes con fondo más oscuro para dar profundidad -->
-        <div class="flex-grow-1 overflow-auto p-3 zona-mensajes">
-            <div class="card mensaje-chat mb-2 p-2 shadow-sm">
-                <strong style="color: #667eea;">Juan123</strong>
-                <span>¡Hola a todos! ¿Alguien para jugar?</span>
-                <small class="text-white-50" style="font-size: 0.75rem;">14:20</small>
-            </div>
-            <div class="card mensaje-chat mb-2 p-2 shadow-sm">
-                <strong style="color: #f093fb;">María_Pro</strong>
-                <span>Yo estoy en la sala de expertos, únete!</span>
-                <small class="text-white-50" style="font-size: 0.75rem;">14:22</small>
-            </div>
-            <div class="card mensaje-chat mb-2 p-2 shadow-sm">
-                <strong style="color: #4facfe;">CarlosGamer</strong>
-                <span>Necesitamos 2 jugadores más en Sala Rápida</span>
-                <small class="text-white-50" style="font-size: 0.75rem;">14:25</small>
-            </div>
-        </div>
-
-        <!-- Input adaptado al tema oscuro -->
-        <div class="p-3 border-top border-secondary">
-            <div class="input-group">
-                <input type="text" class="form-control bg-dark text-white border-secondary"
-                    placeholder="Escribe un mensaje...">
-                <button class="btn btn-primary"
-                    style="background: linear-gradient(135deg, #667eea, #764ba2); border: none;">Enviar</button>
-            </div>
-        </div>
-    </div>
-
+   
     <!-- Modal Crear Sala -->
     <div class="modal fade" id="modalCrearSala" tabindex="-1" aria-hidden="true" style="color: #2b3035;">
         <div class="modal-dialog">
@@ -254,29 +211,15 @@
         </div>
     </div>
 
+    <div th:replace="~{fragments/chat :: chat-panel}"></div>
+    <!--<th:block th:replace="~{fragments/chat :: chat-panel}"/>-->
     <th:block th:replace="~{fragments/footer.html :: footer}" />
 
     <script>
         function crearSala() {
             var myModal = new bootstrap.Modal(document.getElementById('modalCrearSala'));
             myModal.show();
-        }
-
-        function alternarChat() {
-            const panelLateral = document.getElementById('menuChat');
-            const fondo = document.getElementById('capaFondo');
-
-            panelLateral.classList.toggle('abierto');
-            fondo.classList.toggle('mostrar');
-        }
-
-        function cerrarChat() {
-            const panelLateral = document.getElementById('menuChat');
-            const fondo = document.getElementById('capaFondo');
-
-            panelLateral.classList.remove('abierto');
-            fondo.classList.remove('mostrar');
-        }
+        }       
     </script>
 </body>
 
