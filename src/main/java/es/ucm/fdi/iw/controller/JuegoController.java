@@ -86,7 +86,7 @@ public class JuegoController {
         User user = entityManager.find(User.class, sessionUser.getId());
         Juego juego = entityManager.find(Juego.class, idTablero);
 
-        Jugador nuevo;
+        Jugador nuevo = new Jugador();
         boolean estaPartida = false;
         for (Jugador jugador : juego.getJugadores()) {
             if (jugador.getUser().getId() == user.getId()) {
@@ -102,7 +102,6 @@ public class JuegoController {
         log.info((estaPartida) ? "Ya esta en partida" : "Creando nuevo Jugador");
 
         if (!estaPartida) {
-            nuevo = new Jugador();
             nuevo.setUser(user);
             nuevo.setJuego(juego);
             nuevo.setEstado(estadoJugador.ESPERANDO);
@@ -130,7 +129,8 @@ public class JuegoController {
                     "apuesta", jugador.getApuesta(),
                     "ganancias", jugador.getGanancias(),
                     "estado", jugador.getEstado(),
-                    "cartas", jugador.getCartas()));
+                    "cartas", (user.getId() == jugador.getUser().getId()) ? jugador.getCartas() : "[]",
+                    "numCartas", jugador.getNumCartas()));
         });
 
         Map<String, Object> estado = new HashMap<>();
@@ -140,6 +140,7 @@ public class JuegoController {
                 "nombreTablero", juego.getNombre(),
                 "estadoJuego", juego.getEstado(),
                 "minBet", juego.getMin_bet(),
+                "posJugador", nuevo.getPosicionMesa(),
                 "numJugadores", juego.getNum_jugadores(),
                 "jugadores", jugadores));
         log.info(estado);

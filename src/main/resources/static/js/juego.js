@@ -13,11 +13,12 @@ const ESTADO_JUEGO = {ESPERA: 0, COMPLETA: 1, JUGANDO: 2, FINALIZADO: 3};
 let estado = ESTADO_JUEGO.ESPERA;
 let miJugadorId = null;
 
+const ESTADO_JUGADOR = {ESPERANDO: 0, ACTIVO: 1, PLANTADO: 2, SOBREPUNTOS: 3}
 const players = [
-    { name: null, cards: [], score: 0, bet: 0, standing: false, active: false },
-    { name: null, cards: [], score: 0, bet: 0, standing: false, active: false },
-    { name: null, cards: [], score: 0, bet: 0, standing: false, active: false },
-    { name: null, cards: [], score: 0, bet: 0, standing: false, active: false }
+    { name: null, cards: [], numCards: 0, score: 0, bet: 0, state: ESTADO_JUGADOR.ESPERANDO },
+    { name: null, cards: [], numCards: 0, score: 0, bet: 0, state: ESTADO_JUGADOR.ESPERANDO },
+    { name: null, cards: [], numCards: 0, score: 0, bet: 0, state: ESTADO_JUGADOR.ESPERANDO },
+    { name: null, cards: [], numCards: 0, score: 0, bet: 0, state: ESTADO_JUGADOR.ESPERANDO }
 ];
 let playerIndex;
 let num_players = 0;
@@ -157,9 +158,14 @@ function actualizarJuego(estado){
     // Función que pintara la información del tablero
     MIN_BET = estado.minBet;
     num_players = estado.numJugadores;
+    playerIndex = estado.posJugador;
     let i = 0;
     estado.jugadores.forEach((jugador) => {
         players[i].name = jugador.nombre;
+        player[i].state = jugador.estado;
+        player[i].cards = jugador.cartas;
+        player[i].numCards = jugador.numCartas;
+        player[i].score = jugador.ganancias;
         i++;
     });
     mostarJugadores();

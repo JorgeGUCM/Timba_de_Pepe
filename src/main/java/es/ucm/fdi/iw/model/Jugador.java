@@ -21,12 +21,15 @@ import lombok.Getter;
 @Data
 @NoArgsConstructor
 @NamedQueries({
-    // Por si en el futuro necesitas buscar, por ejemplo, todos los jugadores de una partida
-    // @NamedQuery(name="Jugador.byJuego", query="SELECT j FROM Jugador j WHERE j.juego.id = :juegoId")
+// Por si en el futuro necesitas buscar, por ejemplo, todos los jugadores de una
+// partida
+// @NamedQuery(name="Jugador.byJuego", query="SELECT j FROM Jugador j WHERE
+// j.juego.id = :juegoId")
 })
 public class Jugador implements Transferable<Jugador.Transfer> {
 
-    // Siguiendo vuestro estilo de nomenclatura de enums en minúscula como en Juego (state, dificulty)
+    // Siguiendo vuestro estilo de nomenclatura de enums en minúscula como en Juego
+    // (state, dificulty)
     public enum estadoJugador {
         ESPERANDO, ACTIVO, PLANTADO, SOBREPUNTOS
     }
@@ -47,6 +50,7 @@ public class Jugador implements Transferable<Jugador.Transfer> {
     // Guardaremos el JSON como texto plano en la BBDD.
     @Column(columnDefinition = "TEXT")
     private String cartas;
+    private int numCartas;
 
     // --- Atributos dinámicos que leerá juego.js ---
     private double puntuacion;
@@ -58,7 +62,7 @@ public class Jugador implements Transferable<Jugador.Transfer> {
 
     /*
      * ---------------
-     * Relaciones 
+     * Relaciones
      * ---------------
      */
     @ManyToOne
@@ -72,31 +76,32 @@ public class Jugador implements Transferable<Jugador.Transfer> {
 
     /*
      * ---------------
-     * DTO 
+     * DTO
      * ---------------
      */
     @Getter
     @AllArgsConstructor
     public static class Transfer {
         private long id;
-        private String username; 
+        private String username;
         private int apuesta;
         private double puntuacion;
-        private String estado; 
+        private String estado;
         private int posicionMesa;
         private String cartas;
+        private int numCartas;
     }
 
     @Override
     public Transfer toTransfer() {
         return new Transfer(
-            id, 
-            user != null ? user.getUsername() : "Desconocido", 
-            apuesta, 
-            puntuacion, 
-            estado != null ? estado.name() : null, 
-            posicionMesa, 
-            cartas
-        );
+                id,
+                user != null ? user.getUsername() : "Desconocido",
+                apuesta,
+                puntuacion,
+                estado != null ? estado.name() : null,
+                posicionMesa,
+                cartas,
+                numCartas);
     }
 }
