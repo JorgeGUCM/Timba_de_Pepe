@@ -9,11 +9,11 @@ const REVERSO = IMG_BASE + 'reverso1.png';
 const LIMITE = 7.5;
 let MIN_BET = 10; 
 
-const ESTADO_JUEGO = {ESPERA: 0, COMPLETA: 1, JUGANDO: 2, FINALIZADO: 3};
-let estado = ESTADO_JUEGO.ESPERA;
+const ESTADO_JUEGO = {ESPERANDO: "ESPERANDO", COMPLETO: "COMPLETO", JUGANDO: "JUGANDO", FINALIZADO: "FINALIZADO"};
+let estadoJuego = ESTADO_JUEGO.ESPERA;
 let miJugadorId = null;
 
-const ESTADO_JUGADOR = {ESPERANDO: 0, ACTIVO: 1, PLANTADO: 2, SOBREPUNTOS: 3}
+const ESTADO_JUGADOR = {ESPERANDO: "ESPERANDO", ACTIVO: "ACTIVO", PLANTADO: "PLANTADO", SOBREPUNTOS: "SOBREPUNTOS"}
 const players = [
     { name: null, cards: [], numCards: 0, score: 0, bet: 0, state: ESTADO_JUGADOR.ESPERANDO },
     { name: null, cards: [], numCards: 0, score: 0, bet: 0, state: ESTADO_JUGADOR.ESPERANDO },
@@ -26,14 +26,11 @@ let num_players = 0;
 let elemFichas = document.querySelector("#fichas");
 let elemCervezas = document.querySelector("#cervezas");
 
-let playerDisplay = "active-";
 let playerSlot = "slot-";
 let playerEsperando = `<span class="badge bg-secondary">Esperando...</span>`;
 let playerActivo = `<span class="badge bg-success">Activo</span>`;
 let playerPlantado = `<span class="badge bg-warning">Plantado</span>`;
 let playerOver = `<span class="badge bg-danger">Sobrepuntos</span>`;
-let playerCards = "cards-";
-let playerScore = "score-";
 
 let elemMensaje = document.querySelector("#mensaje");
 let elemApuesta = document.querySelector("#apuesta");
@@ -80,96 +77,95 @@ function createCardReverse(){
 }
 
 /* ------------ Funciones de apoyo a pintar ------------ */
-function mostrarMonedas(f, c){
-    elemFichas.innerHTML = f;
-    elemCervezas.innerHTML = c;
+function mostrarJugador(slot, nombre, puntos, numCartas, estadoJugador){
+    let jugadorDisplay = document.querySelector(slot);
+
+    if(estadoJugador == ESTADO_JUGADOR.ACTIVO)
+        nombre += ` ` + playerActivo;
+    else if(estadoJugador == ESTADO_JUGADOR.PLANTADO)
+        nombre += ` ` + playerPlantado;
+    else if(estadoJugador == ESTADO_JUGADOR.SOBREPUNTOS)
+        nombre += ` ` + playerOver;
+    else
+        nombre = playerEsperando;
+
+    jugadorDisplay.innerHTML = `
+        <div class="jugador-nombre">
+            🃏 `+ nombre + `
+        </div>
+        <div class="zona-cartas" id="cards-1"></div>
+        <div class="jugador-puntuacion d-flex flex-column align-items-center">
+            <p>Puntos: <strong>`+ puntos +`</strong> </p>
+            <p>Numero de Cartas: <strong>`+ numCartas +`</strong></p>
+        </div>
+    `;
+            
+    if(estadoJugador == ESTADO_JUGADOR.ESPERANDO)
+        jugadorDisplay.classList.add("empty");
+    else
+        jugadorDisplay.classList.remove("empty");
+
 }
-function mostarJugadores(){
-    let i = 1;
+function mostrarJugadores(){
+    let i = 0;
     players.forEach((p) => {
-        let display = "#"+playerDisplay+i;
-        let slot = "#"+playerSlot+i;
-        let score = "#"+playerScore+i;
+        let slot = "#"+playerSlot+(i+1);
         
         // Aquí arreglamos el fallo visual del Player 2
         let nombreJugador = (p.name && p.name !== "null") ? p.name : "Jugador " + i;
 
         // Mostrar puntos o interrogación dependiendo del estado global de la partida
         let puntosAMostrar = "?";
-        if (estado === ESTADO_JUEGO.FINALIZADO || i === playerIndex) {
+        if (estadoJuego == ESTADO_JUEGO.FINALIZADO || i == playerIndex) {
             puntosAMostrar = p.score;
         }
 
-        if(p.score > LIMITE){
-            document.querySelector(display).innerHTML = `🃏 ` + nombreJugador + " " + playerOver;
-            document.querySelector(slot).classList.remove("empty");
-            document.querySelector(score).innerHTML = puntosAMostrar;
-        }else if(p.standing){
-            document.querySelector(display).innerHTML = `🃏 ` + nombreJugador + " " + playerPlantado;
-            document.querySelector(slot).classList.remove("empty");
-            document.querySelector(score).innerHTML = puntosAMostrar;
-        }else if(p.name !== null){
-            // Si tiene nombre, está en la sala (esperando o jugando)
-            document.querySelector(display).innerHTML = `🃏 ` + nombreJugador + " " + playerActivo;
-            document.querySelector(slot).classList.remove("empty");
-            document.querySelector(score).innerHTML = puntosAMostrar;
-        }else{
-            document.querySelector(display).innerHTML = playerEsperando;
-            document.querySelector(slot).classList.add("empty");
-            document.querySelector(score).innerHTML = "-";
-        }
+        mostrarJugador(slot, nombreJugador, puntosAMostrar, p.numCards, p.state);
+
         i++;
     });
 }
-function mensaje(texto, tipo = "info"){
-    elemMensaje.innerHTML = texto;
-    elemMensaje.classList.value = "estado-juego text-center mt-3 mx-auto show alert alert-"+tipo;
-}
-function mensajeHide(){
-    elemMensaje.classList.remove("show");
-}
-function apostarPanelShow(){
-    elemPanelApuesta.classList.add("show");
-}
-function apostarPanelHide(){
-    elemPanelApuesta.classList.remove("show");
-}
-function actualizarPuntos(score, indexPlayer){
-    if(indexPlayer == playerIndex || estado === ESTADO_JUEGO.FINALIZADO) {
-        document.querySelector("#"+playerScore+indexPlayer).innerHTML = score;
-    } else {
-        document.querySelector("#"+playerScore+indexPlayer).innerHTML = "?";
-    }
-}
 
-function renderCards(cards, indexPlayer){
-    let target = document.querySelector("#"+playerCards + indexPlayer);
-    target.innerHTML = '';
-    
-    // IMPORTANTE: Revelar las cartas si somos nosotros, O si el juego está finalizado.
-    if(indexPlayer == playerIndex || estado === ESTADO_JUEGO.FINALIZADO) {
-        cards.forEach(c => target.appendChild(createCardImg(c)));
-    } else {
-        cards.forEach(() => target.appendChild(createCardReverse()));
-    }
-}
+
 /* ------------ Pintar Estado ------------ */
 function actualizarJuego(estado){
-    // Función que pintara la información del tablero
+    // Tablero
     MIN_BET = estado.minBet;
+    estadoJuego = estado.estadoJuego;
+
+    // Jugadores
     num_players = estado.numJugadores;
     playerIndex = estado.posJugador;
     let i = 0;
     estado.jugadores.forEach((jugador) => {
         players[i].name = jugador.nombre;
-        player[i].state = jugador.estado;
-        player[i].cards = jugador.cartas;
-        player[i].numCards = jugador.numCartas;
-        player[i].score = jugador.ganancias;
+        players[i].state = jugador.estado;
+        players[i].cards = jugador.cartas;
+        players[i].numCards = jugador.numCartas;
+        players[i].score = jugador.ganancias;
         i++;
     });
-    mostarJugadores();
+    mostrarJugadores();
 }
+
+/* ------------ Apostar ------------ */
+function ajustarApuesta(n){
+    let cant = parseInt(elemCantApuesta.value, 10) || 0;
+    if(cant + n > 0 && cant + n <= 1000)
+        elemCantApuesta.value = cant + n;
+    else if(cant + n > 1000)
+        elemCantApuesta.value = 1000;
+    else
+        elemCantApuesta.value = 1;
+}
+function mostrarApostar(){
+    elemPanelApuesta.classList.add("show");
+}
+function ocultarApostar(){
+    elemPanelApuesta.classList.remove("show");
+}
+btnApostar.onclick = e => mostrarApostar();
+btnCancelApuesta.onclick = e => ocultarApostar();
 
 function entrarPartida(){
     const urlParams = new URLSearchParams(window.location.search);
@@ -183,33 +179,29 @@ function entrarPartida(){
     .then( res => actualizarJuego(res))
     .catch( error => console.log("No se pudo entrar a la sal de juego: ", error));
 }
+document.addEventListener("DOMContentLoaded", e => entrarPartida());
 
 ws.receive = (mensajeStr) => {
     let estado = mensajeStr;
     
     console.log(estado);
     
-    
+    actualizarJuego(estado);
 };
 
-document.addEventListener("DOMContentLoaded", e => {
-    entrarPartida()
-    
-    window.addEventListener('beforeunload', function () {
-    /* const urlParams = new URLSearchParams(window.location.search);
-    const juegoId = urlParams.get('id');
-    
-    if (juegoId && miJugadorId) {
-        let headers = { 'Content-Type': 'application/json' };
-        if (typeof config !== 'undefined' && config.csrf && config.csrf.name) {
-            headers[config.csrf.name === '_csrf' ? 'X-CSRF-TOKEN' : config.csrf.name] = config.csrf.value;
-        }
-        fetch(`/juego/${juegoId}/salir`, { 
-            method: 'POST', 
-            headers: headers, 
-            keepalive: true 
-            });
-        } */
-    });
+window.addEventListener('beforeunload', function () {
+/* const urlParams = new URLSearchParams(window.location.search);
+const juegoId = urlParams.get('id');
 
+if (juegoId && miJugadorId) {
+    let headers = { 'Content-Type': 'application/json' };
+    if (typeof config !== 'undefined' && config.csrf && config.csrf.name) {
+        headers[config.csrf.name === '_csrf' ? 'X-CSRF-TOKEN' : config.csrf.name] = config.csrf.value;
+    }
+    fetch(`/juego/${juegoId}/salir`, { 
+        method: 'POST', 
+        headers: headers, 
+        keepalive: true 
+        });
+    } */
 });

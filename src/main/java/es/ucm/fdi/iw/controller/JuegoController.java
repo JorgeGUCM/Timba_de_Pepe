@@ -8,6 +8,7 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.MessagingException;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import es.ucm.fdi.iw.model.Juego;
@@ -104,14 +106,14 @@ public class JuegoController {
         if (!estaPartida) {
             nuevo.setUser(user);
             nuevo.setJuego(juego);
-            nuevo.setEstado(estadoJugador.ESPERANDO);
+            nuevo.setEstado(estadoJugador.ACTIVO);
             nuevo.setApuesta(0);
             nuevo.setGanancias(0);
             nuevo.setPuntuacion(0);
             nuevo.setPosicionMesa(juego.getNum_jugadores());
-            nuevo.setCartas("{}");
+            nuevo.setCartas("[]");
 
-            log.info("Jugador nuevo: \n" + nuevo.toString());
+            log.info("Jugador nuevo");
 
             entityManager.persist(nuevo);
             juego.getJugadores().add(nuevo);
@@ -144,6 +146,14 @@ public class JuegoController {
                 "numJugadores", juego.getNum_jugadores(),
                 "jugadores", jugadores));
         log.info(estado);
+
+        if(!estaPartida){
+            try {
+                messagingTemplate.convertAndSend("/topic/juego/"+juego.getId(), mapper.writeValueAsString(estado));
+            } catch (Exception e) {
+                log.error("No se a podido enviar por webshocket el nuevo jugador: ", e.getMessage());
+            }
+        }
 
         return estado;
     }

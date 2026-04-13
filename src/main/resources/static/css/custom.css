@@ -81,6 +81,7 @@ img.preview {
 .tablero {
     display: grid;
     grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
     gap: 1rem;
     min-height: 420px;
     border: .1em solid #198754;
@@ -182,6 +183,10 @@ img.preview {
 .jugador-puntuacion strong {
     color: #ffc107;
     font-size: 1.1rem;
+}
+
+.jugador-puntuacion p{
+    margin: 0;
 }
 
 /* ── Panel de apuesta ── */
