@@ -40,7 +40,6 @@ const ESTADO_JUGADOR = {ESPERANDO: "ESPERANDO", ACTIVO: "ACTIVO", PLANTADO: "PLA
 let elemFichas = document.querySelector("#fichas");
 let elemCervezas = document.querySelector("#cervezas");
 let elemMensaje = document.querySelector("#mensaje");
-let elemApuesta = document.querySelector("#apuesta");
 
 // Para los jugadores
 let playerSlot = "slot-";
@@ -60,9 +59,6 @@ let elemPanelApuesta = document.querySelector("#panelApuesta");
 let elemCantApuesta = document.querySelector("#cantApuesta");
 let btnConfirmApuesta = document.querySelector("#btnConfirmApuesta"); 
 let btnCancelApuesta = document.querySelector("#btnCancelApuesta");
-
-let fichas = 0;
-let cervezas = 0;
 
 /* ------------ Otras funciones ------------ */
 function valorCarta(carta){
@@ -100,11 +96,24 @@ function puntosDeCartas(cartas){
 }
 function mostrarCartera(fichas, cervezas){
     elemFichas.innerHTML = fichas;
+    document.querySelector("#display-fichas").innerHTML = fichas;
     elemCervezas.innerHTML = cervezas;
+}
+function mostrarMensaje(mensaje, tipo = "info"){
+    elemMensaje.innerHTML = `
+        <p class="fs-5 badge bg-`+tipo+` text-black">`+ mensaje +`</p>
+    `;
+
+    if(!elemMensaje.classList.contains("show")){
+        elemMensaje.classList.add("show");
+        setTimeout(() => {
+            elemMensaje.classList.remove("show");
+        }, 5000);
+    }
 }
 
 /* ------------ Funciones de apoyo a pintar ------------ */
-function mostrarJugador(slot, nombre, puntosJugador, numCartas, estadoJugador){
+function mostrarJugador(slot, nombre, puntosJugador, apuesta, estadoJugador){
     let jugadorDisplay = document.querySelector(slot);
 
     if(estadoJugador == ESTADO_JUGADOR.ACTIVO)
@@ -121,14 +130,23 @@ function mostrarJugador(slot, nombre, puntosJugador, numCartas, estadoJugador){
     🃏 `+ nombre + `
     </div>
     <div class="zona-cartas" id="cards-1"></div>
-    <div class="jugador-puntuacion d-flex flex-column align-items-center">
-    <p>Puntos: <strong>`+ puntosJugador +`</strong> </p>
-    <p>Numero de Cartas: <strong>`+ numCartas +`</strong></p>
+    <div class="jugador-puntuacion d-flex gap-3">
+        <p class="fw-bold">Puntos: <strong>`+ puntosJugador +`</strong> </p>
+        <p class="fw-bold">Apuesta: <strong>`+ apuesta +`</strong>
+            <svg style="transform: translate(-3px, -3px); filter:invert(1); width: 1.2em;"
+                xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+                <path
+                    d="M471.9 324.8L320 417.6L168 324.8L320 64L471.9 324.8zM320 447.4L168 354.6L320 576L472 354.6L320 447.4z" />
+            </svg> 
+        </p>
     </div>
     `;
     
-    if(puntosJugador != "?")
+    // Jugador de la vista
+    if(puntosJugador != "?"){
         jugadorDisplay.classList.add("border-warning");
+        jugadorDisplay.querySelectorAll("strong")[1].classList.add("apuesta");
+    }
     else
         jugadorDisplay.classList.remove("border-warning");
 
@@ -150,9 +168,10 @@ function mostrarJugadores(){
         let puntosAMostrar = "?";
         if (info.estadoJuego == ESTADO_JUEGO.FINALIZADO || i == info.posJugador) {
             puntosAMostrar = puntos;
+            mostrarApuestaActual(j.apuesta);
         }
 
-        mostrarJugador(slot, nombreJugador, puntosAMostrar, j.numCartas, j.estado);
+        mostrarJugador(slot, nombreJugador, puntosAMostrar, j.apuesta, j.estado, );
 
         i++;
     });
@@ -186,18 +205,36 @@ function ocultarApostar(){
     elemPanelApuesta.classList.remove("show");
 }
 function mostrarApuestaActual(n){
-    elemApuesta.innerHTML = n;
+    document.querySelectorAll(".apuesta").forEach((elem) => elem.innerHTML = n);
 }
-function confirmApuesta(){
+function confirmApuesta(e){
+    e.preventDefault();
+    const urlParams = new URLSearchParams(window.location.search);
+    const idTablero = urlParams.get("id");
     const idJugador = info.jugadores[info.posJugador].idJugador;
+    const cant = elemCantApuesta.value;
 
-    go(`/juego/${idJugador}/apostar`, 'POST', {})
-    .then( res => mostrarApuestaActual(res))
-    .catch( error => console.log("No se ha podido actualizar la apuesta", error));
+    if(cant <= 0){
+        mostrarMensaje("La cantidad de fichas debe ser positiva");
+        return;
+    }
+    else if(cant > parseInt(elemFichas.innerHTML, 10)){
+        mostrarMensaje("No tienes suficientes fichas", "warning");
+        return;
+    }
+
+    go(`/juego/${idTablero}/apostar`, 'POST', {idJugador, cant})
+    .then( res => {
+        mostrarApuestaActual(res.cant);
+        mostrarCartera(res.fichas , parseInt(elemCervezas.innerHTML,10));
+    })
+    .catch( error => console.log("No se ha podido actualizar la apuesta: ", error));
+
+    elemPanelApuesta.classList.remove("show");
 }
 btnApostar.onclick = e => mostrarApostar();
 btnCancelApuesta.onclick = e => ocultarApostar();
-btnConfirmApuesta.onclick = e => confirmApuesta();
+btnConfirmApuesta.onclick = e => confirmApuesta(e);
 
 /* ------------ Entrar en partida ------------ */
 function entrarPartida(){
@@ -219,11 +256,14 @@ document.addEventListener("DOMContentLoaded", e => entrarPartida());
 
 ws.receive = (respuesta) => {
 
+    info = (info == undefined)? {} : info;
+
     if(respuesta.result == "ENTRADO"){
         info.jugadores = respuesta.jugadores;
         info.numJugadores = respuesta.numJugadores;
         console.log(info);
-        actualizarJuego();
+        if(info.numJugadores > 1)
+            actualizarJuego();
     }   
 };
 

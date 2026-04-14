@@ -202,19 +202,20 @@ img.preview {
     border-radius: 1em;
     
     display: flex;
-    align-items: center;
+    align-items: end;
     justify-content: center;
 
     visibility: hidden;
 }
 
 .panel-apuesta > div{
+    margin-bottom: 4em;
+    padding: 1.2rem 1.5rem;
+    max-width: 400px;
     background: rgba(0, 0, 0, .85);
     backdrop-filter: blur(8px);
     border: 1px solid rgba(255, 193, 7, .4);
     border-radius: 1em;
-    padding: 1.2rem 1.5rem;
-    max-width: 400px;
 }
 
 .panel-apuesta.show {
@@ -242,18 +243,29 @@ img.preview {
 
 /* ── Mensaje de estado ── */
 .estado-juego {
+    position: absolute;
+    top: 0;
+    left: 0;
     padding: .6rem 1rem;
+    width: 100%;
+
+    display: flex;
+    justify-content: center;
+
     border-radius: 10px;
     font-weight: 600;
-    display: none;
+    
+    z-index: 2;
+    visibility: hidden;
 }
 
 .estado-juego.show {
-    display: block;
+    visibility: visible;
 }
 
 /* ── Wallet bar ── */
 .cartera {
+    position: relative;
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
@@ -261,6 +273,7 @@ img.preview {
     padding: .6rem 1.2rem;
     background: rgba(0, 0, 0, .4);
     border-radius: 12px;
+    z-index: 3;
 }
 
 .cartera .cartera-item {

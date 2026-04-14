@@ -161,11 +161,29 @@ public class JuegoController {
     @PostMapping("{idTablero}/apostar")
     @ResponseBody
     @Transactional
-    public String apostar(Model model, HttpSession session, @RequestBody JsonNode o, @PathVariable long idJugador) {
+    public String apostar(Model model, HttpSession session, @RequestBody JsonNode o, @PathVariable Long idTablero) {
+
+        Long idJugador = o.get("idJugador").asLong();
+        int cant = o.get("cant").asInt();
 
         Jugador j = entityManager.find(Jugador.class, idJugador);
-        // TODO
-        return "";
+        Juego juego = entityManager.find(Juego.class, idJugador);
+
+        if(j == null)
+            return "{\"error\": \"No se ha encontrado el jugador\"}";
+
+        if(cant <= 0)
+            return "{\"error\": \"La cantidad a apostar debe ser al menos de : " + juego.getMin_bet() + "\"}";
+
+        if(cant > j.getUser().getFichas())
+            return "{\"error\": \"No tienes suficientes fichas\"}";
+
+        j.setApuesta(j.getApuesta() + cant);
+        j.getUser().setFichas(j.getUser().getFichas() - cant);
+        
+        session.setAttribute("u", j.getUser());
+
+        return "{\"cant\": \"" + j.getApuesta() + "\", \"fichas\": \"" + j.getUser().getFichas() + "\"}";
     }
 
 }
