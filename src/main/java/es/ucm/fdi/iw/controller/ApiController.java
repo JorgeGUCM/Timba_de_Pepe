@@ -205,4 +205,52 @@ public class ApiController {
           .map(Message::toTransfer).toArray()
       ));
   }
+
+  /**
+   * DEBUG: Endpoint to test WebSockets. 
+   * Gives 100 beers to the logged in user and broadcasts the updated ranking.
+   */
+  @PostMapping("/debug/cervezas")
+  @ResponseBody
+  @Transactional
+  public Map<String,Object> debugAddCervezas(HttpSession session) {
+      // 1. Give beers to the current user
+      User sessionUser = (User) session.getAttribute("u");
+      if (sessionUser == null) {
+          return Map.of("error", "Not logged in");
+      }
+      User user = entityManager.find(User.class, sessionUser.getId());
+      user.setCervezas_totales(user.getCervezas_totales() + 100);
+      user.setCervezas_actuales(user.getCervezas_actuales() + 100);
+      entityManager.persist(user);
+      entityManager.flush();
+
+      // 2. Query the updated ranking
+      java.util.List<User> topUsuarios = entityManager.createQuery(
+          "SELECT u FROM User u ORDER BY u.cervezas_totales DESC", User.class)
+          .setMaxResults(10)
+          .getResultList();
+
+      java.util.List<Map<String, Object>> rankingParaMandar = new java.util.ArrayList<>();
+      for (User u : topUsuarios) {
+          rankingParaMandar.add(Map.of(
+              "id", u.getId(),
+              "username", u.getUsername(),
+              "rango", "Catador Experto", 
+              "cervezas", u.getCervezas_totales()
+          ));
+      }
+
+      // 3. Broadcast exactly what the frontend ranking.js expects
+      try {
+          // This will be parsed as JSON Array by the frontend
+          messagingTemplate.convertAndSend("/topic/ranking", rankingParaMandar);
+          log.info("Test WebSockets: Sent updated ranking to /topic/ranking");
+      } catch (Exception e) {
+          log.error("Fallo al enviar notificación de ranking: ", e);
+      }
+
+      return Map.of("result", "Cervezas añadidas!", "nuevas_cervezas", user.getCervezas_totales());
+  }
 }
+

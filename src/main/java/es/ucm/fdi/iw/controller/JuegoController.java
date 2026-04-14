@@ -147,4 +147,46 @@ public class JuegoController {
         return estado;
     }
 
+
+     @PostMapping("{idTablero}/finalizar")
+    @ResponseBody
+    @Transactional
+    public Map<String, Object> finalizarPartida(HttpSession session, @PathVariable long idTablero) {
+        
+        // 1. Aquí iría tu lógica normal de actualizar quién gana
+        // User ganador = ...
+        // ganador.setCervezas(ganador.getCervezas() + 100);
+        // entityManager.persist(ganador);
+        
+        // ...
+        
+        // 2. Extraer el servidor el "nuevo ranking" para mandarlo.
+        // Haces una Query ordenando por cervezas descendente
+        List<User> topUsuarios = entityManager.createQuery(
+            "SELECT u FROM User u ORDER BY u.cervezas DESC", User.class)
+            // .setMaxResults(10) // opcional si solo quieres el Top 10
+            .getResultList();
+        // Creamos una lista simplificada para no enviar al frontend datos del password, roles etc.
+        List<Map<String, Object>> rankingParaMandar = new ArrayList<>();
+        for (User u : topUsuarios) {
+            rankingParaMandar.add(Map.of(
+                "id", u.getId(),
+                "username", u.getUsername(),
+                "rango", "Maestro", // Aquí pondrías el rango según las cervezas
+                "cervezas", u.getCervezas_totales()
+            ));
+        }
+        // 3. ¡EL MOMENTO DEL ANUNCIO!
+        // Como hemos modificado la BBDD, gritamos por el megáfono al topic "/topic/ranking" 
+        // pasándole la lista actualizada en formato JSON (Map se pasa a JSON autómaticamente)
+        try {
+            messagingTemplate.convertAndSend("/topic/ranking", rankingParaMandar);
+        } catch(Exception e) {
+            log.error("Fallo al enviar notificación de ranking: ", e);
+        }
+        // 4. Devolvemos respuesta al que mandó procesar el fin de partida
+        return Map.of("result", "Partida Finalizada y Ranking Anunciado");
+    
+    }
+
 }
