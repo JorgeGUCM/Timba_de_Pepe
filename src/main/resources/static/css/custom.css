@@ -115,7 +115,7 @@ img.preview {
 
 /* ── hueco de jugador ── */
 .jugador-hueco {
-    border: .1em solid rgba(255 255, 255, .15);
+    border: .15em solid rgba(255, 255, 255, .15);
     border-radius: 14px;
     padding: 1rem;
     background: rgba(255, 255, 255, .06);

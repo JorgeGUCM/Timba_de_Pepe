@@ -8,7 +8,6 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.MessagingException;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,11 +16,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import es.ucm.fdi.iw.model.Juego;
@@ -125,13 +125,12 @@ public class JuegoController {
         List<Map<String, Object>> jugadores = new ArrayList<>();
         juego.getJugadores().forEach((jugador) -> {
             jugadores.add(Map.of(
-                    "idUsuario", jugador.getUser().getId(),
+                    "idJugador", jugador.getId(),
                     "nombre", jugador.getUser().getUsername(),
                     "posTablero", jugador.getPosicionMesa(),
                     "apuesta", jugador.getApuesta(),
                     "ganancias", jugador.getGanancias(),
                     "estado", jugador.getEstado(),
-                    "cartas", (user.getId() == jugador.getUser().getId()) ? jugador.getCartas() : "[]",
                     "numCartas", jugador.getNumCartas()));
         });
 
@@ -143,19 +142,30 @@ public class JuegoController {
                 "estadoJuego", juego.getEstado(),
                 "minBet", juego.getMin_bet(),
                 "posJugador", nuevo.getPosicionMesa(),
+                "cartasJugador", nuevo.getCartas(),
                 "numJugadores", juego.getNum_jugadores(),
                 "jugadores", jugadores));
         log.info(estado);
 
-        if(!estaPartida){
+        if (!estaPartida) {
             try {
-                messagingTemplate.convertAndSend("/topic/juego/"+juego.getId(), mapper.writeValueAsString(estado));
+                messagingTemplate.convertAndSend("/topic/juego/" + juego.getId(), mapper.writeValueAsString(estado));
             } catch (Exception e) {
-                log.error("No se a podido enviar por webshocket el nuevo jugador: ", e.getMessage());
+                log.error("No se a podido enviar por webshocket del nuevo jugador: ", e.getMessage());
             }
         }
 
         return estado;
+    }
+
+    @PostMapping("{idTablero}/apostar")
+    @ResponseBody
+    @Transactional
+    public String apostar(Model model, HttpSession session, @RequestBody JsonNode o, @PathVariable long idJugador) {
+
+        Jugador j = entityManager.find(Jugador.class, idJugador);
+        // TODO
+        return "";
     }
 
 }
