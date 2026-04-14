@@ -55,6 +55,39 @@ public class JuegoController {
         }
     }
 
+    private boolean comprobarJugador(HttpSession session, Jugador j){
+        return ((User)session.getAttribute("u")).getId() != j.getUser().getId();
+    }
+
+    private Map<String, Object> generarEstado(String resultado, Jugador j, Juego juego){
+        List<Map<String, Object>> jugadores = new ArrayList<>();
+        juego.getJugadores().forEach((jugador) -> {
+            jugadores.add(Map.of(
+                    "idJugador", jugador.getId(),
+                    "nombre", jugador.getUser().getUsername(),
+                    "posTablero", jugador.getPosicionMesa(),
+                    "apuesta", jugador.getApuesta(),
+                    "ganancias", jugador.getGanancias(),
+                    "estado", jugador.getEstado(),
+                    "numCartas", jugador.getNumCartas()));
+        });
+
+        Map<String, Object> estado = new HashMap<>();
+        estado.putAll(Map.of(
+                "result", resultado,
+                "idTablero", juego.getId(),
+                "nombreTablero", juego.getNombre(),
+                "estadoJuego", juego.getEstado(),
+                "minBet", juego.getMin_bet(),
+                "posJugador", (j != null)? j.getPosicionMesa() : -1,
+                "cartasJugador", (j != null)? j.getCartas() : "[]",
+                "numJugadores", juego.getNum_jugadores(),
+                "jugadores", jugadores));
+        log.info(estado);
+
+        return estado;
+    }
+
     @GetMapping("")
     @Transactional
     public String juego(Model model, HttpSession session, @RequestParam("id") Long idTablero) {
@@ -63,6 +96,9 @@ public class JuegoController {
         }
 
         Juego juego = entityManager.find(Juego.class, idTablero);
+
+        if(juego == null)
+            return "redirect:/salas";
 
         Map<String, Object> estado = new HashMap<>();
         estado.putAll(Map.of(
@@ -98,8 +134,11 @@ public class JuegoController {
             }
         }
 
-        if (!estaPartida && juego.getNum_jugadores() >= 4)
-            return Map.of("error", "Sala completa.");
+        if (!estaPartida && juego.getEstado() == state.COMPLETO)
+            return Map.of("error", "Juego completo.");
+
+        if(!estaPartida && juego.getEstado() == state.JUGANDO)
+            return Map.of("error", "Juego ya comenzado.");
 
         log.info((estaPartida) ? "Ya esta en partida" : "Creando nuevo Jugador");
 
@@ -122,30 +161,10 @@ public class JuegoController {
                 juego.setEstado(state.COMPLETO);
         }
 
-        List<Map<String, Object>> jugadores = new ArrayList<>();
-        juego.getJugadores().forEach((jugador) -> {
-            jugadores.add(Map.of(
-                    "idJugador", jugador.getId(),
-                    "nombre", jugador.getUser().getUsername(),
-                    "posTablero", jugador.getPosicionMesa(),
-                    "apuesta", jugador.getApuesta(),
-                    "ganancias", jugador.getGanancias(),
-                    "estado", jugador.getEstado(),
-                    "numCartas", jugador.getNumCartas()));
-        });
+        if(juego.getNum_jugadores() >= 4)
+            juego.setEstado(state.COMPLETO);
 
-        Map<String, Object> estado = new HashMap<>();
-        estado.putAll(Map.of(
-                "result", "ENTRADO",
-                "idTablero", juego.getId(),
-                "nombreTablero", juego.getNombre(),
-                "estadoJuego", juego.getEstado(),
-                "minBet", juego.getMin_bet(),
-                "posJugador", nuevo.getPosicionMesa(),
-                "cartasJugador", nuevo.getCartas(),
-                "numJugadores", juego.getNum_jugadores(),
-                "jugadores", jugadores));
-        log.info(estado);
+        Map<String, Object> estado = generarEstado("ENTRADO", nuevo, juego);
 
         if (!estaPartida) {
             try {
@@ -167,10 +186,16 @@ public class JuegoController {
         int cant = o.get("cant").asInt();
 
         Jugador j = entityManager.find(Jugador.class, idJugador);
-        Juego juego = entityManager.find(Juego.class, idJugador);
+        Juego juego = entityManager.find(Juego.class, idTablero);
 
         if(j == null)
             return "{\"error\": \"No se ha encontrado el jugador\"}";
+
+        if(comprobarJugador(session, j))
+            return "{\"error\": \"Se ha detectado la manipulación de datos.\"}";
+
+        if(juego.getEstado() != state.JUGANDO)
+            return "{\"warning\": \"¡El juego no a comenzado!\"}";
 
         if(cant <= 0)
             return "{\"error\": \"La cantidad a apostar debe ser al menos de : " + juego.getMin_bet() + "\"}";
@@ -185,5 +210,53 @@ public class JuegoController {
 
         return "{\"cant\": \"" + j.getApuesta() + "\", \"fichas\": \"" + j.getUser().getFichas() + "\"}";
     }
+
+    @PostMapping("{idTablero}/listo")
+    @ResponseBody
+    @Transactional
+    public String jugadorListo(Model model, HttpSession session, @RequestBody JsonNode o, @PathVariable Long idTablero) {
+        
+        Long idJugador = o.get("idJugador").asLong();
+
+        Jugador j = entityManager.find(Jugador.class, idJugador);
+        Juego juego = entityManager.find(Juego.class, idTablero);
+
+        if(j == null)
+            return "{\"error\": \"No se ha encontrado el jugador\"}";
+        
+        if(juego.getEstado() == state.JUGANDO)
+            return "{\"warning\": \"¡El juego ya ha comenzado!\"}";
+        
+        if(comprobarJugador(session, j))
+            return "{\"error\": \"Se ha detectado la manipulación de datos.\"}";
+
+        j.setEstado(estadoJugador.LISTO);
+        entityManager.merge(j);
+
+        boolean todosListos = true;
+        for(Jugador jugador : juego.getJugadores()){
+            if(jugador.getEstado() != estadoJugador.LISTO){
+                todosListos = false;
+                break;
+            }
+        }
+
+        log.info((todosListos)? "El juego comienza" : "Falta gente por estar lista");
+
+        if(todosListos)
+            juego.setEstado(state.JUGANDO);
+
+        Map<String, Object> estado = generarEstado("ESTADO_CAMBIADO", j, juego);
+
+        try {
+            messagingTemplate.convertAndSend("/topic/juego/" + juego.getId(), mapper.writeValueAsString(estado));
+        } catch (Exception e) {
+            log.error("No se a podido enviar por webshocket del cambio de estado: ", e.getMessage());
+            return "{\"error\": \"Al mandar la información del juego.\"}";
+        }
+        
+        return "{\"success\": \"Estado cambiado con exito\"}";
+    }
+    
 
 }

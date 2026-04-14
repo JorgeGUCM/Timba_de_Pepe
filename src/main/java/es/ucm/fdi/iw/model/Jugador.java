@@ -31,7 +31,7 @@ public class Jugador implements Transferable<Jugador.Transfer> {
     // Siguiendo vuestro estilo de nomenclatura de enums en minúscula como en Juego
     // (state, dificulty)
     public enum estadoJugador {
-        ESPERANDO, ACTIVO, PLANTADO, SOBREPUNTOS
+        ESPERANDO, ACTIVO, LISTO, PLANTADO, SOBREPUNTOS
     }
 
     @Id

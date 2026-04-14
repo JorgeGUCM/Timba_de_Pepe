@@ -27,6 +27,7 @@ const REVERSO = IMG_BASE + 'reverso1.png';
     }]
 */
 let info;
+let index;
 let puntos = 0;
 
 // Limites para apostar
@@ -34,7 +35,7 @@ const LIMITE = 7.5;
 
 // Enums
 const ESTADO_JUEGO = {ESPERANDO: "ESPERANDO", COMPLETO: "COMPLETO", JUGANDO: "JUGANDO", FINALIZADO: "FINALIZADO"};
-const ESTADO_JUGADOR = {ESPERANDO: "ESPERANDO", ACTIVO: "ACTIVO", PLANTADO: "PLANTADO", SOBREPUNTOS: "SOBREPUNTOS"}
+const ESTADO_JUGADOR = {ESPERANDO: "ESPERANDO", ACTIVO: "ACTIVO", LISTO: "LISTO", PLANTADO: "PLANTADO", SOBREPUNTOS: "SOBREPUNTOS"}
 
 // Elmentos
 let elemFichas = document.querySelector("#fichas");
@@ -47,12 +48,17 @@ let playerEsperando = `<span class="badge bg-secondary">Esperando...</span>`;
 let playerActivo = `<span class="badge bg-success">Activo</span>`;
 let playerPlantado = `<span class="badge bg-warning">Plantado</span>`;
 let playerOver = `<span class="badge bg-danger">Sobrepuntos</span>`;
+let playerListo = `<span class="badge bg-info">Listo</span>`;
 
 // Botones
+let elemOpciones = document.querySelector("#gameActions");
 let btnPedir = document.querySelector("#btnPedir");
 let btnPlantarse = document.querySelector("#btnPlantarse");
 let btnApostar = document.querySelector("#btnApostar");
-let targetBtn = document.querySelector("#target-btnNueva");
+const btnListo = `
+    <button class="btn btn-success px-4 fw-bold" id="btnListo">
+        🆗 Listo
+    </button>`;
 
 // Para las apuestas
 let elemPanelApuesta = document.querySelector("#panelApuesta");
@@ -122,8 +128,10 @@ function mostrarJugador(slot, nombre, puntosJugador, apuesta, estadoJugador){
         nombre += ` ` + playerPlantado;
     else if(estadoJugador == ESTADO_JUGADOR.SOBREPUNTOS)
         nombre += ` ` + playerOver;
+    else if(estadoJugador == ESTADO_JUGADOR.LISTO)
+        nombre += ` ` + playerListo;
     else
-        nombre = playerEsperando;
+        nombre += ` ` + playerEsperando;
     
     jugadorDisplay.innerHTML = `
     <div class="jugador-nombre">
@@ -143,7 +151,7 @@ function mostrarJugador(slot, nombre, puntosJugador, apuesta, estadoJugador){
     `;
     
     // Jugador de la vista
-    if(puntosJugador != "?"){
+    if(puntosJugador != "?" && puntosJugador != "-"){
         jugadorDisplay.classList.add("border-warning");
         jugadorDisplay.querySelectorAll("strong")[1].classList.add("apuesta");
     }
@@ -159,14 +167,14 @@ function mostrarJugador(slot, nombre, puntosJugador, apuesta, estadoJugador){
 function mostrarJugadores(){
     let i = 0;
     info.jugadores.forEach((j) => {
-        let slot = "#"+playerSlot+(i+1);
+        let slot = "#"+playerSlot+i;
         
         // Aquí arreglamos el fallo visual del Player 2
         let nombreJugador = (j.nombre && j.nombre !== "null") ? j.nombre : "Jugador " + (i+1);
 
         // Mostrar puntos o interrogación dependiendo del estado global de la partida
         let puntosAMostrar = "?";
-        if (info.estadoJuego == ESTADO_JUEGO.FINALIZADO || i == info.posJugador) {
+        if (info.estadoJuego == ESTADO_JUEGO.FINALIZADO || i == index) {
             puntosAMostrar = puntos;
             mostrarApuestaActual(j.apuesta);
         }
@@ -175,6 +183,29 @@ function mostrarJugadores(){
 
         i++;
     });
+
+    while(i < 4){
+        mostrarJugador("#"+playerSlot+i, "Jugador " + (i+1), "-", "-", ESTADO_JUGADOR.ESPERANDO);
+        i++;
+    }
+}
+function mostrarBtnListo(){
+    elemOpciones.innerHTML += btnListo;
+    /* ------------ Listo ------------ */
+    document.querySelector("#btnListo").onclick = e => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const idTablero = urlParams.get("id");
+        const idJugador = info.jugadores[index].idJugador;
+        go(`/juego/${idTablero}/listo`, 'POST', {idJugador})
+        .catch(error => console.log("No se pudo poner en listo al jugador: ", error));
+
+        document.querySelector("#btnListo").remove();
+    }
+}
+function habilitarAcciones(){
+    btnApostar.disabled = false;
+    btnPlantarse.disabled = false;
+    btnPedir.disabled = false;
 }
 
 
@@ -182,10 +213,16 @@ function mostrarJugadores(){
 function actualizarJuego(){
     // Tablero
     MIN_BET = info.minBet;
-    puntos = (info.jugadores[info.posJugador].numCartas <= 0)? 0 : puntosDeCartas(info.cartasJugador);
+    puntos = (info.jugadores[index].numCartas <= 0)? 0 : puntosDeCartas(info.cartasJugador);
 
     // Jugadores
     mostrarJugadores();
+
+    // Acciones
+    if(info.jugadores[index].estado == ESTADO_JUGADOR.ACTIVO)
+        mostrarBtnListo();
+    if(info.estadoJuego == ESTADO_JUEGO.JUGANDO)
+        habilitarAcciones();
 }
 
 /* ------------ Apostar ------------ */
@@ -208,11 +245,15 @@ function mostrarApuestaActual(n){
     document.querySelectorAll(".apuesta").forEach((elem) => elem.innerHTML = n);
 }
 function confirmApuesta(e){
-    e.preventDefault();
     const urlParams = new URLSearchParams(window.location.search);
     const idTablero = urlParams.get("id");
-    const idJugador = info.jugadores[info.posJugador].idJugador;
+    const idJugador = info.jugadores[index].idJugador;
     const cant = elemCantApuesta.value;
+
+    if(info.estadoJuego != ESTADO_JUEGO.JUGANDO){
+        mostrarMensaje("No se ha iniciado la juego", "danger");
+        return;
+    }
 
     if(cant <= 0){
         mostrarMensaje("La cantidad de fichas debe ser positiva");
@@ -225,15 +266,22 @@ function confirmApuesta(e){
 
     go(`/juego/${idTablero}/apostar`, 'POST', {idJugador, cant})
     .then( res => {
-        mostrarApuestaActual(res.cant);
-        mostrarCartera(res.fichas , parseInt(elemCervezas.innerHTML,10));
+        if(res.error != undefined){
+            mostrarMensaje("Servidor respondio con: " + res.error, "danger");
+        }else if(res.warning != undefined){
+            mostrarMensaje("Servidor respondio con: " + res.warning, "warning");
+        }
+        else{
+            mostrarApuestaActual(res.cant);
+            mostrarCartera(res.fichas , parseInt(elemCervezas.innerHTML,10));
+        }
     })
     .catch( error => console.log("No se ha podido actualizar la apuesta: ", error));
 
     elemPanelApuesta.classList.remove("show");
 }
-btnApostar.onclick = e => mostrarApostar();
-btnCancelApuesta.onclick = e => ocultarApostar();
+btnApostar.onclick = e => {if(info.estadoJuego == ESTADO_JUEGO.JUGANDO) mostrarApostar()};
+btnCancelApuesta.onclick = e => {if(info.estadoJuego == ESTADO_JUEGO.JUGANDO) ocultarApostar()};
 btnConfirmApuesta.onclick = e => confirmApuesta(e);
 
 /* ------------ Entrar en partida ------------ */
@@ -241,18 +289,24 @@ function entrarPartida(){
     const urlParams = new URLSearchParams(window.location.search);
     const idTablero = urlParams.get("id");
 
-    let headers = { 'Content-Type': 'application/json' }
-    if (typeof config !== 'undefined' && config.csrf && config.csrf.name)
-        headers[config.csrf.name === '_csrf' ? 'X-CSRF-TOKEN' : config.csrf.name] = config.csrf.value;
-
-    go(`/juego/${idTablero}/entrar`, 'POST', {}, headers)
+    go(`/juego/${idTablero}/entrar`, 'POST')
     .then( res => {
-        info = res;
-        actualizarJuego();
+        if(res.error != undefined)
+            window.location.replace("/salas"); // Si quieres enviar un mensaje a salas haz lo de registrar
+        else{
+            info = res;
+            index = res.posJugador;
+            actualizarJuego();
+        }
     })
     .catch( error => console.log("No se pudo entrar a la sal de juego: ", error));
 }
-document.addEventListener("DOMContentLoaded", e => entrarPartida());
+document.addEventListener("DOMContentLoaded", e => {
+    btnApostar.disabled = true;
+    btnPlantarse.disabled = true;
+    btnPedir.disabled = true;
+    entrarPartida();
+});
 
 ws.receive = (respuesta) => {
 
@@ -261,10 +315,16 @@ ws.receive = (respuesta) => {
     if(respuesta.result == "ENTRADO"){
         info.jugadores = respuesta.jugadores;
         info.numJugadores = respuesta.numJugadores;
-        console.log(info);
         if(info.numJugadores > 1)
             actualizarJuego();
-    }   
+    }
+    
+    if(respuesta.result == "ESTADO_CAMBIADO"){
+        info.jugadores = respuesta.jugadores;
+        actualizarJuego();
+    }
+
+    console.log(info);
 };
 
 window.addEventListener('beforeunload', function () {
