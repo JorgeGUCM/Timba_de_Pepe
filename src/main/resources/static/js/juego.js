@@ -52,9 +52,6 @@ let playerListo = `<span class="badge bg-info">Listo</span>`;
 
 // Botones
 let elemOpciones = document.querySelector("#gameActions");
-let btnPedir = document.querySelector("#btnPedir");
-let btnPlantarse = document.querySelector("#btnPlantarse");
-let btnApostar = document.querySelector("#btnApostar");
 const btnListo = `
     <button class="btn btn-success px-4 fw-bold" id="btnListo">
         🆗 Listo
@@ -190,7 +187,8 @@ function mostrarJugadores(){
     }
 }
 function mostrarBtnListo(){
-    elemOpciones.innerHTML += btnListo;
+    if(elemOpciones.querySelector("#btnListo") == undefined)
+        elemOpciones.innerHTML += btnListo;
     /* ------------ Listo ------------ */
     document.querySelector("#btnListo").onclick = e => {
         const urlParams = new URLSearchParams(window.location.search);
@@ -203,9 +201,12 @@ function mostrarBtnListo(){
     }
 }
 function habilitarAcciones(){
-    btnApostar.disabled = false;
-    btnPlantarse.disabled = false;
-    btnPedir.disabled = false;
+    document.querySelector("#btnApostar").onclick = e => mostrarApostar();
+    btnCancelApuesta.onclick = e => ocultarApostar();
+    btnConfirmApuesta.onclick = e => confirmApuesta();
+    document.querySelector("#btnApostar").disabled = false;
+    document.querySelector("#btnPlantarse").disabled = false;
+    document.querySelector("#btnPedir").disabled = false;
 }
 
 
@@ -244,7 +245,7 @@ function ocultarApostar(){
 function mostrarApuestaActual(n){
     document.querySelectorAll(".apuesta").forEach((elem) => elem.innerHTML = n);
 }
-function confirmApuesta(e){
+function confirmApuesta(){
     const urlParams = new URLSearchParams(window.location.search);
     const idTablero = urlParams.get("id");
     const idJugador = info.jugadores[index].idJugador;
@@ -280,9 +281,6 @@ function confirmApuesta(e){
 
     elemPanelApuesta.classList.remove("show");
 }
-btnApostar.onclick = e => {if(info.estadoJuego == ESTADO_JUEGO.JUGANDO) mostrarApostar()};
-btnCancelApuesta.onclick = e => {if(info.estadoJuego == ESTADO_JUEGO.JUGANDO) ocultarApostar()};
-btnConfirmApuesta.onclick = e => confirmApuesta(e);
 
 /* ------------ Entrar en partida ------------ */
 function entrarPartida(){
@@ -302,9 +300,9 @@ function entrarPartida(){
     .catch( error => console.log("No se pudo entrar a la sal de juego: ", error));
 }
 document.addEventListener("DOMContentLoaded", e => {
-    btnApostar.disabled = true;
-    btnPlantarse.disabled = true;
-    btnPedir.disabled = true;
+    document.querySelector("#btnApostar").disabled = true;
+    document.querySelector("#btnPlantarse").disabled = true;
+    document.querySelector("#btnPedir").disabled = true;
     entrarPartida();
 });
 
@@ -320,6 +318,7 @@ ws.receive = (respuesta) => {
     }
     
     if(respuesta.result == "ESTADO_CAMBIADO"){
+        info.estadoJuego = respuesta.estadoJuego;
         info.jugadores = respuesta.jugadores;
         actualizarJuego();
     }
