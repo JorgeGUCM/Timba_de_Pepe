@@ -209,7 +209,11 @@ function habilitarAcciones(){
     btnCancelApuesta.onclick = e => ocultarApostar();
     btnConfirmApuesta.onclick = e => confirmApuesta();
     document.querySelector("#btnApostar").disabled = false;
+
+    document.querySelector("#btnPlantarse").onclick = e => plantarse();
     document.querySelector("#btnPlantarse").disabled = false;
+
+    document.querySelector("#btnPedir").onclick = e => pedirCarta();
     document.querySelector("#btnPedir").disabled = false;
 }
 function actualizarEstadoJuego(){
@@ -244,6 +248,16 @@ function actualizarJuego(){
         mostrarBtnListo();
     if(info.estadoJuego == ESTADO_JUEGO.JUGANDO)
         habilitarAcciones();
+}
+
+/* ------------ Pedir Carta ------------ */
+function pedirCarta(){
+
+}
+
+/* ------------ Plantarse ------------ */
+function plantarse(){
+
 }
 
 /* ------------ Apostar ------------ */
