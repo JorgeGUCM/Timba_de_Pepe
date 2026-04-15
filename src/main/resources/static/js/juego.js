@@ -13,22 +13,24 @@ const REVERSO = IMG_BASE + 'reverso1.png';
     nombreTablero
     estadoJuego
     minBet
-    idJugador
-    posJugador
-    cartasJugador
+    jugadorAct: {
+        idJugador
+        posJugador
+        cartasJugador
+        puntos
+    }
     numJugadores
     jugadores: [{
         nombre
         posTablero
         apuesta
-        ganancias
+        puntos
         estado
         numCartas
     }]
 */
 let info;
 let index;
-let puntos = 0;
 
 // Limites para apostar
 const LIMITE = 7.5;
@@ -43,7 +45,6 @@ let elemCervezas = document.querySelector("#cervezas");
 let elemMensaje = document.querySelector("#mensaje");
 
 // Para los jugadores
-let playerSlot = "slot-";
 let playerEsperando = `<span class="badge bg-secondary">Esperando...</span>`;
 let playerActivo = `<span class="badge bg-success">Activo</span>`;
 let playerPlantado = `<span class="badge bg-warning">Plantado</span>`;
@@ -65,12 +66,6 @@ let btnConfirmApuesta = document.querySelector("#btnConfirmApuesta");
 let btnCancelApuesta = document.querySelector("#btnCancelApuesta");
 
 /* ------------ Otras funciones ------------ */
-function valorCarta(carta){
-    if(FIGURAS.includes(carta.num))
-        return 0.5;
-    else
-        return parseInt(carta.num, 10);
-}
 function nombreCarta(carta){
     let numNombre = { '1': 'As', 'S': 'Sota', 'C': 'Caballo', 'R': 'Rey' };
     return (numNombre[carta.num] || carta.num) + ' de ' + PALO_NOMBRES[carta.palo];
@@ -91,13 +86,6 @@ function createCardReverse(){
     img.draggable = false;
     return img;
 }
-function puntosDeCartas(cartas){
-    let p = 0;
-    cartas.forEach((c) => {
-        p += valorCarta(c);
-    })
-    return p;
-}
 function mostrarCartera(fichas, cervezas){
     elemFichas.innerHTML = fichas;
     document.querySelector("#display-fichas").innerHTML = fichas;
@@ -117,8 +105,8 @@ function mostrarMensaje(mensaje, tipo = "info"){
 }
 
 /* ------------ Funciones de apoyo a pintar ------------ */
-function mostrarJugador(slot, nombre, puntosJugador, apuesta, estadoJugador){
-    let jugadorDisplay = document.querySelector(slot);
+function mostrarJugador(i, nombre, puntosJugador, apuesta, estadoJugador){
+    let jugadorDisplay = document.querySelector("#slot-"+i);
 
     if(estadoJugador == ESTADO_JUGADOR.ACTIVO)
         nombre += ` ` + playerActivo;
@@ -137,7 +125,7 @@ function mostrarJugador(slot, nombre, puntosJugador, apuesta, estadoJugador){
     <div class="jugador-nombre">
     🃏 `+ nombre + `
     </div>
-    <div class="zona-cartas" id="cards-1"></div>
+    <div class="zona-cartas" id="cards-`+ i +`"></div>
     <div class="jugador-puntuacion d-flex gap-3">
         <p class="fw-bold">Puntos: <strong>`+ puntosJugador +`</strong> </p>
         <p class="fw-bold">Apuesta: <strong>`+ apuesta +`</strong>
@@ -151,7 +139,7 @@ function mostrarJugador(slot, nombre, puntosJugador, apuesta, estadoJugador){
     `;
     
     // Jugador de la vista
-    if(puntosJugador != "?" && puntosJugador != "-"){
+    if(i == index && puntosJugador != "?" && puntosJugador != "-"){
         jugadorDisplay.classList.add("border-warning");
         jugadorDisplay.querySelectorAll("strong")[1].classList.add("apuesta");
     }
@@ -167,28 +155,37 @@ function mostrarJugador(slot, nombre, puntosJugador, apuesta, estadoJugador){
 function mostrarJugadores(){
     let i = 0;
     info.jugadores.forEach((j) => {
-        let slot = "#"+playerSlot+i;
-        
         // Aquí arreglamos el fallo visual del Player 2
         let nombreJugador = (j.nombre && j.nombre !== "null") ? j.nombre : "Jugador " + (i+1);
 
-        // Mostrar puntos o interrogación dependiendo del estado global de la partida
-        let puntosAMostrar = "?";
-        if (info.estadoJuego == ESTADO_JUEGO.FINALIZADO || i == index) {
-            puntosAMostrar = puntos;
+        let puntosAMostrar = info.jugadores[i].puntos;
+        if (i == index) {
+            puntosAMostrar = info.jugadorAct.puntos;
             mostrarApuestaActual(j.apuesta);
         }
 
-        mostrarJugador(slot, nombreJugador, puntosAMostrar, j.apuesta, j.estado, );
+        mostrarJugador(i, nombreJugador, puntosAMostrar, j.apuesta, j.estado);
 
         i++;
     });
 
     while(i < 4){
-        mostrarJugador("#"+playerSlot+i, "Jugador " + (i+1), "-", "-", ESTADO_JUGADOR.ESPERANDO);
+        mostrarJugador(i, "Jugador " + (i+1), "-", "-", ESTADO_JUGADOR.ESPERANDO);
         i++;
     }
 }
+function mostrarCartas(){
+    for(let i = 0; i < info.numJugadores; i++){
+        let elemCards = document.querySelector("#cards-"+i);
+        if(i == info.jugadorAct.posJugador){
+            JSON.parse(info.jugadorAct.cartasJugador).forEach((c) =>{
+              console.log(c);
+            });
+        }else
+            console.log(info.jugadores[i].numCartas);
+    }
+}
+
 function mostrarBtnListo(){
     if(elemOpciones.querySelector("#btnListo") == undefined)
         elemOpciones.innerHTML += btnListo;
@@ -196,7 +193,7 @@ function mostrarBtnListo(){
     document.querySelector("#btnListo").onclick = e => {
         const urlParams = new URLSearchParams(window.location.search);
         const idTablero = urlParams.get("id");
-        const idJugador = info.idJugador;
+        const idJugador = info.jugadorAct.idJugador;
 
         go(`/juego/${idTablero}/listo`, 'POST', {idJugador})
         .catch(error => console.log("No se pudo poner en listo al jugador: ", error));
@@ -204,17 +201,17 @@ function mostrarBtnListo(){
         document.querySelector("#btnListo").remove();
     }
 }
-function habilitarAcciones(){
-    document.querySelector("#btnApostar").onclick = e => mostrarApostar();
-    btnCancelApuesta.onclick = e => ocultarApostar();
-    btnConfirmApuesta.onclick = e => confirmApuesta();
-    document.querySelector("#btnApostar").disabled = false;
+function deshabilitarAcciones(deshabilitar = true){
+    document.querySelector("#btnApostar").onclick = e => {(!deshabilitar)? mostrarApostar() : console.log("Deshabilitado")};
+    btnCancelApuesta.onclick = e => {(!deshabilitar)? ocultarApostar() : console.log("Deshabilitado")};
+    btnConfirmApuesta.onclick = e => {(!deshabilitar)? confirmApuesta() : console.log("Deshabilitado")};
+    document.querySelector("#btnApostar").disabled = deshabilitar;
 
-    document.querySelector("#btnPlantarse").onclick = e => plantarse();
-    document.querySelector("#btnPlantarse").disabled = false;
+    document.querySelector("#btnPlantarse").onclick = e => {(!deshabilitar)? plantarse() : console.log("Deshabilitado")};
+    document.querySelector("#btnPlantarse").disabled = deshabilitar;
 
-    document.querySelector("#btnPedir").onclick = e => pedirCarta();
-    document.querySelector("#btnPedir").disabled = false;
+    document.querySelector("#btnPedir").onclick = e => {(!deshabilitar)? pedirCarta() : console.log("Deshabilitado")};
+    document.querySelector("#btnPedir").disabled = deshabilitar;
 }
 function actualizarEstadoJuego(){
     let titleDisplayElem = document.querySelectorAll("#title-display p");
@@ -226,7 +223,7 @@ function actualizarEstadoJuego(){
         bgEstado = "bg-success";
     else if(info.estadoJuego == ESTADO_JUEGO.FINALIZADO)
         bgEstado = "bg-primary";
-    titleDisplayElem[0].classList.add(bgEstado);
+    titleDisplayElem[0].classList.value = "m-0 badge fs-5 " + bgEstado;
     titleDisplayElem[0].innerHTML = info.estadoJuego;
 
     titleDisplayElem[1].innerHTML = info.numJugadores + " / 4";
@@ -237,22 +234,33 @@ function actualizarEstadoJuego(){
 function actualizarJuego(){
     // Tablero
     MIN_BET = info.minBet;
-    puntos = (info.jugadores[index].numCartas <= 0)? 0 : puntosDeCartas(info.cartasJugador);
     actualizarEstadoJuego();
 
     // Jugadores
     mostrarJugadores();
+    mostrarCartas();
 
     // Acciones
     if(info.jugadores[index].estado == ESTADO_JUGADOR.ACTIVO)
         mostrarBtnListo();
     if(info.estadoJuego == ESTADO_JUEGO.JUGANDO)
-        habilitarAcciones();
+        deshabilitarAcciones(false);
+    else
+        deshabilitarAcciones();
 }
 
 /* ------------ Pedir Carta ------------ */
 function pedirCarta(){
+    const urlParams = new URLSearchParams(window.location.search);
+    const idTablero = urlParams.get("id");
+    const idJugador = info.jugadorAct.idJugador;
 
+    go(`/juego/${idTablero}/pedirCarta`, 'POST', {idJugador})
+    .then(res => {
+        info = res;
+        actualizarJuego();
+    })
+    .catch(error => console.log("No se pudo obtener la carta: ", error));
 }
 
 /* ------------ Plantarse ------------ */
@@ -282,7 +290,7 @@ function mostrarApuestaActual(n){
 function confirmApuesta(){
     const urlParams = new URLSearchParams(window.location.search);
     const idTablero = urlParams.get("id");
-    const idJugador = info.idJugador;
+    const idJugador = info.jugadorAct.idJugador;
     const cant = elemCantApuesta.value;
 
     if(info.estadoJuego != ESTADO_JUEGO.JUGANDO){
@@ -327,7 +335,7 @@ function entrarPartida(){
             window.location.replace("/salas"); // Si quieres enviar un mensaje a salas haz lo de registrar
         else{
             info = res;
-            index = res.posJugador;
+            index = res.jugadorAct.posJugador;
             actualizarJuego();
         }
     })
@@ -354,6 +362,12 @@ ws.receive = (respuesta) => {
     if(respuesta.result == "ESTADO_CAMBIADO"){
         info.estadoJuego = respuesta.estadoJuego;
         info.jugadores = respuesta.jugadores;
+        actualizarJuego();
+    }
+
+    if(respuesta.result == "PEDIDO"){
+        info.jugadores = respuesta.jugadores;
+        info.estadoJuego = respuesta.estadoJuego;
         actualizarJuego();
     }
 
