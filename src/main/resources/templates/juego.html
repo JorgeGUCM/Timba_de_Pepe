@@ -128,6 +128,8 @@
         config.topics = 'juego/[[${estado.idTablero}]]'; 
     </script>
 
+    <th:block th:replace="~{fragments/chat :: chat-sala}"/>
+    <th:block th:replace="~{fragments/chat :: chat-global}"/>
     <th:block th:replace="~{fragments/footer.html :: footer}" />
 
     <script th:src="@{/js/juego.js}" src="/js/juego.js"></script>

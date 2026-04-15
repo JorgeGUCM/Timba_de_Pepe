@@ -32,17 +32,18 @@ public class ChatController {
     private SimpMessagingTemplate messagingTemplate;
 
 
-    // Para la ruta /chat/global una peticion POST desde http
-    @PostMapping("/global")
+    @PostMapping("/enviar")
     @ResponseBody   // Para que no devuelva una vista http
     @Transactional  // Para que sea de una tacada y no se raye la BD
-    public Map<String, String> enviarMensajeGlobal(HttpSession session, @RequestBody JsonNode data) {
+    public Map<String, String> enviarMensaje(HttpSession session, @RequestBody JsonNode data) {
         User u = (User) session.getAttribute("u");
         if (u == null) {
             return Map.of("error", "Usuario no autenticado");
         }
 
         String text = data.get("text").asText();
+        // Si nos pasan una sala, la usamos. Si no, por defecto es global.
+        String room = data.has("room") ? data.get("room").asText() : "global";
         
         // Construimos el mensaje
         Map<String, String> msg = new HashMap<>();
@@ -50,13 +51,9 @@ public class ChatController {
         msg.put("from", u.getUsername());
         msg.put("text", text);
         msg.put("sent", LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm")));
-        
-        // Sale por consola en plan OK
-        log.info("Mensaje de chat global de {}: {}", u.getUsername(), text);
 
-        // Retransmitimos por WebSockets a todos los clientes suscritos a /topic/chat
-        messagingTemplate.convertAndSend("/topic/chat", msg);
-        
+        // Retransmitimos a la "tubería" correcta
+        messagingTemplate.convertAndSend("/topic/chat/" + room, msg);
         return Map.of("result", "ok");
     }
 }

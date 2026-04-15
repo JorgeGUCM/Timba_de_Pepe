@@ -1,82 +1,78 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <th:block th:fragment="chat-styles">
+<body>
+
+    <th:block th:fragment="chat-styles-shared">
         <style>
-            /* Botón flotante */
-            .btn-chat-flotante {
-                position: fixed; bottom: 25px; right: 25px; width: 55px; height: 55px;
-                border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2);
-                border: none; color: white; font-size: 1.4rem; z-index: 1000;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5); transition: transform 0.2s;
-            }
+            .panel-chat { position: fixed; top: 0; width: 380px; height: 100vh; background-color: #343a40; box-shadow: 0 0 15px rgba(0,0,0,0.5); transition: 0.3s ease; z-index: 1050; display: flex; flex-direction: column; }
+            .panel-chat-derecha { right: -400px; }
+            .panel-chat-derecha.abierto { right: 0; }
+            .panel-chat-izquierda { left: -400px; }
+            .panel-chat-izquierda.abierto { left: 0; }
+            
+            .btn-chat-flotante { position: fixed; bottom: 25px; width: 55px; height: 55px; border-radius: 50%; border: none; color: white; font-size: 1.4rem; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.5); transition: transform 0.2s; }
             .btn-chat-flotante:hover { transform: scale(1.1); }
             
-            /* Panel y mensajes */
-            .panel-chat {
-                position: fixed; top: 0; right: -400px; width: 380px; height: 100vh;
-                background-color: #343a40; box-shadow: -5px 0 15px rgba(0,0,0,0.5);
-                transition: right 0.3s ease; z-index: 1050; display: flex; flex-direction: column;
-            }
-
-            /* 1. Evitamos que la cabecera y el input se aplasten o empujen */
-            .panel-chat > div:first-child,
-            .panel-chat > div:last-child {
-                flex-shrink: 0;
-            }
-
-            /* 2. Añadimos min-height: 0 a la zona de mensajes */
-            .zona-mensajes { 
-                background-color: #212529; 
-                flex-grow: 1; 
-                overflow-y: auto; 
-                min-height: 100; /* ¡Esta es la clave mágica! */
-            }
-            .panel-chat.abierto { right: 0; }
-            .zona-mensajes { background-color: #212529; flex-grow: 1; overflow-y: auto; }
+            .zona-mensajes { background-color: #212529; flex-grow: 1; overflow-y: auto; height: 0; }
             .mensaje-chat { background-color: #2b3035; border: 1px solid #495057; color: #e9ecef; }
-            
-            /* Capa oscura de fondo */
-            .fondo-oscuro-chat { 
-                position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-                background: rgba(0,0,0,0.7); z-index: 1040; display: none; 
-            }
+            .fondo-oscuro-chat { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1040; display: none; }
             .fondo-oscuro-chat.mostrar { display: block; }
 
             @media (max-width: 768px) {
-                .panel-chat { width: 100%; right: -100%; }
+                .panel-chat { width: 100%; }
+                .panel-chat-derecha { right: -100%; }
+                .panel-chat-izquierda { left: -100%; }
             }
         </style>
+        <script th:src="@{/js/chat.js}"></script>
     </th:block>
-</head>
-<body>
 
-    <div th:fragment="chat-panel">
-        <button class="btn-chat-flotante" onclick="ChatGlobal.alternar()">💬</button>
-        <div class="fondo-oscuro-chat" id="capaFondoChat" onclick="ChatGlobal.cerrar()"></div>
 
-        <div class="panel-chat d-flex flex-column" id="menuChatGlobal">
-            
+    <div th:fragment="chat-global">
+        <th:block th:replace="~{fragments/chat :: chat-styles-shared}"></th:block>
+
+        <button class="btn-chat-flotante" style="right: 25px; background: linear-gradient(135deg, #667eea, #764ba2);" onclick="ChatGlobal.alternar()">🌍</button>
+        <div class="fondo-oscuro-chat" id="capaFondoChatGlobal" onclick="ChatGlobal.cerrar()"></div>
+
+        <div class="panel-chat panel-chat-derecha d-flex flex-column" id="menuChatGlobal">
             <div class="p-3 text-white d-flex justify-content-between align-items-center flex-shrink-0" style="background: linear-gradient(135deg, #667eea, #764ba2);">
-                <h5 class="mb-0">💬 Chat Global</h5>
+                <h5 class="mb-0">🌍 Chat Global</h5>
                 <button class="btn-close btn-close-white" onclick="ChatGlobal.cerrar()"></button>
             </div>
-
-            <div class="p-3 zona-mensajes flex-grow-1 overflow-auto" id="chat-zona-mensajes" style="height: 0;">
-                </div>
-
+            <div class="p-3 zona-mensajes flex-grow-1 overflow-auto" id="chat-zona-mensajes-global"></div>
             <div class="p-3 border-top border-secondary flex-shrink-0 bg-dark">
                 <form onsubmit="ChatGlobal.enviar(event)">
                     <div class="input-group">
-                        <input type="text" id="chat-input-texto" class="form-control bg-dark text-white border-secondary" placeholder="Escribe un mensaje..." autocomplete="off">
+                        <input type="text" id="chat-input-texto-global" class="form-control bg-dark text-white border-secondary" placeholder="Escribe al servidor..." autocomplete="off">
                         <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, #667eea, #764ba2); border: none;">Enviar</button>
                     </div>
                 </form>
             </div>
         </div>
+    </div>
 
-        <script th:src="@{/js/chat.js}"></script>
-        
+
+    <div th:fragment="chat-sala">
+        <th:block th:replace="~{fragments/chat :: chat-styles-shared}"></th:block>
+
+        <button class="btn-chat-flotante" style="left: 25px; background: linear-gradient(135deg, #11998e, #38ef7d);" onclick="ChatSala.alternar()">🎮</button>
+        <div class="fondo-oscuro-chat" id="capaFondoChatSala" onclick="ChatSala.cerrar()"></div>
+
+        <div class="panel-chat panel-chat-izquierda d-flex flex-column" id="menuChatSala">
+            <div class="p-3 text-white d-flex justify-content-between align-items-center flex-shrink-0" style="background: linear-gradient(135deg, #11998e, #38ef7d);">
+                <h5 class="mb-0">🎮 Chat Privado</h5>
+                <button class="btn-close btn-close-white" onclick="ChatSala.cerrar()"></button>
+            </div>
+            <div class="p-3 zona-mensajes flex-grow-1 overflow-auto" id="chat-zona-mensajes-sala"></div>
+            <div class="p-3 border-top border-secondary flex-shrink-0 bg-dark">
+                <form onsubmit="ChatSala.enviar(event)">
+                    <div class="input-group">
+                        <input type="text" id="chat-input-texto-sala" class="form-control bg-dark text-white border-secondary" placeholder="Escribe a tu sala..." autocomplete="off">
+                        <button type="submit" class="btn btn-success" style="background: linear-gradient(135deg, #11998e, #38ef7d); border: none;">Enviar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
 </body>

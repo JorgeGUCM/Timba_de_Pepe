@@ -48,81 +48,6 @@
             background-color: #343a40;
             color: #ffffff;
         }
-
-        /* Panel del chat */
-        .btn-chat-flotante {
-            position: fixed;
-            bottom: 25px;
-            right: 25px;
-            width: 55px;
-            height: 55px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            border: none;
-            color: white;
-            font-size: 1.4rem;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            transition: transform 0.2s;
-        }
-
-        .btn-chat-flotante:hover {
-            transform: scale(1.1);
-        }
-
-        .panel-chat {
-            position: fixed;
-            top: 0;
-            right: -400px;
-            width: 380px;
-            height: 100vh;
-            background-color: #343a40;
-            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.5);
-            transition: right 0.3s ease;
-            z-index: 1050;
-            display: flex;
-            flex-direction: column;
-            color: #e9ecef;
-        }
-
-        .panel-chat.abierto {
-            right: 0;
-        }
-
-        /* Zona de los mensajes (un gris más hundido/oscuro) */
-        .zona-mensajes {
-            background-color: #212529;
-        }
-
-        /* Estilo de cada globo de mensaje */
-        .mensaje-chat {
-            background-color: #2b3035;
-            /* Color del body */
-            border: 1px solid #495057;
-            color: #e9ecef;
-        }
-
-        .fondo-oscuro {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            z-index: 1040;
-            display: none;
-        }
-
-        .fondo-oscuro.mostrar {
-            display: block;
-        }
-
-        @media (max-width: 768px) {
-            .panel-chat {
-                width: 100%;
-                right: -100%;
-            }
-        }
     </style>
 </head>
 
@@ -211,15 +136,15 @@
         </div>
     </div>
 
-    <div th:replace="~{fragments/chat :: chat-panel}"></div>
-    <!--<th:block th:replace="~{fragments/chat :: chat-panel}"/>-->
+    <div th:replace="~{fragments/chat :: chat-global}"></div>
+
     <th:block th:replace="~{fragments/footer.html :: footer}" />
 
     <script>
         function crearSala() {
             var myModal = new bootstrap.Modal(document.getElementById('modalCrearSala'));
             myModal.show();
-        }       
+        }
     </script>
 </body>
 

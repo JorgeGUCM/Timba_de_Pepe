@@ -1,68 +1,109 @@
 
+// Protegemos para que no se declare dos veces si incluyes ambos widgets
+// hay que ponerlo pq si incluyes los dos se crea 2 veces y puede haber msgs duplicados y vainas
+if (typeof window.ChatSystem === 'undefined') {
+    window.ChatSystem = true;
 
-// Se crea un objeto para que no halla funciones que se llamen igual en chat.js y juego.js
-// Porque como chat.js esta implementado con otras cosas en las vistas ps se evitan fallos
-// Se envia como AJAX se recoge como WS 
-const ChatGlobal = {
-    // En plan interruptor
-    alternar: () => {
-        document.getElementById('menuChatGlobal').classList.toggle('abierto');
-        document.getElementById('capaFondoChat').classList.toggle('mostrar');
-    },
-    
-    cerrar: () => {
-        document.getElementById('menuChatGlobal').classList.remove('abierto');
-        document.getElementById('capaFondoChat').classList.remove('mostrar');
-    },
-    
-    enviar: (e) => {
-        e.preventDefault(); // haces que el navegador no recarge la web entera
-        let input = document.getElementById("chat-input-texto");
-        let texto = input.value.trim();
-        
-        if (texto) {
-            // Usamos la función go() de iw.js
-            // Se envia como AJAX
-            go(config.rootUrl + "/chat/global", "POST", { text: texto })
-                .catch(err => console.error("Error enviando mensaje:", err));
-            input.value = "";
-        }
-    },
-    
-    // Cuando se nos avisa de que hay un msg nuevo se ejecuta esto
-    // renderizado dinamico
-    renderizar: (m) => {
-        const zona = document.getElementById("chat-zona-mensajes");
-        const div = document.createElement("div");
-        div.className = "card mensaje-chat mb-2 p-2 shadow-sm";
-        div.innerHTML = `
-            <strong style="color: #667eea;">${m.from}</strong>
-            <span>${m.text}</span>
-            <small class="text-white-50 mt-1" style="font-size: 0.75rem; text-align: right;">${m.sent}</small>
-        `;
-        zona.appendChild(div);
-        zona.scrollTop = zona.scrollHeight; // Auto-scroll al fondo
-    },
-    
-    initConexion: () => {
-        // Como iw.js conecta asíncronamente, nos aseguramos de que stompClient exista
-        if (typeof ws !== 'undefined' && ws.stompClient && ws.connected) {
-            ws.stompClient.subscribe("/topic/chat", (m) => {
-                ChatGlobal.renderizar(JSON.parse(m.body));
-            });
-            console.log("Chat Global suscrito a /topic/chat");
-        } else {
-            // Reintentamos en 500ms si el socket de iw.js aún no ha conectado
-            setTimeout(ChatGlobal.initConexion, 500);
-        }
-    }
-};
+    // LÓGICA DEL CHAT GLOBAL (DERECHA)
+    window.ChatGlobal = {
 
-// Inicializar cuando el DOM cargue
-// DOMContentLoaded salta cuando el navegador termina de leer el .html
-document.addEventListener("DOMContentLoaded", () => {
-    // Comprobamos si el fragmento del chat está en la página actual
-    if (document.getElementById('menuChatGlobal')) {
-        ChatGlobal.initConexion();
-    }
-});
+        // entra y sale deslizando el panel lateral
+        alternar: () => {
+            // document.getElementById('menuChatGlobal') busca el elemento con ese ID
+            // .classList.toggle('abierto'); si tiene el CSS 'abierto' se lo quita, si no lo tiene se lo pone
+            document.getElementById('menuChatGlobal').classList.toggle('abierto');
+            document.getElementById('capaFondoChatGlobal').classList.toggle('mostrar');
+        },
+        cerrar: () => {
+            document.getElementById('menuChatGlobal').classList.remove('abierto');
+            document.getElementById('capaFondoChatGlobal').classList.remove('mostrar');
+        },
+        enviar: (e) => {
+            e.preventDefault();     // para que no se recarge la página entera
+            let input = document.getElementById("chat-input-texto-global");
+            let texto = input.value.trim();
+            if (texto) {    // lo envia con AJAX a "global"
+                // go ( destinoURL, metodo, datos)
+                go(config.rootUrl + "/chat/enviar", "POST", { text: texto, room: "global" })
+                    .catch(err => console.error("Error global:", err));
+                input.value = "";   // limpia lo que acabas de enviar
+            }
+        },
+        renderizar: (m) => {
+            const zona = document.getElementById("chat-zona-mensajes-global");
+            const div = document.createElement("div");
+            div.className = "card mensaje-chat mb-2 p-2 shadow-sm";     // le pega el formato CSS de los msgs
+            // innerHTML es el estilo a los globos de los msgs, al recuadro
+            div.innerHTML = `<strong style="color: #667eea;">${m.from}</strong> <span>${m.text}</span> <small class="text-white-50 mt-1" style="font-size: 0.75rem; text-align: right;">${m.sent}</small>`;
+            zona.appendChild(div);  // coge el mensaje ya hecho y lo pone al final de la lista
+            zona.scrollTop = zona.scrollHeight; // scrolleo hasta abajo
+        },
+        initConexion: () => {
+            if (typeof ws !== 'undefined' && ws.stompClient && ws.connected) {  // vemos si WS están activos
+                // Se subscribe al chat global. SI llega algo parsea y renderiza
+                ws.stompClient.subscribe("/topic/chat/global", (m) => ChatGlobal.renderizar(JSON.parse(m.body)));
+                console.log("Suscrito al Chat Global");
+            } else {
+                // Bucle que reintenta el WS cada X secs esperando a que se active correctamente
+                setTimeout(ChatGlobal.initConexion, 500);
+            }
+        }
+    };
+
+    // LÓGICA DEL CHAT DE SALA (IZQUIERDA)
+    window.ChatSala = {
+
+        // te devuelve el valor de 'id' del URL
+        getSalaId: () => new URLSearchParams(window.location.search).get('id'),
+
+        alternar: () => {
+            document.getElementById('menuChatSala').classList.toggle('abierto');
+            document.getElementById('capaFondoChatSala').classList.toggle('mostrar');
+        },
+        cerrar: () => {
+            document.getElementById('menuChatSala').classList.remove('abierto');
+            document.getElementById('capaFondoChatSala').classList.remove('mostrar');
+        },
+        enviar: (e) => {
+            e.preventDefault();
+            let input = document.getElementById("chat-input-texto-sala");
+            let texto = input.value.trim();
+            let id = ChatSala.getSalaId();  // saca el ID de la sala
+            if (texto && id) {
+                go(config.rootUrl + "/chat/enviar", "POST", { text: texto, room: "sala_" + id })
+                    .catch(err => console.error("Error sala:", err));
+                input.value = "";
+            }
+        },
+        renderizar: (m) => {
+            const zona = document.getElementById("chat-zona-mensajes-sala");
+            const div = document.createElement("div");
+            div.className = "card mensaje-chat mb-2 p-2 shadow-sm";
+            div.innerHTML = `<strong style="color: #38ef7d;">${m.from}</strong> <span>${m.text}</span> <small class="text-white-50 mt-1" style="font-size: 0.75rem; text-align: right;">${m.sent}</small>`;
+            zona.appendChild(div);
+            zona.scrollTop = zona.scrollHeight;
+        },
+        initConexion: () => {
+            let id = ChatSala.getSalaId();
+            if(!id) return; // Si no hay ID en la URL, no podemos conectar a una sala privada
+
+            if (typeof ws !== 'undefined' && ws.stompClient && ws.connected) {
+                ws.stompClient.subscribe("/topic/chat/sala_" + id, (m) => ChatSala.renderizar(JSON.parse(m.body)));
+                console.log("Suscrito al Chat de Sala " + id);
+            } else {
+                setTimeout(ChatSala.initConexion, 500);
+            }
+        }
+    };
+
+    // Inicializador general
+    // Empieza cuando se haya cargado todo el .html
+    document.addEventListener("DOMContentLoaded", () => {
+        if (document.getElementById('menuChatGlobal')) {
+            window.ChatGlobal.initConexion();
+        }
+        if (document.getElementById('menuChatSala') && window.ChatSala.getSalaId()) {
+            window.ChatSala.initConexion();
+        }
+    });
+}
