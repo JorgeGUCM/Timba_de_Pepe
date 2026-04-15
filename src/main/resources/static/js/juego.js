@@ -12,12 +12,12 @@ const REVERSO = IMG_BASE + 'reverso1.png';
     idTablero
     nombreTablero
     estadoJuego
-    minBet:
+    minBet
+    idJugador
     posJugador
     cartasJugador
     numJugadores
     jugadores: [{
-        idJugador
         nombre
         posTablero
         apuesta
@@ -49,6 +49,7 @@ let playerActivo = `<span class="badge bg-success">Activo</span>`;
 let playerPlantado = `<span class="badge bg-warning">Plantado</span>`;
 let playerOver = `<span class="badge bg-danger">Sobrepuntos</span>`;
 let playerListo = `<span class="badge bg-info">Listo</span>`;
+let playerJugando = `<span class="badge bg-success">Jugando</span>`;
 
 // Botones
 let elemOpciones = document.querySelector("#gameActions");
@@ -125,6 +126,8 @@ function mostrarJugador(slot, nombre, puntosJugador, apuesta, estadoJugador){
         nombre += ` ` + playerPlantado;
     else if(estadoJugador == ESTADO_JUGADOR.SOBREPUNTOS)
         nombre += ` ` + playerOver;
+    else if(estadoJugador == ESTADO_JUGADOR.LISTO && info.estadoJuego == ESTADO_JUEGO.JUGANDO)
+        nombre += ` ` + playerJugando;
     else if(estadoJugador == ESTADO_JUGADOR.LISTO)
         nombre += ` ` + playerListo;
     else
@@ -193,7 +196,8 @@ function mostrarBtnListo(){
     document.querySelector("#btnListo").onclick = e => {
         const urlParams = new URLSearchParams(window.location.search);
         const idTablero = urlParams.get("id");
-        const idJugador = info.jugadores[index].idJugador;
+        const idJugador = info.idJugador;
+
         go(`/juego/${idTablero}/listo`, 'POST', {idJugador})
         .catch(error => console.log("No se pudo poner en listo al jugador: ", error));
 
@@ -208,6 +212,21 @@ function habilitarAcciones(){
     document.querySelector("#btnPlantarse").disabled = false;
     document.querySelector("#btnPedir").disabled = false;
 }
+function actualizarEstadoJuego(){
+    let titleDisplayElem = document.querySelectorAll("#title-display p");
+    
+    let bgEstado = "bg-secondary";
+    if(info.estadoJuego == ESTADO_JUEGO.COMPLETO)
+        bgEstado = "bg-danger";
+    else if(info.estadoJuego == ESTADO_JUEGO.JUGANDO)
+        bgEstado = "bg-success";
+    else if(info.estadoJuego == ESTADO_JUEGO.FINALIZADO)
+        bgEstado = "bg-primary";
+    titleDisplayElem[0].classList.add(bgEstado);
+    titleDisplayElem[0].innerHTML = info.estadoJuego;
+
+    titleDisplayElem[1].innerHTML = info.numJugadores + " / 4";
+}
 
 
 /* ------------ Pintar Estado ------------ */
@@ -215,6 +234,7 @@ function actualizarJuego(){
     // Tablero
     MIN_BET = info.minBet;
     puntos = (info.jugadores[index].numCartas <= 0)? 0 : puntosDeCartas(info.cartasJugador);
+    actualizarEstadoJuego();
 
     // Jugadores
     mostrarJugadores();
@@ -248,7 +268,7 @@ function mostrarApuestaActual(n){
 function confirmApuesta(){
     const urlParams = new URLSearchParams(window.location.search);
     const idTablero = urlParams.get("id");
-    const idJugador = info.jugadores[index].idJugador;
+    const idJugador = info.idJugador;
     const cant = elemCantApuesta.value;
 
     if(info.estadoJuego != ESTADO_JUEGO.JUGANDO){

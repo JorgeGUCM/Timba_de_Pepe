@@ -79,6 +79,7 @@ img.preview {
 
 /* ── Tablero ── */
 .tablero {
+    margin-bottom: 1em;
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr 1fr;
@@ -96,19 +97,19 @@ img.preview {
 /* ── Opciones de juego ── */
 .juego-opt{
     position: relative;
+    margin-bottom: 1em;
     padding: 1.2em;
     width: 35%;
     border: .1em solid #2387ce;
     border-radius: .75em;
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 1280px) {
     .general{
         flex-direction: column;
     }
     .juego-opt{
         margin: auto;
-        margin-bottom: 1em;
         width: fit-content;
     }
 }
