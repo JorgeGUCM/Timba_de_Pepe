@@ -69,7 +69,8 @@ public class JuegoController {
                     "posTablero", jugador.getPosicionMesa(),
                     "apuesta", jugador.getApuesta(),
                     "puntos", (juego.getEstado() == state.FINALIZADO)? jugador.getPuntuacion() : "?",
-                    "estado", jugador.getEstado(),
+                    "estado", (juego.getEstado() != state.JUGANDO || (j != null && j.getId() == jugador.getId()))? jugador.getEstado() : estadoJugador.LISTO,
+                    "cartas", (juego.getEstado() == state.FINALIZADO)? jugador.getCartas() : "[]",
                     "numCartas", jugador.getNumCartas()));
         });
 
@@ -83,7 +84,7 @@ public class JuegoController {
                 "jugadorAct", Map.of(
                     "idJugador", (j != null) ? j.getId() : -1,
                     "posJugador", (j != null) ? j.getPosicionMesa() : -1,
-                    "cartasJugador", (j != null) ? j.getCartas() : "[]",
+                    "cartas", (j != null) ? j.getCartas() : "[]",
                     "puntos", (j != null) ? j.getPuntuacion() : "?"
                 ),
                 "numJugadores", juego.getNum_jugadores(),
@@ -131,6 +132,14 @@ public class JuegoController {
             return 0.5;
         else
             return Character.getNumericValue(carta.charAt(0));
+    }
+
+    private boolean finJuego(Juego juego){
+        for(Jugador jugador : juego.getJugadores()){
+            if(jugador.getEstado() == estadoJugador.LISTO)
+                return false;
+        }
+        return true;
     }
 
     @GetMapping("")
@@ -276,8 +285,14 @@ public class JuegoController {
         if (comprobarJugador(session, j))
             return "{\"error\": \"Se ha detectado la manipulación de datos.\"}";
 
+        j.setCartas("[]");
+        j.setNumCartas(0);
+        j.setApuesta(0);
+        j.setPuntuacion(0);
         j.setEstado(estadoJugador.LISTO);
-        entityManager.merge(j);
+
+        if(juego.getEstado() == state.FINALIZADO)
+            juego.setEstado(state.ESPERANDO);
 
         boolean todosListos = true;
         for (Jugador jugador : juego.getJugadores()) {
@@ -296,14 +311,16 @@ public class JuegoController {
 
         Map<String, Object> estado = generarEstado("ESTADO_CAMBIADO", j, juego);
 
+        String result = "";
         try {
-            messagingTemplate.convertAndSend("/topic/juego/" + juego.getId(), mapper.writeValueAsString(estado));
+            result = mapper.writeValueAsString(estado);
+            messagingTemplate.convertAndSend("/topic/juego/" + juego.getId(), result);
         } catch (Exception e) {
             log.error("No se a podido enviar por webshocket del cambio de estado: ", e.getMessage());
             return "{\"error\": \"Al mandar la información del juego.\"}";
         }
 
-        return "{\"success\": \"Estado cambiado con exito\"}";
+        return result;
     }
 
     @PostMapping("{idTablero}/pedirCarta")
@@ -356,14 +373,7 @@ public class JuegoController {
             if(j.getPuntuacion() > 7.5){
                 j.setEstado(estadoJugador.SOBREPUNTOS);
                 
-                boolean finJuego = true;
-                for(Jugador jugador : juego.getJugadores()){
-                    if(jugador.getEstado() == estadoJugador.LISTO){
-                        finJuego = false;
-                        break;
-                    }
-                }
-                if(finJuego)
+                if(finJuego(juego))
                     juego.setEstado(state.FINALIZADO);
             }
         } catch (Exception e) {
@@ -371,12 +381,50 @@ public class JuegoController {
             return "{\"error\": \"No se pudo guardar la baraja o las cartas del jugador.\"}";
         }
 
-        
-
         String estado = "";
         try {
             estado = mapper.writeValueAsString(generarEstado("PEDIDO", j, juego));
             messagingTemplate.convertAndSend("/topic/juego/" + juego.getId(), mapper.writeValueAsString(generarEstado("PEDIDO", null, juego)));
+        } catch (Exception e) {
+            log.error("No se pudo parsear el estado: ", e.getMessage());
+            return "{\"error\": \"Al enviar la información del estado.\"}";
+        }
+
+        return estado;
+    }
+
+    @PostMapping("{idTablero}/plantar")
+    @ResponseBody
+    @Transactional
+    public String plantar(Model model, HttpSession session, @RequestBody JsonNode o,
+            @PathVariable Long idTablero){
+
+        Long idJugador = o.get("idJugador").asLong();
+
+        Jugador j = entityManager.find(Jugador.class, idJugador);
+        Juego juego = entityManager.find(Juego.class, idTablero);
+
+        if (j == null)
+            return "{\"error\": \"No se ha encontrado el jugador\"}";
+
+        if (juego.getEstado() != state.JUGANDO)
+            return "{\"warning\": \"¡El juego no ha comenzado!\"}";
+
+        if (comprobarJugador(session, j))
+            return "{\"error\": \"Se ha detectado la manipulación de datos.\"}";
+
+        if(j.getEstado() != estadoJugador.LISTO)
+            return "{\"error\": \"El jugador debe de estar jugando.\"}";
+        
+        j.setEstado(estadoJugador.PLANTADO);
+
+        if(finJuego(juego))
+            juego.setEstado(state.FINALIZADO);
+
+        String estado = "";
+        try {
+            estado = mapper.writeValueAsString(generarEstado("PLANTADO", j, juego));
+            messagingTemplate.convertAndSend("/topic/juego/" + juego.getId(), mapper.writeValueAsString(generarEstado("PLANTADO", null, juego)));
         } catch (Exception e) {
             log.error("No se pudo parsear el estado: ", e.getMessage());
             return "{\"error\": \"Al enviar la información del estado.\"}";

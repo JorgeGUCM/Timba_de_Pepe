@@ -16,7 +16,7 @@ const REVERSO = IMG_BASE + 'reverso1.png';
     jugadorAct: {
         idJugador
         posJugador
-        cartasJugador
+        cartas
         puntos
     }
     numJugadores
@@ -26,6 +26,7 @@ const REVERSO = IMG_BASE + 'reverso1.png';
         apuesta
         puntos
         estado
+        cartas
         numCartas
     }]
 */
@@ -68,11 +69,11 @@ let btnCancelApuesta = document.querySelector("#btnCancelApuesta");
 /* ------------ Otras funciones ------------ */
 function nombreCarta(carta){
     let numNombre = { '1': 'As', 'S': 'Sota', 'C': 'Caballo', 'R': 'Rey' };
-    return (numNombre[carta.num] || carta.num) + ' de ' + PALO_NOMBRES[carta.palo];
+    return (numNombre[carta[0]] || carta[0]) + ' de ' + PALO_NOMBRES[carta[1]];
 }
 function createCardImg(carta){
     let img = document.createElement('img');
-    img.src = IMG_BASE + carta.code + '.png';
+    img.src = IMG_BASE + carta + '.png';
     img.className = 'carta-jugador';
     img.alt = nombreCarta(carta);
     img.draggable = false;
@@ -95,6 +96,9 @@ function mostrarMensaje(mensaje, tipo = "info"){
     elemMensaje.innerHTML = `
         <p class="fs-5 badge bg-`+tipo+` text-black">`+ mensaje +`</p>
     `;
+
+    if(tipo == "danger")
+        elemMensaje.querySelector("p").classList.replace("text-black", "text-white");
 
     if(!elemMensaje.classList.contains("show")){
         elemMensaje.classList.add("show");
@@ -178,11 +182,17 @@ function mostrarCartas(){
     for(let i = 0; i < info.numJugadores; i++){
         let elemCards = document.querySelector("#cards-"+i);
         if(i == info.jugadorAct.posJugador){
-            JSON.parse(info.jugadorAct.cartasJugador).forEach((c) =>{
-              console.log(c);
+            JSON.parse(info.jugadorAct.cartas).forEach((c) =>{
+                elemCards.appendChild(createCardImg(c));
             });
-        }else
-            console.log(info.jugadores[i].numCartas);
+        }else if(info.estadoJuego == ESTADO_JUEGO.FINALIZADO){
+            JSON.parse(info.jugadores[i].cartas).forEach((c) =>{
+                elemCards.appendChild(createCardImg(c));
+            });
+        }else{
+            for(let j = 0; j < info.jugadores[i].numCartas; j++)
+                elemCards.appendChild(createCardReverse());
+        }
     }
 }
 
@@ -196,16 +206,26 @@ function mostrarBtnListo(){
         const idJugador = info.jugadorAct.idJugador;
 
         go(`/juego/${idTablero}/listo`, 'POST', {idJugador})
+        .then(res => {
+            if(res.error)
+                mostrarMensaje(res.error, "danger");
+            else if (res.warning)
+                mostrarMensaje(res.warning, "warning");
+            else{
+                info = res;
+                actualizarJuego();
+            }
+        })
         .catch(error => console.log("No se pudo poner en listo al jugador: ", error));
 
         document.querySelector("#btnListo").remove();
     }
 }
-function deshabilitarAcciones(deshabilitar = true){
-    document.querySelector("#btnApostar").onclick = e => {(!deshabilitar)? mostrarApostar() : console.log("Deshabilitado")};
-    btnCancelApuesta.onclick = e => {(!deshabilitar)? ocultarApostar() : console.log("Deshabilitado")};
-    btnConfirmApuesta.onclick = e => {(!deshabilitar)? confirmApuesta() : console.log("Deshabilitado")};
-    document.querySelector("#btnApostar").disabled = deshabilitar;
+function deshabilitarAcciones(deshabilitar = true, apostar = deshabilitar){
+    document.querySelector("#btnApostar").onclick = e => {(!apostar)? mostrarApostar() : console.log("Deshabilitado")};
+    btnCancelApuesta.onclick = e => {(!apostar)? ocultarApostar() : console.log("Deshabilitado")};
+    btnConfirmApuesta.onclick = e => {(!apostar)? confirmApuesta() : console.log("Deshabilitado")};
+    document.querySelector("#btnApostar").disabled = apostar;
 
     document.querySelector("#btnPlantarse").onclick = e => {(!deshabilitar)? plantarse() : console.log("Deshabilitado")};
     document.querySelector("#btnPlantarse").disabled = deshabilitar;
@@ -243,10 +263,16 @@ function actualizarJuego(){
     // Acciones
     if(info.jugadores[index].estado == ESTADO_JUGADOR.ACTIVO)
         mostrarBtnListo();
-    if(info.estadoJuego == ESTADO_JUEGO.JUGANDO)
+
+    if(info.estadoJuego == ESTADO_JUEGO.JUGANDO && info.jugadores[info.jugadorAct.posJugador].estado == ESTADO_JUGADOR.PLANTADO)
+        deshabilitarAcciones(true, false);
+    else if(info.estadoJuego == ESTADO_JUEGO.JUGANDO && info.jugadores[info.jugadorAct.posJugador].estado != ESTADO_JUGADOR.SOBREPUNTOS)
         deshabilitarAcciones(false);
     else
         deshabilitarAcciones();
+
+    if(info.estadoJuego == ESTADO_JUEGO.FINALIZADO)
+        mostrarBtnListo();
 }
 
 /* ------------ Pedir Carta ------------ */
@@ -257,15 +283,36 @@ function pedirCarta(){
 
     go(`/juego/${idTablero}/pedirCarta`, 'POST', {idJugador})
     .then(res => {
-        info = res;
-        actualizarJuego();
+        if(res.error)
+            mostrarMensaje(res.error, "danger");
+        else if (res.warning)
+            mostrarMensaje(res.warning, "warning");
+        else{
+            info = res;
+            actualizarJuego();
+        }
     })
     .catch(error => console.log("No se pudo obtener la carta: ", error));
 }
 
 /* ------------ Plantarse ------------ */
 function plantarse(){
+    const urlParams = new URLSearchParams(window.location.search);
+    const idTablero = urlParams.get("id");
+    const idJugador = info.jugadorAct.idJugador;
 
+    go(`/juego/${idTablero}/plantar`, 'POST', {idJugador})
+    .then(res => {
+        if(res.error)
+            mostrarMensaje(res.error, "danger");
+        else if (res.warning)
+            mostrarMensaje(res.warning, "warning");
+        else{
+            info = res;
+            actualizarJuego();
+        }
+    })
+    .catch(error => console.log("No se pudo plantar al jugador: ", error));
 }
 
 /* ------------ Apostar ------------ */
@@ -366,6 +413,12 @@ ws.receive = (respuesta) => {
     }
 
     if(respuesta.result == "PEDIDO"){
+        info.jugadores = respuesta.jugadores;
+        info.estadoJuego = respuesta.estadoJuego;
+        actualizarJuego();
+    }
+
+    if(respuesta.result == "PLANTADO"){
         info.jugadores = respuesta.jugadores;
         info.estadoJuego = respuesta.estadoJuego;
         actualizarJuego();
