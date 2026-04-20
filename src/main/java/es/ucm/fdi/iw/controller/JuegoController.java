@@ -42,6 +42,12 @@ import jakarta.servlet.http.HttpSession;
 public class JuegoController {
     private static final Logger log = LogManager.getLogger(JuegoController.class);
 
+    private static final List<Character> PALOS = List.of('B', 'C', 'E', 'O');
+    private static final List<String> NUMS = List.of("1", "2", "3", "4", "5", "6", "7", "S", "C", "R");
+    private static final List<Character> FIGURAS = List.of('S', 'C', 'R');
+
+    private static final int CERVEZAS_GANADAS = 2;
+
     @Autowired
     private EntityManager entityManager;
 
@@ -68,9 +74,12 @@ public class JuegoController {
                     "nombre", jugador.getUser().getUsername(),
                     "posTablero", jugador.getPosicionMesa(),
                     "apuesta", jugador.getApuesta(),
-                    "puntos", (juego.getEstado() == state.FINALIZADO)? jugador.getPuntuacion() : "?",
-                    "estado", (juego.getEstado() != state.JUGANDO || (j != null && j.getId() == jugador.getId()))? jugador.getEstado() : estadoJugador.LISTO,
-                    "cartas", (juego.getEstado() == state.FINALIZADO)? jugador.getCartas() : "[]",
+                    "puntos", (juego.getEstado() == state.FINALIZADO) ? jugador.getPuntuacion() : "?",
+                    "estado",
+                    (juego.getEstado() != state.JUGANDO || (j != null && j.getId() == jugador.getId()))
+                            ? jugador.getEstado()
+                            : estadoJugador.LISTO,
+                    "cartas", (juego.getEstado() == state.FINALIZADO) ? jugador.getCartas() : "[]",
                     "numCartas", jugador.getNumCartas()));
         });
 
@@ -82,11 +91,10 @@ public class JuegoController {
                 "estadoJuego", juego.getEstado(),
                 "minBet", juego.getMin_bet(),
                 "jugadorAct", Map.of(
-                    "idJugador", (j != null) ? j.getId() : -1,
-                    "posJugador", (j != null) ? j.getPosicionMesa() : -1,
-                    "cartas", (j != null) ? j.getCartas() : "[]",
-                    "puntos", (j != null) ? j.getPuntuacion() : "?"
-                ),
+                        "idJugador", (j != null) ? j.getId() : -1,
+                        "posJugador", (j != null) ? j.getPosicionMesa() : -1,
+                        "cartas", (j != null) ? j.getCartas() : "[]",
+                        "puntos", (j != null) ? j.getPuntuacion() : "?"),
                 "numJugadores", juego.getNum_jugadores(),
                 "jugadores", jugadores));
         log.info(estado);
@@ -94,23 +102,19 @@ public class JuegoController {
         return estado;
     }
 
-    private void barajarBaraja(List<String> baraja){
-        for(int i = baraja.size() - 1; i > 0; i--){
-            int j = (int) Math.floor(Math.random() * (i+1));
+    private void barajarBaraja(List<String> baraja) {
+        for (int i = baraja.size() - 1; i > 0; i--) {
+            int j = (int) Math.floor(Math.random() * (i + 1));
             Collections.swap(baraja, i, j);
         }
     }
 
-    private static final List<Character> PALOS = List.of('B', 'C', 'E', 'O');
-    private static final List<String> NUMS = List.of("1", "2", "3", "4", "5", "6", "7", "S", "C", "R");
-    private static final List<Character> FIGURAS = List.of('S', 'C', 'R');
-
-    private String crearBaraja(){
+    private String crearBaraja() {
         List<String> baraja = new ArrayList<>();
 
-        for(Character palo : PALOS){
-            for(String num : NUMS)
-                baraja.add(num+palo);
+        for (Character palo : PALOS) {
+            for (String num : NUMS)
+                baraja.add(num + palo);
         }
         log.info("Baraja creada: " + baraja.toString());
 
@@ -127,19 +131,68 @@ public class JuegoController {
         return res;
     }
 
-    private double puntosCarta(String carta){
-        if(FIGURAS.contains(carta.charAt(0)))
+    private double puntosCarta(String carta) {
+        if (FIGURAS.contains(carta.charAt(0)))
             return 0.5;
         else
             return Character.getNumericValue(carta.charAt(0));
     }
 
-    private boolean finJuego(Juego juego){
-        for(Jugador jugador : juego.getJugadores()){
-            if(jugador.getEstado() == estadoJugador.LISTO)
+    private boolean finJuego(Juego juego) {
+        for (Jugador jugador : juego.getJugadores()) {
+            if (jugador.getEstado() == estadoJugador.LISTO)
                 return false;
         }
         return true;
+    }
+
+    private void repartoDinero(Juego juego) {
+        juego.setEstado(state.FINALIZADO);
+        List<Jugador> jugadores = juego.getJugadores();
+
+        // Reparto de fichas
+        int fichasTotales = 0;
+        for (Jugador j : jugadores) {
+            fichasTotales += j.getApuesta();
+        }
+
+        List<Jugador> ganadores = new ArrayList<>();
+        if (jugadores.size() == 1) {
+            ganadores.add(jugadores.get(0));
+        } else {
+            int i = 0, j = 1;
+            while (i < juego.getNum_jugadores() - 2 && j < juego.getNum_jugadores() - 1) {
+                if (jugadores.get(i).getPuntuacion() > jugadores.get(j).getPuntuacion()) {
+                    ganadores.add(jugadores.get(i));
+                    j++;
+                } else if (jugadores.get(i).getPuntuacion() < jugadores.get(j).getPuntuacion()) {
+                    ganadores.add(jugadores.get(j));
+                    i = j;
+                    j++;
+                } else {
+                    ganadores.add(jugadores.get(i));
+                    ganadores.add(jugadores.get(j));
+                    j++;
+                }
+            }
+        }
+
+        for (Jugador g : ganadores) {
+            fichasTotales -= g.getApuesta();
+        }
+        ;
+
+        for (Jugador g : ganadores) {
+            User u = g.getUser();
+            int fichas = u.getFichas() + fichasTotales / ganadores.size() + g.getApuesta();
+            u.setFichas(fichas);
+            int nuevas_cervezas = (CERVEZAS_GANADAS * (jugadores.size() - ganadores.size()));
+            u.setCervezas_totales(u.getCervezas_totales() + nuevas_cervezas);
+            u.setCervezas_actuales(u.getCervezas_actuales() + nuevas_cervezas);
+        }
+
+        // TODO hacer ws a ranking
+
     }
 
     @GetMapping("")
@@ -291,7 +344,7 @@ public class JuegoController {
         j.setPuntuacion(0);
         j.setEstado(estadoJugador.LISTO);
 
-        if(juego.getEstado() == state.FINALIZADO)
+        if (juego.getEstado() == state.FINALIZADO)
             juego.setEstado(state.ESPERANDO);
 
         boolean todosListos = true;
@@ -304,7 +357,7 @@ public class JuegoController {
 
         log.info((todosListos) ? "El juego comienza" : "Falta gente por estar lista");
 
-        if (todosListos){
+        if (todosListos) {
             juego.setBaraja(crearBaraja());
             juego.setEstado(state.JUGANDO);
         }
@@ -327,8 +380,8 @@ public class JuegoController {
     @ResponseBody
     @Transactional
     public String pedirCarta(Model model, HttpSession session, @RequestBody JsonNode o,
-            @PathVariable Long idTablero){
-        
+            @PathVariable Long idTablero) {
+
         Long idJugador = o.get("idJugador").asLong();
 
         Jugador j = entityManager.find(Jugador.class, idJugador);
@@ -343,20 +396,22 @@ public class JuegoController {
         if (comprobarJugador(session, j))
             return "{\"error\": \"Se ha detectado la manipulación de datos.\"}";
 
-        if(j.getEstado() != estadoJugador.LISTO)
+        if (j.getEstado() != estadoJugador.LISTO)
             return "{\"error\": \"El jugador debe de estar jugando.\"}";
 
         List<String> cartas = new ArrayList<>();
         List<String> baraja = new ArrayList<>();
         try {
-            baraja = mapper.readValue(juego.getBaraja(), new TypeReference<List<String>>() {});
-            cartas = mapper.readValue(j.getCartas(), new TypeReference<List<String>>() {});
+            baraja = mapper.readValue(juego.getBaraja(), new TypeReference<List<String>>() {
+            });
+            cartas = mapper.readValue(j.getCartas(), new TypeReference<List<String>>() {
+            });
         } catch (Exception e) {
             log.error("Error parseando la baraja o cartas del jugador: " + e.getMessage());
             return "{\"error\": \"No se pudo parsear la baraja o cartas del jugador.\"}";
         }
 
-        if(baraja.isEmpty()){
+        if (baraja.isEmpty()) {
             log.error("Baraja Vacia");
             return "{\"error\": \"Baraja vacia.\"}";
         }
@@ -370,11 +425,11 @@ public class JuegoController {
             j.setCartas(mapper.writeValueAsString(cartas));
             j.setPuntuacion(j.getPuntuacion() + puntos);
             j.setNumCartas(j.getNumCartas() + 1);
-            if(j.getPuntuacion() > 7.5){
+            if (j.getPuntuacion() > 7.5) {
                 j.setEstado(estadoJugador.SOBREPUNTOS);
-                
-                if(finJuego(juego))
-                    juego.setEstado(state.FINALIZADO);
+
+                if (finJuego(juego))
+                    repartoDinero(juego);
             }
         } catch (Exception e) {
             log.error("Error guardando la baraja o cartas del jugador: " + e.getMessage());
@@ -384,7 +439,8 @@ public class JuegoController {
         String estado = "";
         try {
             estado = mapper.writeValueAsString(generarEstado("PEDIDO", j, juego));
-            messagingTemplate.convertAndSend("/topic/juego/" + juego.getId(), mapper.writeValueAsString(generarEstado("PEDIDO", null, juego)));
+            messagingTemplate.convertAndSend("/topic/juego/" + juego.getId(),
+                    mapper.writeValueAsString(generarEstado("PEDIDO", null, juego)));
         } catch (Exception e) {
             log.error("No se pudo parsear el estado: ", e.getMessage());
             return "{\"error\": \"Al enviar la información del estado.\"}";
@@ -397,7 +453,7 @@ public class JuegoController {
     @ResponseBody
     @Transactional
     public String plantar(Model model, HttpSession session, @RequestBody JsonNode o,
-            @PathVariable Long idTablero){
+            @PathVariable Long idTablero) {
 
         Long idJugador = o.get("idJugador").asLong();
 
@@ -413,18 +469,19 @@ public class JuegoController {
         if (comprobarJugador(session, j))
             return "{\"error\": \"Se ha detectado la manipulación de datos.\"}";
 
-        if(j.getEstado() != estadoJugador.LISTO)
+        if (j.getEstado() != estadoJugador.LISTO)
             return "{\"error\": \"El jugador debe de estar jugando.\"}";
-        
+
         j.setEstado(estadoJugador.PLANTADO);
 
-        if(finJuego(juego))
-            juego.setEstado(state.FINALIZADO);
+        if (finJuego(juego))
+            repartoDinero(juego);
 
         String estado = "";
         try {
             estado = mapper.writeValueAsString(generarEstado("PLANTADO", j, juego));
-            messagingTemplate.convertAndSend("/topic/juego/" + juego.getId(), mapper.writeValueAsString(generarEstado("PLANTADO", null, juego)));
+            messagingTemplate.convertAndSend("/topic/juego/" + juego.getId(),
+                    mapper.writeValueAsString(generarEstado("PLANTADO", null, juego)));
         } catch (Exception e) {
             log.error("No se pudo parsear el estado: ", e.getMessage());
             return "{\"error\": \"Al enviar la información del estado.\"}";
