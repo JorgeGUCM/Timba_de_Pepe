@@ -105,5 +105,7 @@ if (typeof window.ChatSystem === 'undefined') {
         if (document.getElementById('menuChatSala') && window.ChatSala.getSalaId()) {
             window.ChatSala.initConexion();
         }
+        // TODO
+        // go(config.jljasfdj/recuperar, POST, data);
     });
 }

@@ -13,6 +13,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import es.ucm.fdi.iw.model.User;
+import es.ucm.fdi.iw.model.Juego;
+import es.ucm.fdi.iw.model.Jugador;
+import es.ucm.fdi.iw.model.Message;
+import es.ucm.fdi.iw.model.Topic;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
 import jakarta.servlet.http.HttpSession;
 
 import java.time.LocalDateTime;
@@ -31,6 +37,10 @@ public class ChatController {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
+    // Variable para la BD
+    @Autowired
+    private EntityManager entityManager;
+
 
     @PostMapping("/enviar")
     @ResponseBody   // Para que no devuelva una vista http
@@ -40,6 +50,7 @@ public class ChatController {
         if (u == null) {
             return Map.of("error", "Usuario no autenticado");
         }
+
 
         String text = data.get("text").asText();
         // Si nos pasan una sala, la usamos. Si no, por defecto es global.
@@ -53,7 +64,75 @@ public class ChatController {
         msg.put("sent", LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm")));
 
         // Retransmitimos a la "tubería" correcta
+        // Se envía por el WS correspondiente
         messagingTemplate.convertAndSend("/topic/chat/" + room, msg);
+
+
+        // Para la BD
+
+        // Necesario ponerlo porque con "u" se ralla cuando pones algo en la tabla TOPIC_MEMBERS 
+        User sender = entityManager.find(User.class, u.getId());
+
+        // Para la tabla TOPIC
+        Topic topic = null;
+        try {
+            topic = entityManager.createNamedQuery("Topic.byKey", Topic.class)
+                    .setParameter("key", room)
+                    .getSingleResult();
+        } catch (NoResultException e) {
+            log.info("El chat '{}' no existe. Creándolo de forma automática...", room);
+            topic = new Topic();
+            topic.setKey(room);
+            // Le ponemos un nombre genérico basado en la key
+            topic.setName(room);
+
+            
+            entityManager.persist(topic);
+
+            // Para añadir TOPIC_ID en la tabla JUEGO
+            if(room.startsWith("sala_")) {
+                long idJuego = Long.parseLong(room.replace("sala_", ""));
+                Juego juego = entityManager.find(Juego.class, idJuego);
+
+                boolean estaJugando = false;
+                for (Jugador j : juego.getJugadores()) {
+                    if (j.getUser().getId() == sender.getId()) {
+                        estaJugando = true;
+                    }
+                }
+                
+                if(estaJugando){
+                    juego.setChat(topic);
+                    // Ya de paso le cambiamos el nombre para que no tenga name = room = Key
+                    topic.setName("Partida: " + juego.getNombre());
+                }
+
+                else{
+                    log.info("Se ha iniciado un chat privado que no esta en un juego.");
+                    log.info("WS: ", room);
+                }
+            }
+        }
+
+
+        // Para la tabla TOPIC_MEMBERS (N a N)
+        // Se usa sender en vez de "u" porque nos lo chapan las cosas de HTTPS ciertas extensiones
+        if (!topic.getMembers().contains(sender)) {
+            topic.getMembers().add(sender);
+            sender.getGroups().add(topic); 
+            log.info("Usuario añadido al chat");
+        }
+
+        // Para la tabla MESSAGE
+        Message message = new Message();
+        message.setText(text);
+        message.setSender(u);
+        message.setTopic(topic);
+        message.setDateSent(LocalDateTime.now());
+
+        entityManager.persist(message);
+
+
         return Map.of("result", "ok");
     }
 }
