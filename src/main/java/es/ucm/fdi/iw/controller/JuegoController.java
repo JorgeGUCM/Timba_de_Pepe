@@ -490,4 +490,14 @@ public class JuegoController {
         return estado;
     }
 
+    @PostMapping("/{idTablero}/salir")
+    @ResponseBody
+    @Transactional
+    public String salir(@RequestBody String entity) {
+        
+        log.info("Dentro");
+        return "{}";
+    }
+    
+
 }

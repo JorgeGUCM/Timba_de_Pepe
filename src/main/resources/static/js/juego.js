@@ -273,6 +273,17 @@ function actualizarJuego(){
 
     if(info.estadoJuego == ESTADO_JUEGO.FINALIZADO)
         mostrarBtnListo();
+
+    let elemSalir = document.querySelector("#salir");
+    if(info.estadoJuego == ESTADO_JUEGO.JUGANDO){
+        elemSalir.onclick = e => {
+            mostrarMensaje("¡Debes acabar la partida para poder salir!", "warning");
+        }
+        elemSalir.disabled = true;
+    }else{
+        elemSalir.onclick = e => salir();
+        elemSalir.disabled = false;
+    }
 }
 
 /* ------------ Pedir Carta ------------ */
@@ -392,8 +403,21 @@ document.addEventListener("DOMContentLoaded", e => {
     document.querySelector("#btnApostar").disabled = true;
     document.querySelector("#btnPlantarse").disabled = true;
     document.querySelector("#btnPedir").disabled = true;
+    document.querySelector("#salir").onclick = e => salir();
     entrarPartida();
 });
+
+/* ------------ Salir de la Sala ------------ */
+function salir(){
+    const urlParams = new URLSearchParams(window.location.search);
+    const idTablero = urlParams.get("id");
+
+    go(`/juego/${idTablero}/salir`, 'POST')
+    .then( res => {
+        window.location.replace("/salas");
+    })
+    .catch( error => console.log("No se pudo salir de la sala: ", error));
+}
 
 ws.receive = (respuesta) => {
 
@@ -426,20 +450,3 @@ ws.receive = (respuesta) => {
 
     console.log(info);
 };
-
-window.addEventListener('beforeunload', function () {
-/* const urlParams = new URLSearchParams(window.location.search);
-const juegoId = urlParams.get('id');
-
-if (juegoId && miJugadorId) {
-    let headers = { 'Content-Type': 'application/json' };
-    if (typeof config !== 'undefined' && config.csrf && config.csrf.name) {
-        headers[config.csrf.name === '_csrf' ? 'X-CSRF-TOKEN' : config.csrf.name] = config.csrf.value;
-    }
-    fetch(`/juego/${juegoId}/salir`, { 
-        method: 'POST', 
-        headers: headers, 
-        keepalive: true 
-        });
-    } */
-});
