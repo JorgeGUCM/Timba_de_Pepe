@@ -80,7 +80,10 @@ public class JuegoController {
                             ? jugador.getEstado()
                             : estadoJugador.LISTO,
                     "cartas", (juego.getEstado() == state.FINALIZADO) ? jugador.getCartas() : "[]",
-                    "numCartas", jugador.getNumCartas()));
+                    "numCartas", jugador.getNumCartas(),
+                    "fichas", (juego.getEstado() == state.FINALIZADO) ? jugador.getUser().getFichas() : "?",
+                    "cervezas",
+                    (juego.getEstado() == state.FINALIZADO) ? jugador.getUser().getCervezas_actuales() : "?"));
         });
 
         Map<String, Object> estado = new HashMap<>();
@@ -146,7 +149,7 @@ public class JuegoController {
         return true;
     }
 
-    private void repartoDinero(Juego juego) {
+    private void repartoDinero(Juego juego, HttpSession session, User user) {
         juego.setEstado(state.FINALIZADO);
         List<Jugador> jugadores = juego.getJugadores();
 
@@ -161,7 +164,7 @@ public class JuegoController {
             ganadores.add(jugadores.get(0));
         } else {
             int i = 0, j = 1;
-            while (i < juego.getNum_jugadores() - 2 && j < juego.getNum_jugadores() - 1) {
+            while (i < juego.getNum_jugadores() - 1 && j < juego.getNum_jugadores()) {
                 if (jugadores.get(i).getPuntuacion() > jugadores.get(j).getPuntuacion()) {
                     ganadores.add(jugadores.get(i));
                     j++;
@@ -429,7 +432,7 @@ public class JuegoController {
                 j.setEstado(estadoJugador.SOBREPUNTOS);
 
                 if (finJuego(juego))
-                    repartoDinero(juego);
+                    repartoDinero(juego, session, j.getUser());
             }
         } catch (Exception e) {
             log.error("Error guardando la baraja o cartas del jugador: " + e.getMessage());
@@ -475,7 +478,7 @@ public class JuegoController {
         j.setEstado(estadoJugador.PLANTADO);
 
         if (finJuego(juego))
-            repartoDinero(juego);
+            repartoDinero(juego, session, j.getUser());
 
         String estado = "";
         try {
@@ -493,11 +496,62 @@ public class JuegoController {
     @PostMapping("/{idTablero}/salir")
     @ResponseBody
     @Transactional
-    public String salir(@RequestBody String entity) {
-        
-        log.info("Dentro");
-        return "{}";
+    public String salir(Model model, HttpSession session, @RequestBody JsonNode o,
+            @PathVariable Long idTablero) {
+
+        Long idJugador = o.get("idJugador").asLong();
+
+        Jugador j = entityManager.find(Jugador.class, idJugador);
+        Juego juego = entityManager.find(Juego.class, idTablero);
+
+        if (j == null)
+            return "{\"error\": \"No se ha encontrado el jugador\"}";
+
+        if (juego.getEstado() == state.JUGANDO)
+            return "{\"warning\": \"¡El juego no ha comenzado!\"}";
+
+        if (comprobarJugador(session, j))
+            return "{\"error\": \"Se ha detectado la manipulación de datos.\"}";
+
+        if (juego.getNum_jugadores() <= 0)
+            return "{\"error\": \"No hay ningún jugador en la sala.\"}";
+
+        // INFO: ahora mismo se desvincula el jugador del juego haciendo que no sea
+        // posible recuperar el juego en el que jugo
+        juego.setNum_jugadores(juego.getNum_jugadores() - 1);
+        j.setJuego(null);
+
+        if (juego.getEstado() == state.COMPLETO)
+            juego.setEstado(state.ESPERANDO);
+
+        log.info("Se ha eliminado al jugador del juego correctamente");
+
+        try {
+            messagingTemplate.convertAndSend("/topic/juego/" + juego.getId(),
+                    mapper.writeValueAsString(generarEstado("SALIDO", null, juego)));
+        } catch (Exception e) {
+            log.error("No se pudo parsear el estado: ", e.getMessage());
+            return "{\"error\": \"Al enviar la información del estado.\"}";
+        }
+
+        return "{\"success\": \"true\"}";
     }
-    
+
+    @PostMapping("/sessions")
+    @ResponseBody
+    @Transactional
+    public String actualizarSesiones(HttpSession session, @RequestBody JsonNode o) {
+
+        Long idJugador = o.get("idJugador").asLong();
+
+        Jugador j = entityManager.find(Jugador.class, idJugador);
+
+        if (comprobarJugador(session, j))
+            return "{\"error\": \"¡Has manipulado datos!\"}";
+
+        session.setAttribute("u", j.getUser());
+
+        return "{\"success\": \"true\"}";
+    }
 
 }

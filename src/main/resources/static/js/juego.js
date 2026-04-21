@@ -28,6 +28,8 @@ const REVERSO = IMG_BASE + 'reverso1.png';
         estado
         cartas
         numCartas
+        fichas
+        cervezas
     }]
 */
 let info;
@@ -106,6 +108,20 @@ function mostrarMensaje(mensaje, tipo = "info"){
             elemMensaje.classList.remove("show");
         }, 5000);
     }
+}
+
+/* Para actualizar las sesiones de todos los jugadores necesario para que cuando se actualicen las fichas de varios jugadores a la vez se actualicen sus sesiones */
+function actualizarSesiones(){
+    const idJugador = info.jugadorAct.idJugador;
+
+    go(`/juego/sessions`, 'POST', {idJugador})
+    .then(res => {
+        if(res.error)
+            mostrarMensaje(res.error, "danger");
+        else if (res.warning)
+            mostrarMensaje(res.warning, "warning");
+    })
+    .catch(error => console.log("No se pudo obtener la carta: ", error));
 }
 
 /* ------------ Funciones de apoyo a pintar ------------ */
@@ -271,8 +287,11 @@ function actualizarJuego(){
     else
         deshabilitarAcciones();
 
-    if(info.estadoJuego == ESTADO_JUEGO.FINALIZADO)
+    if(info.estadoJuego == ESTADO_JUEGO.FINALIZADO){
         mostrarBtnListo();
+        mostrarCartera(info.jugadores[info.jugadorAct.posJugador].fichas, info.jugadores[info.jugadorAct.posJugador].cervezas);
+        actualizarSesiones();
+    }
 
     let elemSalir = document.querySelector("#salir");
     if(info.estadoJuego == ESTADO_JUEGO.JUGANDO){
@@ -399,6 +418,25 @@ function entrarPartida(){
     })
     .catch( error => console.log("No se pudo entrar a la sal de juego: ", error));
 }
+
+/* ------------ Salir de la Sala ------------ */
+function salir(){
+    const urlParams = new URLSearchParams(window.location.search);
+    const idTablero = urlParams.get("id");
+    const idJugador = info.jugadorAct.idJugador;
+
+    go(`/juego/${idTablero}/salir`, 'POST', {idJugador})
+    .then( res => {
+        if(res.success != undefined)
+            window.location.replace("/salas");
+        else if(res.warning != undefined)
+            mostrarMensaje("No se pudo salir de la Sala: " + res.warning, "warning");
+        else
+            mostrarMensaje("No se pudo salir de la Sala: " + res.error, "danger");
+    })
+    .catch( error => console.log("No se pudo salir de la sala: ", error));
+}
+
 document.addEventListener("DOMContentLoaded", e => {
     document.querySelector("#btnApostar").disabled = true;
     document.querySelector("#btnPlantarse").disabled = true;
@@ -406,18 +444,6 @@ document.addEventListener("DOMContentLoaded", e => {
     document.querySelector("#salir").onclick = e => salir();
     entrarPartida();
 });
-
-/* ------------ Salir de la Sala ------------ */
-function salir(){
-    const urlParams = new URLSearchParams(window.location.search);
-    const idTablero = urlParams.get("id");
-
-    go(`/juego/${idTablero}/salir`, 'POST')
-    .then( res => {
-        window.location.replace("/salas");
-    })
-    .catch( error => console.log("No se pudo salir de la sala: ", error));
-}
 
 ws.receive = (respuesta) => {
 
@@ -443,6 +469,12 @@ ws.receive = (respuesta) => {
     }
 
     if(respuesta.result == "PLANTADO"){
+        info.jugadores = respuesta.jugadores;
+        info.estadoJuego = respuesta.estadoJuego;
+        actualizarJuego();
+    }
+
+    if(respuesta.result == "SALIDO"){
         info.jugadores = respuesta.jugadores;
         info.estadoJuego = respuesta.estadoJuego;
         actualizarJuego();
