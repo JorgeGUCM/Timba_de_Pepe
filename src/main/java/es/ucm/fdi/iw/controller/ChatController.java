@@ -23,8 +23,12 @@ import jakarta.servlet.http.HttpSession;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @Controller
 @RequestMapping("chat")
@@ -135,4 +139,41 @@ public class ChatController {
 
         return Map.of("result", "ok");
     }
+
+
+
+    // Se llama cuando se cambia de vista o F5
+    // Para que te salgan los mensajes que ya había en ese chat con anterioridad
+    @PostMapping("/recuperar")
+    @ResponseBody
+    @Transactional
+    public List<Map<String, String>> recuperarMensajes(HttpSession session, @RequestBody JsonNode data) { // <-- Leemos el JSON
+        User u = (User) session.getAttribute("u");
+        if (u == null) {
+            return List.of(); 
+        }
+
+        // Sacamos la sala del tercer parámetro que manda el JS
+        String room = data.get("room").asText();
+
+        // Buscamos los mensajes
+        List<Message> mensajesBD = entityManager.createQuery(
+                "SELECT m FROM Message m WHERE m.topic.key = :room ORDER BY m.dateSent ASC", Message.class)
+                .setParameter("room", room)
+                .setMaxResults(50)
+                .getResultList();
+
+        // Mapeamos los mensajes
+        List<Map<String, String>> historial = new ArrayList<>();
+        for (Message m : mensajesBD) {
+            Map<String, String> msg = new HashMap<>();
+            msg.put("from", m.getSender().getUsername());
+            msg.put("text", m.getText());
+            msg.put("sent", m.getDateSent().format(DateTimeFormatter.ofPattern("HH:mm")));
+            historial.add(msg);
+        }
+
+        return historial;
+    }
+    
 }

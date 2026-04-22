@@ -29,12 +29,16 @@ if (typeof window.ChatSystem === 'undefined') {
                 input.value = "";   // limpia lo que acabas de enviar
             }
         },
-        renderizar: (m) => {
+        renderizar: (m) => {    // Se llama cuando hay un nuevo mensaje o desde recuperar() que es al principio para ver los mensajes anteriores
             const zona = document.getElementById("chat-zona-mensajes-global");
             const div = document.createElement("div");
             div.className = "card mensaje-chat mb-2 p-2 shadow-sm";     // le pega el formato CSS de los msgs
             // innerHTML es el estilo a los globos de los msgs, al recuadro
-            div.innerHTML = `<strong style="color: #667eea;">${m.from}</strong> <span>${m.text}</span> <small class="text-white-50 mt-1" style="font-size: 0.75rem; text-align: right;">${m.sent}</small>`;
+            div.innerHTML = `
+                <strong style="color: #667eea;">${m.from}</strong>
+                <span>${m.text}</span>
+                <small class="text-white-50 mt-1" style="font-size: 0.75rem; text-align: right;">${m.sent} </small>
+            `;
             zona.appendChild(div);  // coge el mensaje ya hecho y lo pone al final de la lista
             zona.scrollTop = zona.scrollHeight; // scrolleo hasta abajo
         },
@@ -47,7 +51,17 @@ if (typeof window.ChatSystem === 'undefined') {
                 // Bucle que reintenta el WS cada X secs esperando a que se active correctamente
                 setTimeout(ChatGlobal.initConexion, 500);
             }
+        },
+        // se llama tras initConexion() para ver los mensajes previamente mandados
+        recuperar: () => {
+            // Tu idea: usamos POST y mandamos la sala como tercer parámetro
+            go("/chat/recuperar", "POST", { room: "global" })
+                .then(mensajes => {
+                    mensajes.forEach(m => ChatGlobal.renderizar(m));
+                })
+                .catch(err => console.error("Error al recuperar historial global:", err));
         }
+
     };
 
     // LÓGICA DEL CHAT DE SALA (IZQUIERDA)
@@ -79,7 +93,11 @@ if (typeof window.ChatSystem === 'undefined') {
             const zona = document.getElementById("chat-zona-mensajes-sala");
             const div = document.createElement("div");
             div.className = "card mensaje-chat mb-2 p-2 shadow-sm";
-            div.innerHTML = `<strong style="color: #38ef7d;">${m.from}</strong> <span>${m.text}</span> <small class="text-white-50 mt-1" style="font-size: 0.75rem; text-align: right;">${m.sent}</small>`;
+            div.innerHTML = `
+                <strong style="color: #38ef7d;">${m.from}</strong> 
+                <span>${m.text}</span> 
+                <small class="text-white-50 mt-1" style="font-size: 0.75rem; text-align: right;">${m.sent}</small>
+            `;
             zona.appendChild(div);
             zona.scrollTop = zona.scrollHeight;
         },
@@ -93,6 +111,17 @@ if (typeof window.ChatSystem === 'undefined') {
             } else {
                 setTimeout(ChatSala.initConexion, 500);
             }
+        },
+        recuperar: () => {
+            let id = ChatSala.getSalaId();
+            if(!id) return; 
+
+            // Tu idea: usamos POST y mandamos la sala como tercer parámetro
+            go("/chat/recuperar", "POST", { room: "sala_" + id })
+                .then(mensajes => {
+                    mensajes.forEach(m => ChatSala.renderizar(m));
+                })
+                .catch(err => console.error("Error al recuperar historial de sala:", err));
         }
     };
 
@@ -101,11 +130,11 @@ if (typeof window.ChatSystem === 'undefined') {
     document.addEventListener("DOMContentLoaded", () => {
         if (document.getElementById('menuChatGlobal')) {
             window.ChatGlobal.initConexion();
+            window.ChatGlobal.recuperar();  // Para que se recuperen los datos, losq ya habia en ese chat
         }
         if (document.getElementById('menuChatSala') && window.ChatSala.getSalaId()) {
             window.ChatSala.initConexion();
+            window.ChatSala.recuperar();
         }
-        // TODO
-        // go(config.jljasfdj/recuperar, POST, data);
     });
 }
