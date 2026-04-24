@@ -54,6 +54,9 @@ public class JuegoController {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
+    @Autowired
+    private es.ucm.fdi.iw.service.RankingService rankingService;
+
     private ObjectMapper mapper = new ObjectMapper();
 
     @ModelAttribute
@@ -181,21 +184,31 @@ public class JuegoController {
         }
 
         for (Jugador g : ganadores) {
-            fichasTotales -= g.getApuesta();
-        }
-        ;
-
-        for (Jugador g : ganadores) {
             User u = g.getUser();
-            int fichas = u.getFichas() + fichasTotales / ganadores.size() + g.getApuesta();
+            // El ganador se lleva su apuesta más su parte del bote neto (fichasTotales /
+            // numGanadores)
+            // TODO: funciona pero no se si hay que hacerlo asi
+            // aqui lo que hacemos es calcular lo que gana el ganador y lo que pierde el
+            // perdedor
+            int fichas = u.getFichas() + (fichasTotales / ganadores.size());
             u.setFichas(fichas);
             int nuevas_cervezas = (CERVEZAS_GANADAS * (jugadores.size() - ganadores.size()));
             u.setCervezas_totales(u.getCervezas_totales() + nuevas_cervezas);
             u.setCervezas_actuales(u.getCervezas_actuales() + nuevas_cervezas);
+            entityManager.persist(u);
         }
 
-        // TODO hacer ws a ranking
-
+        // Aqui enviamos el ranking actualizado, via websocket, a todos los
+        // usuarios suscritos al topic /topic/ranking
+        entityManager.flush(); // Aseguramos que los cambios están en la BD
+        try {
+            List<Map<String, Object>> ranking = rankingService.getRankingActualizado(); // Metemos el ranking actual
+                                                                                        // en un mapa
+            log.info("Enviando ranking actualizado ({} usuarios) a /topic/ranking", ranking.size());
+            messagingTemplate.convertAndSend("/topic/ranking", ranking);
+        } catch (Exception e) {
+            log.error("Fallo al enviar notificación de ranking: ", e);
+        }
     }
 
     @GetMapping("")
@@ -452,53 +465,23 @@ public class JuegoController {
         return estado;
     }
 
-<<<<<<< rankingWebsockets
-
-     @PostMapping("{idTablero}/finalizar")
+    @PostMapping("{idTablero}/finalizar")
     @ResponseBody
     @Transactional
     public Map<String, Object> finalizarPartida(HttpSession session, @PathVariable long idTablero) {
-        
-        // 1. Aquí iría tu lógica normal de actualizar quién gana
-        // User ganador = ...
-        // ganador.setCervezas(ganador.getCervezas() + 100);
-        // entityManager.persist(ganador);
-        
-        // ...
-        
-        // 2. Extraer el servidor el "nuevo ranking" para mandarlo.
-        // Haces una Query ordenando por cervezas descendente
-        List<User> topUsuarios = entityManager.createQuery(
-            "SELECT u FROM User u ORDER BY u.cervezas DESC", User.class)
-            // .setMaxResults(10) // opcional si solo quieres el Top 10
-            .getResultList();
-        // Creamos una lista simplificada para no enviar al frontend datos del password, roles etc.
-        List<Map<String, Object>> rankingParaMandar = new ArrayList<>();
-        for (User u : topUsuarios) {
-            rankingParaMandar.add(Map.of(
-                "id", u.getId(),
-                "username", u.getUsername(),
-                "rango", "Maestro", // Aquí pondrías el rango según las cervezas
-                "cervezas", u.getCervezas_totales()
-            ));
-        }
-        // 3. ¡EL MOMENTO DEL ANUNCIO!
-        // Como hemos modificado la BBDD, gritamos por el megáfono al topic "/topic/ranking" 
-        // pasándole la lista actualizada en formato JSON (Map se pasa a JSON autómaticamente)
+        // Al finalizar manualmente, también actualizamos el ranking
         try {
-            messagingTemplate.convertAndSend("/topic/ranking", rankingParaMandar);
-        } catch(Exception e) {
-            log.error("Fallo al enviar notificación de ranking: ", e);
+            messagingTemplate.convertAndSend("/topic/ranking", rankingService.getRankingActualizado());
+        } catch (Exception e) {
+            log.error("Fallo al enviar notificación de ranking en finalizarPartida: ", e);
         }
-        // 4. Devolvemos respuesta al que mandó procesar el fin de partida
         return Map.of("result", "Partida Finalizada y Ranking Anunciado");
-    
-=======
+    }
+
     @PostMapping("{idTablero}/plantar")
     @ResponseBody
     @Transactional
-    public String plantar(Model model, HttpSession session, @RequestBody JsonNode o,
-            @PathVariable Long idTablero) {
+    public String plantar(Model model, HttpSession session, @RequestBody JsonNode o, @PathVariable Long idTablero) {
 
         Long idJugador = o.get("idJugador").asLong();
 
@@ -594,7 +577,6 @@ public class JuegoController {
         session.setAttribute("u", j.getUser());
 
         return "{\"success\": \"true\"}";
->>>>>>> WSRanking-Final
     }
 
 }

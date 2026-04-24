@@ -57,6 +57,9 @@ public class ApiController {
   @Autowired
   private EntityManager entityManager;
 
+  @Autowired
+  private es.ucm.fdi.iw.service.RankingService rankingService;
+
   private static final Logger log = LogManager.getLogger(ApiController.class);
 
   /**
@@ -225,26 +228,9 @@ public class ApiController {
       entityManager.persist(user);
       entityManager.flush();
 
-      // 2. Query the updated ranking
-      java.util.List<User> topUsuarios = entityManager.createQuery(
-          "SELECT u FROM User u ORDER BY u.cervezas_totales DESC", User.class)
-          .setMaxResults(10)
-          .getResultList();
-
-      java.util.List<Map<String, Object>> rankingParaMandar = new java.util.ArrayList<>();
-      for (User u : topUsuarios) {
-          rankingParaMandar.add(Map.of(
-              "id", u.getId(),
-              "username", u.getUsername(),
-              "rango", "Catador Experto", 
-              "cervezas", u.getCervezas_totales()
-          ));
-      }
-
-      // 3. Broadcast exactly what the frontend ranking.js expects
+      // 2. Query the updated ranking and Broadcast
       try {
-          // This will be parsed as JSON Array by the frontend
-          messagingTemplate.convertAndSend("/topic/ranking", rankingParaMandar);
+          messagingTemplate.convertAndSend("/topic/ranking", rankingService.getRankingActualizado());
           log.info("Test WebSockets: Sent updated ranking to /topic/ranking");
       } catch (Exception e) {
           log.error("Fallo al enviar notificación de ranking: ", e);
