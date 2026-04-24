@@ -35,9 +35,7 @@ public class SalasController {
     private static final Logger log = LogManager.getLogger(JuegoController.class);
 
     @Autowired
-    private EntityManager entityManager;
-
-   
+    private EntityManager entityManager;   
 
     @ModelAttribute
     public void populateModel(HttpSession session, Model model) {
@@ -80,13 +78,6 @@ public class SalasController {
         nuevoJuego.setNum_jugadores(0);
 
         entityManager.persist(nuevoJuego);
-
-        Topic chat = new Topic();
-        chat.setName("Chat de " + nombre);
-        chat.setKey(UUID.randomUUID().toString());
-        chat.setJuego(nuevoJuego);
-        entityManager.persist(chat);
-        nuevoJuego.setChat(chat);
 
         return "redirect:/salas";
     }

@@ -77,8 +77,9 @@ public class AdminController {
   @Transactional // para no recibir resultados inconsistentes
   @ResponseBody // para indicar que no devuelve vista, sino un objeto (jsonizado)
   public List<Message.Transfer> retrieveMessages(HttpSession session) {
-    TypedQuery<Message> query = entityManager.createQuery("select m from Message m", Message.class);
-    query.setMaxResults(5);
+    //Para que aparezcan los 10 últimos mensajes en orden descendiente, es decir, los 10 más recientes
+    TypedQuery<Message> query = entityManager.createQuery("select m from Message m order by m.dateSent desc", Message.class);
+    query.setMaxResults(10);
     query.setFirstResult(0); // para paginar: cambias el 1er resultado
     // devuelve resultado
     return query.getResultList().stream().map(Transferable::toTransfer)
