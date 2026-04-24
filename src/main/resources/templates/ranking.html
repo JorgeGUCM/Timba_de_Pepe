@@ -42,42 +42,49 @@
             <div class="text-center mb-5">
                 <h1 class="display-4 fw-bold text-primary">🍻 Salón de la Fama 🍻</h1>
                 <p class="lead text-muted">Los maestros cerveceros que más han ganado en la Timba de Pepe.</p>
+                <!-- BOTÓN DE PRUEBA WEBSOCKETS -->
+                <button id="btn-test-ws" class="btn btn-warning mt-2 fw-bold text-dark shadow-sm">
+                    🍺 ¡Dame 100 cervezas (Test WebSockets)!
+                </button>
             </div>
 
-            <div class="row justify-content-center align-items-end mb-5 text-center">
-                <div class="col-md-3 mb-3">
+            <div id="podium-container" class="row justify-content-center align-items-end mb-5 text-center">
+                <!-- 2ª Posición -->
+                <div class="col-md-3 mb-3" th:if="${topUsuarios.size() > 1}">
                     <div class="card border-0 shadow-sm pt-4" style="border-radius: 15px;">
-                        <img th:src="@{/img/equipo/lucas.jpg}" class="rounded-circle mx-auto border border-secondary" width="70" alt="2nd">
+                        <img th:src="@{/user/{id}/pic(id=${topUsuarios[1].id})}" onerror="this.src='/img/user.png'" class="rounded-circle mx-auto border border-secondary" width="70" alt="2nd">
                         <div class="card-body">
-                            <h4 class="card-title h5">LUCAS ARRANZ</h4>
-                            <span class="titulo-cervecero bg-light text-secondary">[Catador Experto 🍻]</span>
+                            <h4 class="card-title h5 text-uppercase" th:text="${topUsuarios[1].username}">LUCAS</h4>
+                            <span class="titulo-cervecero bg-light text-secondary">[Catador 🍻]</span>
                             <p class="badge bg-secondary d-block mt-2">2ª Posición</p>
-                            <p class="text-primary fw-bold mt-2">1.250 Cervezas 🍺</p>
+                            <p class="text-primary fw-bold mt-2"><span th:text="${topUsuarios[1].cervezas_totales}">0</span> Cervezas 🍺</p>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4 mb-3">
+                <!-- 1ª Posición -->
+                <div class="col-md-4 mb-3" th:if="${topUsuarios.size() > 0}">
                     <div class="card border-primary shadow-lg pt-4" style="border-radius: 20px; border-width: 3px;">
                         <div class="position-absolute top-0 start-50 translate-middle">
                             <span class="fs-1">👑</span>
                         </div>
-                        <img th:src="@{/img/equipo/pepe.jpg}" class="rounded-circle mx-auto border border-warning" width="100" alt="1st">
+                        <img th:src="@{/user/{id}/pic(id=${topUsuarios[0].id})}" onerror="this.src='/img/user.png'" class="rounded-circle mx-auto border border-warning" width="100" alt="1st">
                         <div class="card-body">
-                            <h4 class="card-title h4">Pepe (Maestro)</h4>
-                            <span class="titulo-cervecero bg-warning text-dark">[Maestro Cervecero 🏆]</span>
+                            <h4 class="card-title h4 text-uppercase" th:text="${topUsuarios[0].username}">Pepe</h4>
+                            <span class="titulo-cervecero bg-warning text-dark">[Maestro 🏆]</span>
                             <p class="badge bg-warning text-dark d-block mt-2">1ª Posición</p>
-                            <p class="display-6 fw-bold text-primary mt-2">9.999 Cervezas 🍺</p>
+                            <p class="display-6 fw-bold text-primary mt-2"><span th:text="${topUsuarios[0].cervezas_totales}">0</span> Cervezas 🍺</p>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3 mb-3">
+                <!-- 3ª Posición -->
+                <div class="col-md-3 mb-3" th:if="${topUsuarios.size() > 2}">
                     <div class="card border-0 shadow-sm pt-4" style="border-radius: 15px;">
-                        <img th:src="@{/img/equipo/alicia.jpg}" class="rounded-circle mx-auto border border-danger" width="70" alt="3rd">
+                        <img th:src="@{/user/{id}/pic(id=${topUsuarios[2].id})}" onerror="this.src='/img/user.png'" class="rounded-circle mx-auto border border-danger" width="70" alt="3rd">
                         <div class="card-body">
-                            <h4 class="card-title h5">ALICIA CASTRO</h4>
-                            <span class="titulo-cervecero bg-light text-danger">[Catador Experto 🍻]</span>
+                            <h4 class="card-title h5 text-uppercase" th:text="${topUsuarios[2].username}">ALICIA</h4>
+                            <span class="titulo-cervecero bg-light text-danger">[Catador 🍻]</span>
                             <p class="badge bg-danger d-block mt-2">3ª Posición</p>
-                            <p class="text-primary fw-bold mt-2">980 Cervezas 🍺</p>
+                            <p class="text-primary fw-bold mt-2"><span th:text="${topUsuarios[2].cervezas_totales}">0</span> Cervezas 🍺</p>
                         </div>
                     </div>
                 </div>
@@ -96,45 +103,22 @@
                                 <th class="text-end pe-4">Cervezas Ganadas</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <td class="ps-4 fw-bold">4</td>
+                        <tbody id="ranking-tbody">
+                            <tr th:each="usuario, stat : ${topUsuarios}" th:if="${stat.index >= 3}">
+                                <td class="ps-4 fw-bold" th:text="${stat.index + 1}">4</td>
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        <img th:src="@{/img/equipo/jorge.jpg}" class="rounded-circle me-3" width="35">
+                                        <img th:src="@{/user/{id}/pic(id=${usuario.id})}" onerror="this.src='/img/user.png'" class="rounded-circle me-3" width="35">
                                         <div>
-                                            <span class="fw-bold">JORGE GÓMEZ</span>
-                                            <span class="titulo-cervecero text-info bg-light">[Aprendiz de Barra 🍺]</span>
+                                            <span class="fw-bold text-uppercase" th:text="${usuario.username}">JORGE</span>
+                                            <span class="titulo-cervecero text-info bg-light">[Aprendiz 🍺]</span>
                                         </div>
                                     </div>
                                 </td>
-                                <td class="text-end pe-4 fw-bold">850 🍺</td>
+                                <td class="text-end pe-4 fw-bold"><span th:text="${usuario.cervezas_totales}">850</span> 🍺</td>
                             </tr>
-                            <tr>
-                                <td class="ps-4 fw-bold">5</td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <img th:src="@{/img/equipo/guille.jpg}" class="rounded-circle me-3" width="35">
-                                        <div>
-                                            <span class="fw-bold">GUILLERMO GONZÁLEZ</span>
-                                            <span class="titulo-cervecero text-info bg-light">[Aprendiz de Barra 🍺]</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="text-end pe-4 fw-bold">720 🍺</td>
-                            </tr>
-                            <tr>
-                                <td class="ps-4 fw-bold">6</td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <img th:src="@{/img/equipo/pablo.jpg}" class="rounded-circle me-3" width="35">
-                                        <div>
-                                            <span class="fw-bold">PABLO ARLANDIS</span>
-                                            <span class="titulo-cervecero text-muted bg-light">[Abstemio 💧]</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="text-end pe-4 fw-bold">60 🍺</td>
+                            <tr th:if="${topUsuarios.size() <= 3}">
+                                <td colspan="3" class="text-center text-muted py-3">No hay más maestros cerveceros.</td>
                             </tr>
                         </tbody>
                     </table>
@@ -142,6 +126,35 @@
             </div>
         </div>
     </main>
+
+     <!-- Webshocket -->
+    <script th:inline="javascript">
+        window.config = window.config || {};
+        config.socketUrl = /*[[@{/ws}]]*/ '/ws';
+        config.topics = 'ranking'; 
+    </script>
+
+    <script th:src="@{/js/ranking.js}" src="/js/ranking.js"></script>
+
+    <!-- Script para el botón de prueba -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const btn = document.getElementById("btn-test-ws");
+            if(btn) {
+                btn.addEventListener("click", () => {
+                    console.log("Testeando websockets... pidiendo cervezas");
+                    // Usamos la funcion 'go' de iw.js o simplemente fetch
+                    go(config.rootUrl + "/api/debug/cervezas", "POST", {})
+                        .then(response => {
+                            console.log("¡Cervezas añadidas con éxito!", response);
+                        })
+                        .catch(err => {
+                            console.error("Error pidiendo cervezas", err);
+                        });
+                });
+            }
+        });
+    </script>
 
     <th:block th:replace="~{fragments/footer.html :: footer}" />
 </body>
