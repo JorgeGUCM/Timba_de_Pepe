@@ -156,46 +156,60 @@ public class JuegoController {
         juego.setEstado(state.FINALIZADO);
         List<Jugador> jugadores = juego.getJugadores();
 
-        // Reparto de fichas
+        // Cálculo del bote total (suma de todas las apuestas)
         int fichasTotales = 0;
         for (Jugador j : jugadores) {
             fichasTotales += j.getApuesta();
         }
 
+        // Identificamos a los ganadores: aquellos con la puntuación más alta que no supere 7.5
+        double maxPuntuacion = -1.0;
         List<Jugador> ganadores = new ArrayList<>();
-        if (jugadores.size() == 1) {
-            ganadores.add(jugadores.get(0));
-        } else {
-            int i = 0, j = 1;
-            while (i < juego.getNum_jugadores() - 1 && j < juego.getNum_jugadores()) {
-                if (jugadores.get(i).getPuntuacion() > jugadores.get(j).getPuntuacion()) {
-                    ganadores.add(jugadores.get(i));
-                    j++;
-                } else if (jugadores.get(i).getPuntuacion() < jugadores.get(j).getPuntuacion()) {
-                    ganadores.add(jugadores.get(j));
-                    i = j;
-                    j++;
-                } else {
-                    ganadores.add(jugadores.get(i));
-                    ganadores.add(jugadores.get(j));
-                    j++;
+
+        for (Jugador j : jugadores) {
+            // Un jugador solo puede ganar si no se ha pasado (estado != SOBREPUNTOS y puntos <= 7.5)
+            if (j.getEstado() != estadoJugador.SOBREPUNTOS && j.getPuntuacion() <= 7.5) {
+                if (j.getPuntuacion() > maxPuntuacion) {
+                    maxPuntuacion = j.getPuntuacion();
+                    ganadores.clear();
+                    ganadores.add(j);
+                } else if (j.getPuntuacion() == maxPuntuacion) {
+                    ganadores.add(j);
                 }
             }
         }
 
-        for (Jugador g : ganadores) {
-            User u = g.getUser();
-            // El ganador se lleva su apuesta más su parte del bote neto (fichasTotales /
-            // numGanadores)
-            // TODO: funciona pero no se si hay que hacerlo asi
-            // aqui lo que hacemos es calcular lo que gana el ganador y lo que pierde el
-            // perdedor
-            int fichas = u.getFichas() + (fichasTotales / ganadores.size());
-            u.setFichas(fichas);
-            int nuevas_cervezas = (CERVEZAS_GANADAS * (jugadores.size() - ganadores.size()));
-            u.setCervezas_totales(u.getCervezas_totales() + nuevas_cervezas);
-            u.setCervezas_actuales(u.getCervezas_actuales() + nuevas_cervezas);
-            entityManager.persist(u);
+        // Si no hay ganadores (todos se pasaron), devolvemos las apuestas a cada uno
+        if (ganadores.isEmpty()) {
+            log.info("No hay ganadores, se devuelven las apuestas");
+            for (Jugador j : jugadores) {
+                User u = j.getUser();
+                u.setFichas(u.getFichas() + j.getApuesta());
+                entityManager.persist(u);
+            }
+        } else {
+            // Restamos las apuestas de los ganadores para obtener el "bote neto" (ganancias de los perdedores)
+            for (Jugador g : ganadores) {
+                fichasTotales -= g.getApuesta();
+            }
+
+            // Repartimos el bote neto entre los ganadores y les devolvemos su apuesta original
+            int numGanadores = ganadores.size();
+            for (Jugador g : ganadores) {
+                User u = g.getUser();
+                
+                // Premio = devolución de apuesta + parte proporcional del bote neto
+                int premio = g.getApuesta() + (fichasTotales / numGanadores);
+                u.setFichas(u.getFichas() + premio);
+
+                // Recompensa de cervezas basada en el número de perdedores
+                int perdedores = jugadores.size() - numGanadores;
+                int nuevas_cervezas = CERVEZAS_GANADAS * perdedores;
+                u.setCervezas_totales(u.getCervezas_totales() + nuevas_cervezas);
+                u.setCervezas_actuales(u.getCervezas_actuales() + nuevas_cervezas);
+                
+                entityManager.persist(u);
+            }
         }
 
         // Aqui enviamos el ranking actualizado, via websocket, a todos los
