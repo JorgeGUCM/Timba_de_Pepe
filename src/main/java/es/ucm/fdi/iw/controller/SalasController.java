@@ -1,8 +1,8 @@
 package es.ucm.fdi.iw.controller;
 
+import java.util.HashMap;
 import java.util.List;
-
-import java.util.UUID;
+import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,25 +17,25 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import es.ucm.fdi.iw.model.Juego;
 import es.ucm.fdi.iw.model.User;
-
-
-import es.ucm.fdi.iw.model.Topic;
 import jakarta.persistence.EntityManager;
 import jakarta.servlet.http.HttpSession;
 
-/*
-* Controlador de juego
-*/
 @Controller
 @RequestMapping("salas")
 public class SalasController {
-    private static final Logger log = LogManager.getLogger(JuegoController.class);
+
+    private static final Logger log = LogManager.getLogger(SalasController.class);
 
     @Autowired
-    private EntityManager entityManager;   
+    private EntityManager entityManager;
+
+    private SimpMessagingTemplate messagingTemplate;
+
+    private ObjectMapper mapper = new ObjectMapper();
 
     @ModelAttribute
     public void populateModel(HttpSession session, Model model) {
@@ -44,7 +44,7 @@ public class SalasController {
         }
     }
 
- @GetMapping("")
+    @GetMapping("")
     public String salas(Model model, HttpSession session) {
         if (session.getAttribute("u") == null) {
             return "redirect:/login";
@@ -58,7 +58,6 @@ public class SalasController {
         return "salas";
     }
 
-
     @PostMapping("/crear")
     @Transactional
     public String crearSala(
@@ -66,6 +65,7 @@ public class SalasController {
             @RequestParam Juego.dificulty dificultad,
             @RequestParam int min_bet,
             HttpSession session) {
+
         User creador = (User) session.getAttribute("u");
         if (creador == null)
             return "redirect:/login";
@@ -78,6 +78,25 @@ public class SalasController {
         nuevoJuego.setNum_jugadores(0);
 
         entityManager.persist(nuevoJuego);
+        entityManager.flush(); // necesario para que nuevoJuego.getId() tenga valor antes del WS
+
+        // notificar a todos los usuarios en /salas via WebSocket
+        Map<String, Object> wsPayload = new HashMap<>();
+        wsPayload.put("event", "SALA_CREADA");
+        wsPayload.put("id", nuevoJuego.getId());
+        wsPayload.put("nombre", nuevoJuego.getNombre());
+        wsPayload.put("dificultad", nuevoJuego.getDificultad());
+        wsPayload.put("min_bet", nuevoJuego.getMin_bet());
+        wsPayload.put("estado", nuevoJuego.getEstado());
+        wsPayload.put("num_jugadores", nuevoJuego.getNum_jugadores());
+
+        try {
+            messagingTemplate.convertAndSend("/topic/salas", mapper.writeValueAsString(wsPayload));
+            log.info("WS enviado a /topic/salas: sala creada con id={}", nuevoJuego.getId());
+        } catch (Exception e) {
+            log.error("No se pudo enviar el WS de sala creada: {}", e.getMessage());
+        }
+        // ──────────────────────────────────────────────────────────────────────
 
         return "redirect:/salas";
     }
