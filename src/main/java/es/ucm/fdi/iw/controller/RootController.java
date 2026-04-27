@@ -14,6 +14,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
+import es.ucm.fdi.iw.model.*;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Non-authenticated requests only.
