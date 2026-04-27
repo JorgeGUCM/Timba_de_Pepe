@@ -6,6 +6,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
@@ -251,6 +252,28 @@ public class ApiController {
       }
 
       return Map.of("result", "Cervezas añadidas!", "nuevas_cervezas", user.getCervezas_totales());
+  }
+
+  /**
+   * Returns the current top 10 ranking.
+   */
+  @GetMapping("/ranking")
+  @Transactional
+  public List<Map<String, Object>> getRanking() {
+      List<User> topUsuarios = entityManager.createQuery(
+          "SELECT u FROM User u ORDER BY u.cervezas_totales DESC", User.class)
+          .setMaxResults(10)
+          .getResultList();
+
+      List<Map<String, Object>> ranking = new java.util.ArrayList<>();
+      for (User u : topUsuarios) {
+          ranking.add(Map.of(
+              "id", u.getId(),
+              "username", u.getUsername(),
+              "cervezas", u.getCervezas_totales()
+          ));
+      }
+      return ranking;
   }
 }
 

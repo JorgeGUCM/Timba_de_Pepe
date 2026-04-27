@@ -44,4 +44,9 @@ public class AppConfig {
         messageSource.setBasename("Messages");
         return messageSource;
     }
+
+    @Bean
+    public org.springframework.web.client.RestTemplate restTemplate() {
+        return new org.springframework.web.client.RestTemplate();
+    }
 }

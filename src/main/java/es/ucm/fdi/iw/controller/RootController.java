@@ -18,6 +18,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import es.ucm.fdi.iw.model.*;
+import es.ucm.fdi.iw.service.DrinkService;
 import java.util.List;
 import java.util.UUID;
 
@@ -42,6 +43,9 @@ public class RootController {
     @Autowired
     private EntityManager entityManager;
 
+    @Autowired
+    private DrinkService drinkService;
+
     private static final Logger log = LogManager.getLogger(RootController.class);
 
     @ModelAttribute
@@ -60,6 +64,8 @@ public class RootController {
 
     @GetMapping("/")
     public String index(Model model) {
+        DrinkService.Drink drink = drinkService.getRandomDrink();
+        model.addAttribute("drinkOfTheDay", drink);
         return "index";
     }
 
