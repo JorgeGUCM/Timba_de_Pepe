@@ -271,7 +271,7 @@ public class JuegoController {
                 juego.setEstado(state.COMPLETO);
         }
 
-        if (juego.getNum_jugadores() >= 4)
+        if (juego.getNum_jugadores() >= 4 && juego.getEstado() != state.JUGANDO)
             juego.setEstado(state.COMPLETO);
 
         Map<String, Object> estado = generarEstado("ENTRADO", nuevo, juego);
