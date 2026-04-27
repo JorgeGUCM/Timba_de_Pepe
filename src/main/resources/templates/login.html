@@ -13,9 +13,12 @@
         <div class="container" style="width: 35em;">
             <form class="form-signin d-flex flex-column justify-content-start" method="post" th:action="@{/login}">
                 <h2 class="form-signin-heading">¡Bienvienido de vuelta!</h2>
-                <p th:if="${loginError != false}" class="error text-center">
-                    Error en nombre de usuario o contraseña
-                </p>
+                <div th:if="${isNewLogin != false}" class="d-flex justify-content-center" >
+                    <p class="badge text-bg-success fs-6" th:text="${isNewLogin}">El usuario se ha creado correctamente. Inicie sesión.</p>
+                </div>
+                <div th:if="${loginError != false}" class="d-flex justify-content-center">
+                    <p class="badge text-bg-danger fs-6">Error en nombre de usuario o contraseña</p>
+                </div>
                 <p>
                     <label for="username" class="">Nombre de usuario:</label>
                     <input type="text" id="username" name="username" class="form-control" placeholder="Nombre" required="required">
@@ -25,7 +28,7 @@
                     <input type="password" id="password" name="password" class="form-control" placeholder="Contraseña" required="required">
                 </p>
                 <button class="btn btn-lg btn-success btn-block" type="submit">Sign in</button>
-                <p>¿Eres nuevo en esta fiesta? <a href="#" class="link-primary">Registrate</a>.</p>
+                <p>¿Eres nuevo en esta fiesta? <a th:href="@{/signup}" class="link-primary">Registrate</a>.</p>
             </form>
         </div>
     </main>

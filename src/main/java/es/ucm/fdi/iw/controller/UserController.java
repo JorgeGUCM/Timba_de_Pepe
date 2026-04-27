@@ -398,22 +398,22 @@ public class UserController {
   }
 
   /*
-  * Para actualizar las fichas
-  */
- @PostMapping("{id}/fichas")
- @ResponseBody
- @Transactional
- public String updateFichas(@PathVariable Long id,
+   * Para actualizar las fichas
+   */
+  @PostMapping("{id}/fichas")
+  @ResponseBody
+  @Transactional
+  public String updateFichas(@PathVariable Long id,
       @RequestBody JsonNode o, Model model, HttpSession session)
       throws JsonProcessingException {
 
     int cant = o.get("cant").asInt();
     log.info("La cantidada que se va asumar es: " + cant);
-    
+
     User u = entityManager.find(User.class, id);
-    
+
     int fichas = u.getFichas() + cant;
-    if(fichas < 0)
+    if (fichas < 0)
       return "{\"error\": \"No tienes suficientes fichas.\"}";
     u.setFichas(fichas);
     entityManager.merge(u);
@@ -423,7 +423,62 @@ public class UserController {
     log.info("Actualizado cantidad a: " + u.getFichas());
 
     return "{\"result\": \"" + fichas + "\", \"message\":\"Fichas actualizadas correctamente.\"}";
- }
- 
+  }
 
+  /*
+   * Para crear un usario al registrarse
+   */
+  @PostMapping("/signup")
+  @ResponseBody
+  @Transactional
+  public String userSignup(@RequestBody JsonNode o, Model model) {
+
+    String username = o.get("username").asText();
+    String password = o.get("password").asText();
+    String repetir = o.get("repetir").asText();
+
+    String firstName = o.get("firstName").asText();
+    String lastName = o.get("lastName").asText();
+
+    log.info("Username: " + username);
+    log.info("FirstName: " + firstName);
+    log.info("LastName: " + lastName);
+
+    if (repetir.equalsIgnoreCase(password) && !repetir.equals("")) {
+      password = encodePassword(password);
+      repetir = password;
+    } else if (password.isBlank())
+      return "{\"error\": \"Debe poner una contraseña.\"}";
+    else
+      return "{\"error\": \"Las contraseñas tienen que ser iguales.\"}";
+
+    Long dup = entityManager.createNamedQuery("User.hasUsername", Long.class)
+        .setParameter("username", username)
+        .getSingleResult();
+
+    log.info("Duplicated: ", (dup > 0) ? true : false);
+
+    if (dup > 0 || username.isBlank())
+      return "{\"error\": \"Ya existe un usuario con ese nombre.\"}";
+
+    User user = new User();
+    user.setUsername(username);
+    user.setPassword(password);
+
+    user.setFirstName(firstName);
+    user.setLastName(lastName);
+    user.setTitulo("");
+    user.setDescripcion("");
+
+    user.setFichas(0);
+    user.setCervezas_actuales(0);
+    user.setCervezas_totales(0);
+
+    user.setRoles("USER");
+    user.setEnabled(true);
+
+    entityManager.persist(user);
+
+    return "{\"result\": \"Usuario creado correctamente. Inicie sesión.\"}";
+  }
 }
