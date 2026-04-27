@@ -57,9 +57,6 @@ public class ApiController {
   @Autowired
   private EntityManager entityManager;
 
-  @Autowired
-  private es.ucm.fdi.iw.service.RankingService rankingService;
-
   private static final Logger log = LogManager.getLogger(ApiController.class);
 
   /**
@@ -85,23 +82,24 @@ public class ApiController {
         (Long) entityManager.createQuery("SELECT COUNT(u) FROM User u").getSingleResult());
   }
 
-
   /**
-   * Loads a file from the classpath. 
+   * Loads a file from the classpath.
    * This works even if the file is in a JAR.
+   * 
    * @param path - path to the file - **relative to target/classes**
    * @return the file
    */
   private File loadFromClasspath(String path) {
-      try {
-          return ResourceUtils.getFile("classpath:"+path);
-      } catch (FileNotFoundException e) {
-          throw new RuntimeException("Could not load file from classpath: "+path, e);
-      }
+    try {
+      return ResourceUtils.getFile("classpath:" + path);
+    } catch (FileNotFoundException e) {
+      throw new RuntimeException("Could not load file from classpath: " + path, e);
+    }
   }
 
   /**
    * Executes JS code using karate-js
+   * 
    * @param text
    * @param vars
    * @return
@@ -111,23 +109,23 @@ public class ApiController {
     Node node = parser.parse();
     Context context = Context.root();
     if (vars != null) {
-        vars.forEach((k, v) -> context.declare(k, v));
+      vars.forEach((k, v) -> context.declare(k, v));
     }
     return Interpreter.eval(node, context);
   }
 
-  /** 
+  /**
    * Executes JS code loaded from a file in the server
    */
   @GetMapping(value = "/js", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Map<String,String> testJs() throws Exception{
+  public Map<String, String> testJs() throws Exception {
     String start = Files.readString(
-      loadFromClasspath("static/js/js-eval.js").toPath());
+        loadFromClasspath("static/js/js-eval.js").toPath());
     String source = start + "\n" + "f(v);";
 
     Object result = eval(source, Map.of(
-      "v", 10, 
-      "exampleExternalVar", "patata"));
+        "v", 10,
+        "exampleExternalVar", "patata"));
     return Map.of("result", result.toString());
   }
 
@@ -138,13 +136,13 @@ public class ApiController {
    * Posts a message to a topic.
    * 
    * @param topic of target user (source user is from ID)
-   * @param o  JSON-ized message, similar to {"message": "text goes here"}
+   * @param o     JSON-ized message, similar to {"message": "text goes here"}
    * @throws JsonProcessingException
    */
   @PostMapping("/topic/{name}")
   @ResponseBody
   @Transactional
-  public Map<String,String> postMsg(@PathVariable String name,
+  public Map<String, String> postMsg(@PathVariable String name,
       @RequestBody JsonNode o, Model model, HttpSession session,
       HttpServletResponse response)
       throws JsonProcessingException {
@@ -153,10 +151,10 @@ public class ApiController {
     User sender = entityManager.find(
         User.class, ((User) session.getAttribute("u")).getId());
     Topic target = entityManager.createNamedQuery("Topic.byKey", Topic.class)
-        .setParameter("key", name).getSingleResult();  
+        .setParameter("key", name).getSingleResult();
 
     // verify permissions
-    if (! sender.hasRole(Role.ADMIN) && ! target.getMembers().contains(sender)) {
+    if (!sender.hasRole(Role.ADMIN) && !target.getMembers().contains(sender)) {
       response.setStatus(HttpServletResponse.SC_FORBIDDEN);
       return Map.of("error", "user not in group");
     }
@@ -178,65 +176,34 @@ public class ApiController {
     return Map.of("result", "message sent");
   }
 
-    /**
+  /**
    * Posts a message to a topic.
    * 
    * @param topic of target user (source user is from ID)
-   * @param o  JSON-ized message, similar to {"message": "text goes here"}
+   * @param o     JSON-ized message, similar to {"message": "text goes here"}
    * @throws JsonProcessingException
    */
   @GetMapping("/topic/{name}")
   @ResponseBody
   @Transactional
-  public Map<String,String> getMessages(@PathVariable String name, HttpSession session,
-        HttpServletResponse response)
+  public Map<String, String> getMessages(@PathVariable String name, HttpSession session,
+      HttpServletResponse response)
       throws JsonProcessingException {
 
-      User requester = entityManager.find(
-          User.class, ((User) session.getAttribute("u")).getId());
-      Topic target = entityManager.createNamedQuery("Topic.byKey", Topic.class)
-          .setParameter("key", name).getSingleResult();  
-  
-      // verify permissions
-      if (! requester.hasRole(Role.ADMIN) && ! target.getMembers().contains(requester)) {
-        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-        return Map.of("error", "user not in group");
-      } 
-      // return result
-      return Map.of("messages", new ObjectMapper().writeValueAsString(
+    User requester = entityManager.find(
+        User.class, ((User) session.getAttribute("u")).getId());
+    Topic target = entityManager.createNamedQuery("Topic.byKey", Topic.class)
+        .setParameter("key", name).getSingleResult();
+
+    // verify permissions
+    if (!requester.hasRole(Role.ADMIN) && !target.getMembers().contains(requester)) {
+      response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+      return Map.of("error", "user not in group");
+    }
+    // return result
+    return Map.of("messages", new ObjectMapper().writeValueAsString(
         target.getMessages().stream()
-          .map(Message::toTransfer).toArray()
-      ));
+            .map(Message::toTransfer).toArray()));
   }
 
-  /**
-   * DEBUG: Endpoint to test WebSockets. 
-   * Gives 100 beers to the logged in user and broadcasts the updated ranking.
-   */
-  @PostMapping("/debug/cervezas")
-  @ResponseBody
-  @Transactional
-  public Map<String,Object> debugAddCervezas(HttpSession session) {
-      // 1. Give beers to the current user
-      User sessionUser = (User) session.getAttribute("u");
-      if (sessionUser == null) {
-          return Map.of("error", "Not logged in");
-      }
-      User user = entityManager.find(User.class, sessionUser.getId());
-      user.setCervezas_totales(user.getCervezas_totales() + 100);
-      user.setCervezas_actuales(user.getCervezas_actuales() + 100);
-      entityManager.persist(user);
-      entityManager.flush();
-
-      // 2. Query the updated ranking and Broadcast
-      try {
-          messagingTemplate.convertAndSend("/topic/ranking", rankingService.getRankingActualizado());
-          log.info("Test WebSockets: Sent updated ranking to /topic/ranking");
-      } catch (Exception e) {
-          log.error("Fallo al enviar notificación de ranking: ", e);
-      }
-
-      return Map.of("result", "Cervezas añadidas!", "nuevas_cervezas", user.getCervezas_totales());
-  }
 }
-

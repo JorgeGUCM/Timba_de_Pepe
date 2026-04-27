@@ -72,9 +72,8 @@ public class RootController {
     @Transactional
     public String ranking(Model model) {
         // Obtenemos los usuarios reales ordenados por cervezas totales
-        List<User> topUsuarios = entityManager.createQuery(
-                "SELECT u FROM User u ORDER BY u.cervezas_totales DESC", User.class)
-                .setMaxResults(50) // Limitamos a 50 por ahora para no recargar
+        List<User> topUsuarios = entityManager.createNamedQuery("User.ranking", User.class)
+                .setMaxResults(10) // Limitamos a 10 por ahora para no recargar
                 .getResultList();
 
         model.addAttribute("topUsuarios", topUsuarios);

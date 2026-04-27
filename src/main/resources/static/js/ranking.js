@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
     console.log("Ranking JS cargado. Config actual:", config);
-    
+
     // Sobrescribimos el comportamiento de recibir un mensaje por WebSocket
     if (typeof ws !== 'undefined' && ws) {
         console.log("WS detectado, configurando receive para ranking");
@@ -19,14 +19,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function actualizarRankingVisual(nuevoRanking) {
     // 1. Actualizar el Podium (Top 3)
-    const podiumContainer = document.getElementById("podium-container");
-    if(podiumContainer) {
-        podiumContainer.innerHTML = ''; // Vaciar
+    const podioContainer = document.getElementById("podio-container");
+    if (podioContainer) {
+        podioContainer.innerHTML = ''; // Vaciar
 
         // Segundo Puesto
         if (nuevoRanking.length > 1) {
             let u2 = nuevoRanking[1];
-            podiumContainer.innerHTML += `
+            podioContainer.innerHTML += `
                 <div class="col-md-3 mb-3">
                     <div class="card bg-black border-secondary shadow-sm pt-4" style="border-radius: 15px;">
                         <img src="/user/${u2.id}/pic" onerror="this.src='/img/user.png'" class="rounded-circle mx-auto border border-secondary" width="70" alt="2nd">
@@ -34,7 +34,7 @@ function actualizarRankingVisual(nuevoRanking) {
                             <h4 class="card-title h5 text-uppercase text-white">${u2.username}</h4>
                             <span class="titulo-cervecero bg-dark text-secondary border border-secondary">[${u2.rango || 'Catador'} 🍻]</span>
                             <p class="badge bg-secondary d-block mt-2">2ª Posición</p>
-                            <p class="text-warning fw-bold mt-2">${u2.cervezas} Cervezas 🍺</p>
+                            <p class="text-warning fw-bold mt-2">${u2.cervezas_totales} Cervezas 🍺</p>
                         </div>
                     </div>
                 </div>
@@ -44,7 +44,7 @@ function actualizarRankingVisual(nuevoRanking) {
         // Primer Puesto
         if (nuevoRanking.length > 0) {
             let u1 = nuevoRanking[0];
-            podiumContainer.innerHTML += `
+            podioContainer.innerHTML += `
                 <div class="col-md-4 mb-3">
                     <div class="card bg-black border-warning shadow-lg pt-4" style="border-radius: 20px; border-width: 2px;">
                         <div class="position-absolute top-0 start-50 translate-middle">
@@ -55,7 +55,7 @@ function actualizarRankingVisual(nuevoRanking) {
                             <h4 class="card-title h4 text-uppercase text-warning">${u1.username}</h4>
                             <span class="titulo-cervecero bg-warning text-dark">[${u1.rango || 'Maestro'} 🏆]</span>
                             <p class="badge bg-warning text-dark d-block mt-2">1ª Posición</p>
-                            <p class="display-6 fw-bold text-warning mt-2">${u1.cervezas} Cervezas 🍺</p>
+                            <p class="display-6 fw-bold text-warning mt-2">${u1.cervezas_totales} Cervezas 🍺</p>
                         </div>
                     </div>
                 </div>
@@ -65,7 +65,7 @@ function actualizarRankingVisual(nuevoRanking) {
         // Tercer Puesto
         if (nuevoRanking.length > 2) {
             let u3 = nuevoRanking[2];
-            podiumContainer.innerHTML += `
+            podioContainer.innerHTML += `
                 <div class="col-md-3 mb-3">
                     <div class="card bg-black border-danger shadow-sm pt-4" style="border-radius: 15px;">
                         <img src="/user/${u3.id}/pic" onerror="this.src='/img/user.png'" class="rounded-circle mx-auto border border-danger" width="70" alt="3rd">
@@ -73,7 +73,7 @@ function actualizarRankingVisual(nuevoRanking) {
                             <h4 class="card-title h5 text-uppercase text-white">${u3.username}</h4>
                             <span class="titulo-cervecero bg-dark text-danger border border-danger">[${u3.rango || 'Catador'} 🍻]</span>
                             <p class="badge bg-danger d-block mt-2">3ª Posición</p>
-                            <p class="text-warning fw-bold mt-2">${u3.cervezas} Cervezas 🍺</p>
+                            <p class="text-warning fw-bold mt-2">${u3.cervezas_totales} Cervezas 🍺</p>
                         </div>
                     </div>
                 </div>
@@ -83,7 +83,7 @@ function actualizarRankingVisual(nuevoRanking) {
 
     // 2. Actualizar la tabla (resto de jugadores)
     const tbody = document.getElementById("ranking-tbody");
-    if(tbody) {
+    if (tbody) {
         tbody.innerHTML = '';
         if (nuevoRanking.length <= 3) {
             tbody.innerHTML = `<tr><td colspan="3" class="text-center text-muted py-3">No hay más maestros cerveceros.</td></tr>`;
@@ -102,7 +102,7 @@ function actualizarRankingVisual(nuevoRanking) {
                             </div>
                         </div>
                     </td>
-                    <td class="text-end pe-4 fw-bold text-warning">${usuario.cervezas} 🍺</td>
+                    <td class="text-end pe-4 fw-bold text-warning">${usuario.cervezas_totales} 🍺</td>
                 `;
                 tbody.appendChild(tr);
             }

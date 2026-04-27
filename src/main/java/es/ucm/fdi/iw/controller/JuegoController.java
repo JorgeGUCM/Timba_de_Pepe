@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -53,9 +54,6 @@ public class JuegoController {
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
-
-    @Autowired
-    private es.ucm.fdi.iw.service.RankingService rankingService;
 
     private ObjectMapper mapper = new ObjectMapper();
 
@@ -192,16 +190,16 @@ public class JuegoController {
                 Jugador g = ganadores.get(i);
                 User u = g.getUser();
                 int premio = premioBase + (i == 0 ? resto : 0);
-                u.setFichas(u.getFichas() + premio);
-                
+                u.setFichas(u.getFichas() + premio); // Sumamos el premio el cual por JPA se guardara automaticamente
+
                 // Cervezas: El ganador se lleva cervezas por cada perdedor
                 int nuevas_cervezas = CERVEZAS_GANADAS * (jugadores.size() - ganadores.size());
                 u.setCervezas_totales(u.getCervezas_totales() + nuevas_cervezas);
                 u.setCervezas_actuales(u.getCervezas_actuales() + nuevas_cervezas);
-                
+
                 entityManager.persist(u);
-                
-                // Actualizar la sesión si es el usuario actual
+
+                // Actualizamos la sesión si es el usuario actual
                 User sessionUser = (User) session.getAttribute("u");
                 if (sessionUser != null && sessionUser.getId() == u.getId()) {
                     session.setAttribute("u", u);
@@ -215,10 +213,16 @@ public class JuegoController {
         // usuarios suscritos al topic /topic/ranking
         entityManager.flush(); // Aseguramos que los cambios están en la BD
         try {
-            List<Map<String, Object>> ranking = rankingService.getRankingActualizado(); // Metemos el ranking actual
-                                                                                        // en un mapa
+            List<User.Transfer> ranking = entityManager.createNamedQuery("User.ranking", User.class) // usamos la
+                                                                                                     // namedquery del
+                                                                                                     // ranking
+                    .setMaxResults(10) // Ponemos el max de 10
+                    .getResultList()
+                    .stream()
+                    .map(User::toTransfer)
+                    .collect(Collectors.toList()); // convierte user en userTranfer para no enviar datos sensibles
             log.info("Enviando ranking actualizado ({} usuarios) a /topic/ranking", ranking.size());
-            messagingTemplate.convertAndSend("/topic/ranking", ranking);
+            messagingTemplate.convertAndSend("/topic/ranking", ranking); // Enviamos la lista a la pagina de ranking
         } catch (Exception e) {
             log.error("Fallo al enviar notificación de ranking: ", e);
         }
@@ -484,7 +488,14 @@ public class JuegoController {
     public Map<String, Object> finalizarPartida(HttpSession session, @PathVariable long idTablero) {
         // Al finalizar manualmente, también actualizamos el ranking
         try {
-            messagingTemplate.convertAndSend("/topic/ranking", rankingService.getRankingActualizado());
+            List<User.Transfer> ranking = entityManager.createNamedQuery("User.ranking", User.class) // Usamos la
+                                                                                                     // namedquey
+                    .setMaxResults(10) // Max 10
+                    .getResultList() // lista
+                    .stream() // convertimos en stream
+                    .map(User::toTransfer) // convierte user en userTranfer
+                    .collect(Collectors.toList()); // convierte stream en lista
+            messagingTemplate.convertAndSend("/topic/ranking", ranking); // envia la lista al topic
         } catch (Exception e) {
             log.error("Fallo al enviar notificación de ranking en finalizarPartida: ", e);
         }
