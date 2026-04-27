@@ -39,9 +39,7 @@ import lombok.NoArgsConstructor;
         + "WHERE u.id = :id"),
     @NamedQuery(name = "User.cervezas_totales", query = "SELECT u.cervezas_totales "
         + "FROM User u "
-        + "WHERE u.id = :id"),
-    @NamedQuery(name = "User.ranking", query = "SELECT u FROM User u "
-        + "ORDER BY u.cervezas_totales DESC")
+        + "WHERE u.id = :id")
 })
 
 @Table(name = "IWUser")
@@ -59,7 +57,7 @@ public class User implements Transferable<User.Transfer> {
 
   /*
    * ---------------
-   * Atributos
+   *    Atributos
    * ---------------
    */
   @Column(nullable = false, unique = true)
@@ -83,8 +81,8 @@ public class User implements Transferable<User.Transfer> {
   private boolean enabled;
 
   /*
-   * ! Relaciones
-   */
+  !  Relaciones
+  */
   @OneToMany(mappedBy = "user")
   private List<Jugador> jugador;
 
@@ -108,13 +106,6 @@ public class User implements Transferable<User.Transfer> {
     return Arrays.asList(roles.split(",")).contains(roleName);
   }
 
-  /**
-   * Determina el rango del usuario basado en sus cervezas totales.
-   */
-  public String getRango() {
-    return (cervezas_totales > 500) ? "Maestro" : "Aprendiz";
-  }
-
   @Getter
   @AllArgsConstructor
   public static class Transfer {
@@ -133,7 +124,6 @@ public class User implements Transferable<User.Transfer> {
     private int fichas;
     private int cervezas_actuales;
     private int cervezas_totales;
-    private String rango;
   }
 
   @Override
@@ -142,8 +132,7 @@ public class User implements Transferable<User.Transfer> {
     for (Topic g : groups) {
       gs.append(g.getName()).append(", ");
     }
-    return new Transfer(id, username, received.size(), sent.size(), gs.toString(), firstName, lastName, titulo,
-        descripcion, fichas, cervezas_actuales, cervezas_totales, getRango());
+    return new Transfer(id, username, received.size(), sent.size(), gs.toString(), firstName, lastName, titulo, descripcion, fichas, cervezas_actuales, cervezas_totales);
   }
 
   @Override

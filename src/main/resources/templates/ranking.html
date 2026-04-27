@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html class="h-100" xmlns:th="http://www.thymeleaf.org">
-
 <head>
     <th:block th:replace="~{fragments/head :: header}" />
     <title>Timba de Pepe - Salón de la Fama</title>
@@ -11,27 +10,16 @@
             top: 0;
             height: 100vh;
             width: 150px;
-            z-index: -1;
-            opacity: 0.3;
+            z-index: -1; 
+            opacity: 0.3; 
             background-repeat: repeat-y;
             background-size: contain;
         }
-
-        .bottle-left {
-            left: 20px;
-        }
-
-        .bottle-right {
-            right: 20px;
-        }
-
-        .card {
-            transition: transform 0.2s;
-        }
-
-        .card:hover {
-            transform: scale(1.02);
-        }
+        .bottle-left { left: 20px; }
+        .bottle-right { right: 20px; }
+        
+        .card { transition: transform 0.2s; }
+        .card:hover { transform: scale(1.02); }
 
         .titulo-cervecero {
             font-size: 0.85em;
@@ -43,7 +31,7 @@
     </style>
 </head>
 
-<body class="d-flex flex-column h-100 bg-dark text-white">
+<body class="d-flex flex-column h-100 bg-light">
     <div class="bg-bottle bottle-left" th:style="'background-image: url(' + @{/img/botellin1.png} + ');'"></div>
     <div class="bg-bottle bottle-right" th:style="'background-image: url(' + @{/img/botellin1.png} + ');'"></div>
 
@@ -52,92 +40,101 @@
     <main style="height: 100%;">
         <div class="container py-5">
             <div class="text-center mb-5">
-                <h1 class="display-4 fw-bold text-warning">🍻 Salón de la Fama 🍻</h1>
-                <p class="lead text-light opacity-75">Los maestros cerveceros que más han ganado en la Timba de Pepe.
-                </p>
+                <h1 class="display-4 fw-bold text-primary">🍻 Salón de la Fama 🍻</h1>
+                <p class="lead text-muted">Los maestros cerveceros que más han ganado en la Timba de Pepe.</p>
             </div>
 
-            <div id="podio-container" class="row justify-content-center align-items-end mb-5 text-center">
-                <!--segundo puesto-->
-                <div class="col-md-3 mb-3" th:if="${topUsuarios.size() > 1}">
-                    <div class="card bg-black border-secondary shadow-sm pt-4" style="border-radius: 15px;">
-                        <img th:src="@{/user/{id}/pic(id=${topUsuarios[1].id})}" onerror="this.src='/img/user.png'"
-                            class="rounded-circle mx-auto border border-secondary" width="70" alt="2nd">
+            <div class="row justify-content-center align-items-end mb-5 text-center">
+                <div class="col-md-3 mb-3">
+                    <div class="card border-0 shadow-sm pt-4" style="border-radius: 15px;">
+                        <img th:src="@{/img/equipo/lucas.jpg}" class="rounded-circle mx-auto border border-secondary" width="70" alt="2nd">
                         <div class="card-body">
-                            <h4 class="card-title h5 text-uppercase" th:text="${topUsuarios[1].username}">LUCAS</h4>
-                            <span class="titulo-cervecero bg-dark text-secondary border border-secondary">[Catador
-                                🍻]</span>
+                            <h4 class="card-title h5">LUCAS ARRANZ</h4>
+                            <span class="titulo-cervecero bg-light text-secondary">[Catador Experto 🍻]</span>
                             <p class="badge bg-secondary d-block mt-2">2ª Posición</p>
-                            <p class="text-warning fw-bold mt-2"><span
-                                    th:text="${topUsuarios[1].cervezas_totales}">0</span> Cervezas 🍺</p>
+                            <p class="text-primary fw-bold mt-2">1.250 Cervezas 🍺</p>
                         </div>
                     </div>
                 </div>
-                <!--primer puesto-->
-                <div class="col-md-4 mb-3" th:if="${topUsuarios.size() > 0}">
-                    <div class="card bg-black border-warning shadow-lg pt-4"
-                        style="border-radius: 20px; border-width: 2px;">
+                <div class="col-md-4 mb-3">
+                    <div class="card border-primary shadow-lg pt-4" style="border-radius: 20px; border-width: 3px;">
                         <div class="position-absolute top-0 start-50 translate-middle">
                             <span class="fs-1">👑</span>
                         </div>
-                        <img th:src="@{/user/{id}/pic(id=${topUsuarios[0].id})}" onerror="this.src='/img/user.png'"
-                            class="rounded-circle mx-auto border border-warning" width="100" alt="1st">
+                        <img th:src="@{/img/equipo/pepe.jpg}" class="rounded-circle mx-auto border border-warning" width="100" alt="1st">
                         <div class="card-body">
-                            <h4 class="card-title h4 text-uppercase text-warning" th:text="${topUsuarios[0].username}">
-                                Pepe</h4>
-                            <span class="titulo-cervecero bg-warning text-dark">[Maestro 🏆]</span>
+                            <h4 class="card-title h4">Pepe (Maestro)</h4>
+                            <span class="titulo-cervecero bg-warning text-dark">[Maestro Cervecero 🏆]</span>
                             <p class="badge bg-warning text-dark d-block mt-2">1ª Posición</p>
-                            <p class="display-6 fw-bold text-warning mt-2"><span
-                                    th:text="${topUsuarios[0].cervezas_totales}">0</span> Cervezas 🍺</p>
+                            <p class="display-6 fw-bold text-primary mt-2">9.999 Cervezas 🍺</p>
                         </div>
                     </div>
                 </div>
-                <!--tercer puesto-->
-                <div class="col-md-3 mb-3" th:if="${topUsuarios.size() > 2}">
-                    <div class="card bg-black border-danger shadow-sm pt-4" style="border-radius: 15px;">
-                        <img th:src="@{/user/{id}/pic(id=${topUsuarios[2].id})}" onerror="this.src='/img/user.png'"
-                            class="rounded-circle mx-auto border border-danger" width="70" alt="3rd">
+                <div class="col-md-3 mb-3">
+                    <div class="card border-0 shadow-sm pt-4" style="border-radius: 15px;">
+                        <img th:src="@{/img/equipo/alicia.jpg}" class="rounded-circle mx-auto border border-danger" width="70" alt="3rd">
                         <div class="card-body">
-                            <h4 class="card-title h5 text-uppercase" th:text="${topUsuarios[2].username}">ALICIA</h4>
-                            <span class="titulo-cervecero bg-dark text-danger border border-danger">[Catador 🍻]</span>
+                            <h4 class="card-title h5">ALICIA CASTRO</h4>
+                            <span class="titulo-cervecero bg-light text-danger">[Catador Experto 🍻]</span>
                             <p class="badge bg-danger d-block mt-2">3ª Posición</p>
-                            <p class="text-warning fw-bold mt-2"><span
-                                    th:text="${topUsuarios[2].cervezas_totales}">0</span> Cervezas 🍺</p>
+                            <p class="text-primary fw-bold mt-2">980 Cervezas 🍺</p>
                         </div>
                     </div>
                 </div>
             </div>
-            <!--tabla ranking-->
-            <div class="bg-black p-4 rounded-4 shadow border border-secondary border-opacity-25">
-                <h3 class="h4 mb-4 text-warning border-bottom border-warning pb-2">Clasificación Completa</h3>
+
+            <div class="card shadow-sm border-0" style="border-radius: 15px;">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">Clasificación Completa</h5>
+                </div>
                 <div class="table-responsive">
-                    <table class="table table-dark table-hover align-middle mb-0">
-                        <thead>
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
                             <tr>
-                                <th class="ps-4 text-secondary">#</th>
-                                <th class="text-secondary">Usuario y Rango</th>
-                                <th class="text-end pe-4 text-secondary">Cervezas Ganadas</th>
+                                <th class="ps-4">#</th>
+                                <th>Usuario y Rango</th>
+                                <th class="text-end pe-4">Cervezas Ganadas</th>
                             </tr>
                         </thead>
-                        <tbody id="ranking-tbody">
-                            <tr th:each="usuario, stat : ${topUsuarios}" th:if="${stat.index >= 3}">
-                                <td class="ps-4 fw-bold" th:text="${stat.index + 1}">4</td>
+                        <tbody>
+                            <tr>
+                                <td class="ps-4 fw-bold">4</td>
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        <img th:src="@{/user/{id}/pic(id=${usuario.id})}"
-                                            onerror="this.src='/img/user.png'" class="rounded-circle me-3" width="35">
+                                        <img th:src="@{/img/equipo/jorge.jpg}" class="rounded-circle me-3" width="35">
                                         <div>
-                                            <span class="fw-bold text-uppercase"
-                                                th:text="${usuario.username}">JORGE</span>
-                                            <span class="titulo-cervecero text-info bg-light">[Aprendiz 🍺]</span>
+                                            <span class="fw-bold">JORGE GÓMEZ</span>
+                                            <span class="titulo-cervecero text-info bg-light">[Aprendiz de Barra 🍺]</span>
                                         </div>
                                     </div>
                                 </td>
-                                <td class="text-end pe-4 fw-bold"><span th:text="${usuario.cervezas_totales}">850</span>
-                                    🍺</td>
+                                <td class="text-end pe-4 fw-bold">850 🍺</td>
                             </tr>
-                            <tr th:if="${topUsuarios.size() <= 3}">
-                                <td colspan="3" class="text-center text-muted py-3">No hay más maestros cerveceros.</td>
+                            <tr>
+                                <td class="ps-4 fw-bold">5</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <img th:src="@{/img/equipo/guille.jpg}" class="rounded-circle me-3" width="35">
+                                        <div>
+                                            <span class="fw-bold">GUILLERMO GONZÁLEZ</span>
+                                            <span class="titulo-cervecero text-info bg-light">[Aprendiz de Barra 🍺]</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-end pe-4 fw-bold">720 🍺</td>
+                            </tr>
+                            <tr>
+                                <td class="ps-4 fw-bold">6</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <img th:src="@{/img/equipo/pablo.jpg}" class="rounded-circle me-3" width="35">
+                                        <div>
+                                            <span class="fw-bold">PABLO ARLANDIS</span>
+                                            <span class="titulo-cervecero text-muted bg-light">[Abstemio 💧]</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-end pe-4 fw-bold">60 🍺</td>
                             </tr>
                         </tbody>
                     </table>
@@ -146,20 +143,6 @@
         </div>
     </main>
 
-    <!-- Este es el Websocket en el cual  nos suscribimos al topic ranking, NO sobreescribir socketUrl -->
-    <script th:inline="javascript">
-        // config.socketUrl ya viene bien definido desde head.html (ws://...)
-        // Solo necesitamos añadir el topic 'ranking' a las suscripciones
-        config.topics = (config.topics ? config.topics + ',' : '') + 'ranking';
-    </script>
-
-    <!-- Footer PRIMERO: carga stomp.js e iw.js que inicializan ws -->
     <th:block th:replace="~{fragments/footer.html :: footer}" />
-
-    <!-- ranking.js DESPUÉS del footer para que ws ya esté definido -->
-    <script th:src="@{/js/ranking.js}" src="/js/ranking.js"></script>
-
-
 </body>
-
 </html>
