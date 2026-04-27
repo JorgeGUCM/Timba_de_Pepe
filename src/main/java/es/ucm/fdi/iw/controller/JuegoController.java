@@ -163,40 +163,52 @@ public class JuegoController {
             fichasTotales += j.getApuesta();
         }
 
-        List<Jugador> ganadores = new ArrayList<>();
-        if (jugadores.size() == 1) {
-            ganadores.add(jugadores.get(0));
-        } else {
-            int i = 0, j = 1;
-            while (i < juego.getNum_jugadores() - 1 && j < juego.getNum_jugadores()) {
-                if (jugadores.get(i).getPuntuacion() > jugadores.get(j).getPuntuacion()) {
-                    ganadores.add(jugadores.get(i));
-                    j++;
-                } else if (jugadores.get(i).getPuntuacion() < jugadores.get(j).getPuntuacion()) {
-                    ganadores.add(jugadores.get(j));
-                    i = j;
-                    j++;
-                } else {
-                    ganadores.add(jugadores.get(i));
-                    ganadores.add(jugadores.get(j));
-                    j++;
+        // 1. Encontrar la puntuación máxima sin pasarse de 7.5
+        double maxPuntos = -1;
+        for (Jugador j : jugadores) {
+            if (j.getEstado() != estadoJugador.SOBREPUNTOS && j.getPuntuacion() <= 7.5) {
+                if (j.getPuntuacion() > maxPuntos) {
+                    maxPuntos = j.getPuntuacion();
                 }
             }
         }
 
-        for (Jugador g : ganadores) {
-            User u = g.getUser();
-            // El ganador se lleva su apuesta más su parte del bote neto (fichasTotales /
-            // numGanadores)
-            // TODO: funciona pero no se si hay que hacerlo asi
-            // aqui lo que hacemos es calcular lo que gana el ganador y lo que pierde el
-            // perdedor
-            int fichas = u.getFichas() + (fichasTotales / ganadores.size());
-            u.setFichas(fichas);
-            int nuevas_cervezas = (CERVEZAS_GANADAS * (jugadores.size() - ganadores.size()));
-            u.setCervezas_totales(u.getCervezas_totales() + nuevas_cervezas);
-            u.setCervezas_actuales(u.getCervezas_actuales() + nuevas_cervezas);
-            entityManager.persist(u);
+        // 2. Identificar a todos los que tienen esa puntuación máxima
+        List<Jugador> ganadores = new ArrayList<>();
+        if (maxPuntos != -1) {
+            for (Jugador j : jugadores) {
+                if (j.getEstado() != estadoJugador.SOBREPUNTOS && j.getPuntuacion() == maxPuntos) {
+                    ganadores.add(j);
+                }
+            }
+        }
+
+        // 3. Repartir el bote entre los ganadores
+        if (!ganadores.isEmpty()) {
+            int premioBase = fichasTotales / ganadores.size();
+            int resto = fichasTotales % ganadores.size();
+
+            for (int i = 0; i < ganadores.size(); i++) {
+                Jugador g = ganadores.get(i);
+                User u = g.getUser();
+                int premio = premioBase + (i == 0 ? resto : 0);
+                u.setFichas(u.getFichas() + premio);
+                
+                // Cervezas: El ganador se lleva cervezas por cada perdedor
+                int nuevas_cervezas = CERVEZAS_GANADAS * (jugadores.size() - ganadores.size());
+                u.setCervezas_totales(u.getCervezas_totales() + nuevas_cervezas);
+                u.setCervezas_actuales(u.getCervezas_actuales() + nuevas_cervezas);
+                
+                entityManager.persist(u);
+                
+                // Actualizar la sesión si es el usuario actual
+                User sessionUser = (User) session.getAttribute("u");
+                if (sessionUser != null && sessionUser.getId() == u.getId()) {
+                    session.setAttribute("u", u);
+                }
+            }
+        } else {
+            log.info("Nadie ha ganado (todos se han pasado de 7.5). El bote se pierde.");
         }
 
         // Aqui enviamos el ranking actualizado, via websocket, a todos los
