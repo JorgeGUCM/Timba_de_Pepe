@@ -140,12 +140,15 @@
 
     <th:block th:replace="~{fragments/footer.html :: footer}" />
 
-    <script>
+        <script>
+        // abrir el modal
         function crearSala() {
             var myModal = new bootstrap.Modal(document.getElementById('modalCrearSala'));
             myModal.show();
         }
     </script>
+    
+    <script th:src="@{/js/salas.js}"></script>
 </body>
 
 </html>
