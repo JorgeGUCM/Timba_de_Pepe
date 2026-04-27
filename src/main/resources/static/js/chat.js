@@ -22,7 +22,12 @@ if (typeof window.ChatSystem === 'undefined') {
             e.preventDefault();     // para que no se recarge la página entera
             let input = document.getElementById("chat-input-texto-global");
             let texto = input.value.trim();
+
             if (texto) {    // lo envia con AJAX a "global"
+                let counter = document.querySelector("#count-global");
+                counter.innerHTML = "0/100";                
+
+                input.classList.add("border-success");
                 // go ( destinoURL, metodo, datos)
                 go(config.rootUrl + "/chat/enviar", "POST", { text: texto, room: "global" })
                     .catch(err => console.error("Error global:", err));
@@ -84,6 +89,10 @@ if (typeof window.ChatSystem === 'undefined') {
             let texto = input.value.trim();
             let id = ChatSala.getSalaId();  // saca el ID de la sala
             if (texto && id) {
+                let counter = document.querySelector("#count-local");
+                counter.innerHTML = "0/100";
+
+                input.classList.add("border-success");
                 go(config.rootUrl + "/chat/enviar", "POST", { text: texto, room: "sala_" + id })
                     .catch(err => console.error("Error sala:", err));
                 input.value = "";
@@ -136,5 +145,31 @@ if (typeof window.ChatSystem === 'undefined') {
             window.ChatSala.initConexion();
             window.ChatSala.recuperar();
         }
+
+        let input_global = document.getElementById("chat-input-texto-global");
+        if(input_global){
+            input_global.oninput = (e) => {
+                if(input_global.value.trim().length > 100){
+                    input_global.classList.add("border-danger");
+                }else{
+                    input_global.classList.remove("border-danger");
+                }
+                let counter = document.querySelector("#count-global");
+                counter.innerHTML = input_global.value.trim().length + "/100";
+            }
+        }
+        let input_local = document.getElementById("chat-input-texto-sala");
+        if(input_local){
+            input_local.oninput = (e) => {
+                if(input_local.value.trim().length > 100){
+                    input_local.classList.add("border-danger");
+                }else{
+                    input_local.classList.remove("border-danger");
+                }
+                let counter = document.querySelector("#count-local");
+                counter.innerHTML = input_local.value.trim().length + "/100";
+            }
+        }
+        
     });
 }
