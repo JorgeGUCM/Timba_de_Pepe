@@ -155,11 +155,11 @@ public class ChatController {
         String room = data.get("room").asText();
 
         // Buscamos los mensajes
-        List<Message> mensajesBD = entityManager.createQuery(
-                "SELECT m FROM Message m WHERE m.topic.key = :room ORDER BY m.dateSent ASC", Message.class)
-                .setParameter("room", room)
-                .setMaxResults(50)
-                .getResultList();
+        List<Message> mensajesBD = entityManager
+            .createNamedQuery("Message.msgPorTopic", Message.class)
+            .setParameter("room", room)
+            .setMaxResults(50)
+            .getResultList();
 
         // Mapeamos los mensajes
         List<Map<String, String>> historial = new ArrayList<>();

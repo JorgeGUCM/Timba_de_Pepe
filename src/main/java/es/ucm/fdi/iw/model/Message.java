@@ -24,9 +24,10 @@ import lombok.Getter;
  */
 @Entity
 @NamedQueries({
-	@NamedQuery(name="Message.countUnread",
-	query="SELECT COUNT(m) FROM Message m "
-			+ "WHERE m.recipient.id = :userId AND m.dateRead = null")
+	@NamedQuery(name="Message.msgPorTopic",
+	query="SELECT m FROM Message m "
+		 + "WHERE m.topic.key = :room ORDER BY m.dateSent ASC"),
+
 })
 @Data
 public class Message implements Transferable<Message.Transfer> {
@@ -46,17 +47,13 @@ public class Message implements Transferable<Message.Transfer> {
 	private String text;
 	// Sera nuestro date
 	private LocalDateTime dateSent;
-	// Se borrara
-	private LocalDateTime dateRead;
 
 	/*
     !   Relaciones
     */
 	@ManyToOne
 	private User sender;
-	// Se borrara recipient no tiene sentido, ya que lo sera el topic(chat) el que lo reciba
-	@ManyToOne
-	private User recipient;
+
 	@ManyToOne
 	private Topic topic;
   
@@ -69,11 +66,8 @@ public class Message implements Transferable<Message.Transfer> {
     @AllArgsConstructor
 	public static class Transfer {
 		private String from;
-		private String to;
 		// Sera el Date
 		private String sent;
-		// Se borrara
-		private String received;
 		// Es el chat al que pertenece
     	private String topic;
 		private String text;
@@ -81,11 +75,8 @@ public class Message implements Transferable<Message.Transfer> {
 		
 		public Transfer(Message m) {
 			this.from = m.getSender().getUsername();
-			this.to = m.getRecipient() == null ? "null": m.getRecipient().getUsername();
 			this.topic = m.getTopic() == null ? "null": m.getTopic().getName();
 			this.sent = DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(m.getDateSent());
-			this.received = m.getDateRead() == null ?
-					null : DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(m.getDateRead());
 			this.text = m.getText();
 			this.id = m.getId();
 		}
