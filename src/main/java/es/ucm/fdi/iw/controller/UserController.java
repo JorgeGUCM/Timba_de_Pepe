@@ -250,34 +250,6 @@ public class UserController {
   }
 
   /**
-   * Returns JSON with all received messages
-   */
-  @GetMapping(path = "received", produces = "application/json")
-  @Transactional // para no recibir resultados inconsistentes
-  @ResponseBody // para indicar que no devuelve vista, sino un objeto (jsonizado)
-  public List<Message.Transfer> retrieveMessages(HttpSession session) {
-    long userId = ((User) session.getAttribute("u")).getId();
-    User u = entityManager.find(User.class, userId);
-    log.info("Generating message list for user {} ({} messages)",
-        u.getUsername(), u.getReceived().size());
-    return u.getReceived().stream().map(Transferable::toTransfer).collect(Collectors.toList());
-  }
-
-  /**
-   * Returns JSON with count of unread messages
-   */
-  @GetMapping(path = "unread", produces = "application/json")
-  @ResponseBody
-  public String checkUnread(HttpSession session) {
-    long userId = ((User) session.getAttribute("u")).getId();
-    long unread = entityManager.createNamedQuery("Message.countUnread", Long.class)
-        .setParameter("userId", userId)
-        .getSingleResult();
-    session.setAttribute("unread", unread);
-    return "{\"unread\": " + unread + "}";
-  }
-
-  /**
    * Posts a message to a user.
    * 
    * @param id of target user (source user is from ID)
@@ -299,7 +271,6 @@ public class UserController {
 
     // construye mensaje, lo guarda en BD
     Message m = new Message();
-    m.setRecipient(u);
     m.setSender(sender);
     m.setDateSent(LocalDateTime.now());
     m.setText(text);
@@ -311,7 +282,6 @@ public class UserController {
      * // construye json: método manual
      * ObjectNode rootNode = mapper.createObjectNode();
      * rootNode.put("from", sender.getUsername());
-     * rootNode.put("to", u.getUsername());
      * rootNode.put("text", text);
      * rootNode.put("id", m.getId());
      * String json = mapper.writeValueAsString(rootNode);
