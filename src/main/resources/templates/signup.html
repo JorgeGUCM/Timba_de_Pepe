@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html class="h-100" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <th:block th:replace="~{fragments/head :: header}" />
+    <title>IW: Login</title>
+</head>
+
+<body class="d-flex flex-column h-100 bg-dark text-white">
+    <header th:replace="~{fragments/nav.html :: nav}"></header>
+
+    <main class="d-flex align-items-center" style="height:stretch;">
+        <div class="container" style="width: 70em;">
+            <form id="registrar-form" class="form-signin d-flex flex-column" method="post" th:action="@{/user/signup}">
+                <h2 class="mb-4 form-signin-heading text-center">Nuevo en la fiesta ¡Unete!</h2>
+                <div id="target" class="d-flex justify-content-center"></div>
+                <div class="d-flex justify-content-around gap-5">
+                    <div style="width:100%">
+                        <h3 class="text-center">Datos de Perfil</h3>
+                        <p>
+                            <label for="username" class="">Nombre de usuario:</label>
+                            <input type="text" id="username" name="username" class="form-control" required="required">
+                        </p>
+                        <p>
+                            <label for="password" class="">Contraseña:</label>
+                            <input type="password" id="password" name="password" class="form-control" required="required">
+                        </p>
+                        <p>
+                            <label for="repetir" class="">Repetir:</label>
+                            <input type="password" id="repetir" name="repetir" class="form-control" required="required">
+                        </p>
+                    </div>
+                    <div style="width:100%">
+                        <h3 class="text-center">Datos Personales</h3>
+                        <p>
+                            <label for="firstName">Nombre: </label>
+                            <input type="text" name="firstName" id="firstName" class="form-control" required="required">
+                        </p>
+                        <p>
+                            <label for="lastName">Apellido: </label>
+                            <input type="text" name="lastName" id="lastName" class="form-control">
+                        </p>
+                    </div>
+                </div>
+                <button id="postUser" class="mt-4 btn btn-lg btn-success btn-block" type="submit">Sign up</button>
+                <p>Ya formas parte de la timba: <a th:href="@{/login}" class="link-primary">Inicia Sesión</a>.</p>
+            </form>
+        </div>
+    </main>
+
+    <th:block th:replace="~{fragments/footer.html :: footer}" />
+    <script th:src="@{/js/ajax-registrar.js}" src="/js/ajax-registrar.js"></script>
+</body>
+
+</html>

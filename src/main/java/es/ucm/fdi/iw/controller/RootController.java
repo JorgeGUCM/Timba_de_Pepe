@@ -10,25 +10,10 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import jakarta.persistence.EntityManager;
-import jakarta.transaction.Transactional;
-import es.ucm.fdi.iw.model.*;
-import java.util.List;
-import java.util.UUID;
-
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import jakarta.servlet.http.HttpServletResponse;
-import java.util.Map;
 
 /**
  * Non-authenticated requests only.
@@ -58,6 +43,17 @@ public class RootController {
         return "login";
     }
 
+    @GetMapping("/newlogin")
+    public String newlogin(Model model, HttpSession session) {
+        model.addAttribute("isNewLogin", true);
+        return "login";
+    }
+
+    @GetMapping("/signup")
+    public String signup(Model model) {
+        return "signup";
+    }
+
     @GetMapping("/")
     public String index(Model model) {
         return "index";
@@ -77,8 +73,6 @@ public class RootController {
     public String perfil(Model model) {
         return "perfil";
     }
-
-
 
     @GetMapping("/reglas")
     public String reglas(Model model) {

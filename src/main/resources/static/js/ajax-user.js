@@ -30,7 +30,7 @@ function resultDraw(d, targetId){
 
 function errorDraw(targetId){
     document.querySelector("#"+ targetId +"").innerHTML = 
-    `<p class="badge text-bg-success fs-6">Error: No se pudo actualizar la información.</p>`;
+    `<p class="badge text-bg-danger fs-6">Error: No se pudo actualizar la información.</p>`;
 }
 
 /* Para el formulario de perfil */
