@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -156,46 +157,75 @@ public class JuegoController {
         // Reparto de fichas
         int fichasTotales = 0;
         for (Jugador j : jugadores) {
+
             fichasTotales += j.getApuesta();
         }
 
-        List<Jugador> ganadores = new ArrayList<>();
-        if (jugadores.size() == 1) {
-            ganadores.add(jugadores.get(0));
-        } else {
-            int i = 0, j = 1;
-            while (i < juego.getNum_jugadores() - 1 && j < juego.getNum_jugadores()) {
-                if (jugadores.get(i).getPuntuacion() > jugadores.get(j).getPuntuacion()) {
-                    ganadores.add(jugadores.get(i));
-                    j++;
-                } else if (jugadores.get(i).getPuntuacion() < jugadores.get(j).getPuntuacion()) {
-                    ganadores.add(jugadores.get(j));
-                    i = j;
-                    j++;
-                } else {
-                    ganadores.add(jugadores.get(i));
-                    ganadores.add(jugadores.get(j));
-                    j++;
+        // 1. Encontrar la puntuación máxima sin pasarse de 7.5
+        double maxPuntos = -1;
+        for (Jugador j : jugadores) {
+            if (j.getEstado() != estadoJugador.SOBREPUNTOS && j.getPuntuacion() <= 7.5) {
+                if (j.getPuntuacion() > maxPuntos) {
+                    maxPuntos = j.getPuntuacion();
                 }
             }
         }
 
-        for (Jugador g : ganadores) {
-            fichasTotales -= g.getApuesta();
-        }
-        ;
-
-        for (Jugador g : ganadores) {
-            User u = g.getUser();
-            int fichas = u.getFichas() + fichasTotales / ganadores.size() + g.getApuesta();
-            u.setFichas(fichas);
-            int nuevas_cervezas = (CERVEZAS_GANADAS * (jugadores.size() - ganadores.size()));
-            u.setCervezas_totales(u.getCervezas_totales() + nuevas_cervezas);
-            u.setCervezas_actuales(u.getCervezas_actuales() + nuevas_cervezas);
+        // 2. Identificar a todos los que tienen esa puntuación máxima
+        List<Jugador> ganadores = new ArrayList<>();
+        if (maxPuntos != -1) {
+            for (Jugador j : jugadores) {
+                if (j.getEstado() != estadoJugador.SOBREPUNTOS && j.getPuntuacion() == maxPuntos) {
+                    ganadores.add(j);
+                }
+            }
         }
 
-        // TODO hacer ws a ranking
+        // 3. Repartir el bote entre los ganadores
+        if (!ganadores.isEmpty()) {
+            int premioBase = fichasTotales / ganadores.size();
+            int resto = fichasTotales % ganadores.size();
 
+            for (int i = 0; i < ganadores.size(); i++) {
+                Jugador g = ganadores.get(i);
+                User u = g.getUser();
+                int premio = premioBase + (i == 0 ? resto : 0);
+                u.setFichas(u.getFichas() + premio); // Sumamos el premio el cual por JPA se guardara automaticamente
+
+                // Cervezas: El ganador se lleva cervezas por cada perdedor
+                int nuevas_cervezas = CERVEZAS_GANADAS * (jugadores.size() - ganadores.size());
+                u.setCervezas_totales(u.getCervezas_totales() + nuevas_cervezas);
+                u.setCervezas_actuales(u.getCervezas_actuales() + nuevas_cervezas);
+
+                entityManager.persist(u);
+
+                // Actualizamos la sesión si es el usuario actual
+                User sessionUser = (User) session.getAttribute("u");
+                if (sessionUser != null && sessionUser.getId() == u.getId()) {
+                    session.setAttribute("u", u);
+                }
+            }
+        } else {
+            log.info("Nadie ha ganado (todos se han pasado de 7.5). El bote se pierde.");
+        }
+
+        // Aqui enviamos el ranking actualizado, via websocket, a todos los
+        // usuarios suscritos al topic /topic/ranking
+        entityManager.flush(); // Aseguramos que los cambios están en la BD
+        try {
+            List<User.Transfer> ranking = entityManager.createNamedQuery("User.ranking", User.class) // usamos la
+                                                                                                     // namedquery del
+                                                                                                     // ranking
+                    .setMaxResults(10) // Ponemos el max de 10
+                    .getResultList()
+                    .stream()
+                    .map(User::toTransfer)
+                    .collect(Collectors.toList()); // convierte user en userTranfer para no enviar datos sensibles
+            log.info("Enviando ranking actualizado ({} usuarios) a /topic/ranking", ranking.size());
+            messagingTemplate.convertAndSend("/topic/ranking", ranking); // Enviamos la lista a la pagina de ranking
+        } catch (Exception e) {
+            log.error("Fallo al enviar notificación de ranking: ", e);
+        }
     }
 
     @GetMapping("")
@@ -452,11 +482,30 @@ public class JuegoController {
         return estado;
     }
 
+    @PostMapping("{idTablero}/finalizar")
+    @ResponseBody
+    @Transactional
+    public Map<String, Object> finalizarPartida(HttpSession session, @PathVariable long idTablero) {
+        // Al finalizar manualmente, también actualizamos el ranking
+        try {
+            List<User.Transfer> ranking = entityManager.createNamedQuery("User.ranking", User.class) // Usamos la
+                                                                                                     // namedquey
+                    .setMaxResults(10) // Max 10
+                    .getResultList() // lista
+                    .stream() // convertimos en stream
+                    .map(User::toTransfer) // convierte user en userTranfer
+                    .collect(Collectors.toList()); // convierte stream en lista
+            messagingTemplate.convertAndSend("/topic/ranking", ranking); // envia la lista al topic
+        } catch (Exception e) {
+            log.error("Fallo al enviar notificación de ranking en finalizarPartida: ", e);
+        }
+        return Map.of("result", "Partida Finalizada y Ranking Anunciado");
+    }
+
     @PostMapping("{idTablero}/plantar")
     @ResponseBody
     @Transactional
-    public String plantar(Model model, HttpSession session, @RequestBody JsonNode o,
-            @PathVariable Long idTablero) {
+    public String plantar(Model model, HttpSession session, @RequestBody JsonNode o, @PathVariable Long idTablero) {
 
         Long idJugador = o.get("idJugador").asLong();
 
