@@ -62,7 +62,7 @@ public class SecurityConfig {
 						.requestMatchers("/css/**", "/js/**", "/img/**", "/", "/error",
 								"/autores", "/ranking", "/perfil-usuario",
 								"/salas", "/juego", "/reglas", "/signup",
-								"/user/signup")
+								"/user/signup", "/user/{id}/pic")
 						.permitAll()
 
 						.requestMatchers("/api/**").permitAll()

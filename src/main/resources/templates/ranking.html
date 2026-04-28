@@ -64,7 +64,7 @@
                         <img th:src="@{/user/{id}/pic(id=${topUsuarios[1].id})}" onerror="this.src='/img/user.png'"
                             class="rounded-circle mx-auto border border-secondary" width="70" alt="2nd">
                         <div class="card-body">
-                            <h4 class="card-title h5 text-uppercase" th:text="${topUsuarios[1].username}">LUCAS</h4>
+                            <h4 class="card-title h5 text-uppercase text-white" th:text="${topUsuarios[1].username}">LUCAS</h4>
                             <span class="titulo-cervecero bg-dark text-secondary border border-secondary">[Catador
                                 🍻]</span>
                             <p class="badge bg-secondary d-block mt-2">2ª Posición</p>
@@ -98,7 +98,7 @@
                         <img th:src="@{/user/{id}/pic(id=${topUsuarios[2].id})}" onerror="this.src='/img/user.png'"
                             class="rounded-circle mx-auto border border-danger" width="70" alt="3rd">
                         <div class="card-body">
-                            <h4 class="card-title h5 text-uppercase" th:text="${topUsuarios[2].username}">ALICIA</h4>
+                            <h4 class="card-title h5 text-uppercase text-white" th:text="${topUsuarios[2].username}">ALICIA</h4>
                             <span class="titulo-cervecero bg-dark text-danger border border-danger">[Catador 🍻]</span>
                             <p class="badge bg-danger d-block mt-2">3ª Posición</p>
                             <p class="text-warning fw-bold mt-2"><span
@@ -137,7 +137,7 @@
                                     🍺</td>
                             </tr>
                             <tr th:if="${topUsuarios.size() <= 3}">
-                                <td colspan="3" class="text-center text-muted py-3">No hay más maestros cerveceros.</td>
+                                <td colspan="3" class="text-center text-white py-3">No hay más maestros cerveceros.</td>
                             </tr>
                         </tbody>
                     </table>
