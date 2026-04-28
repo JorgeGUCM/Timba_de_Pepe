@@ -282,6 +282,10 @@ public class JuegoController {
 
         log.info((estaPartida) ? "Ya esta en partida" : "Creando nuevo Jugador");
 
+        if(user.getFichas() < juego.getMin_bet() && !estaPartida){
+            return Map.of("error", "No tienes fichas.");
+        }
+
         if (!estaPartida) {
             nuevo.setUser(user);
             nuevo.setJuego(juego);
@@ -343,6 +347,9 @@ public class JuegoController {
         if (cant > j.getUser().getFichas())
             return "{\"error\": \"No tienes suficientes fichas\"}";
 
+        if(cant < juego.getMin_bet())
+            return "{\"warning\": \"Debes apostar la minima apuesta que es: " + juego.getMin_bet() +".\"}";
+
         j.setApuesta(j.getApuesta() + cant);
         j.getUser().setFichas(j.getUser().getFichas() - cant);
 
@@ -370,6 +377,9 @@ public class JuegoController {
 
         if (comprobarJugador(session, j))
             return "{\"error\": \"Se ha detectado la manipulación de datos.\"}";
+
+        if(j.getUser().getFichas() < juego.getMin_bet())
+            return "{\"warning\": \"No tienes suficientes fichas para la apuesta minima.\"}";
 
         j.setCartas("[]");
         j.setNumCartas(0);
@@ -431,6 +441,9 @@ public class JuegoController {
 
         if (j.getEstado() != estadoJugador.LISTO)
             return "{\"error\": \"El jugador debe de estar jugando.\"}";
+
+        if(j.getApuesta() < juego.getMin_bet())
+            return "{\"warning\": \"Debes apostar la minima apuesta que es: " + juego.getMin_bet() +".\"}";
 
         List<String> cartas = new ArrayList<>();
         List<String> baraja = new ArrayList<>();
@@ -523,6 +536,13 @@ public class JuegoController {
 
         if (j.getEstado() != estadoJugador.LISTO)
             return "{\"error\": \"El jugador debe de estar jugando.\"}";
+
+        if(j.getApuesta() < juego.getMin_bet())
+            return "{\"warning\": \"Debes apostar la minima apuesta que es: " + juego.getMin_bet() +".\"}";
+
+        if(j.getCartas().equals("[]")){
+            return "{\"error\": \"El jugador debe tener al menos 1 carta.\"}";
+        }
 
         j.setEstado(estadoJugador.PLANTADO);
 
