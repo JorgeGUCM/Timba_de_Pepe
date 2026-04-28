@@ -4,12 +4,16 @@ document.addEventListener("DOMContentLoaded", () => {
     // Sobrescribimos el comportamiento de recibir un mensaje por WebSocket
     if (typeof ws !== 'undefined' && ws) {
         console.log("WS detectado, configurando receive para ranking");
+        const anterior = ws.receive;
         ws.receive = (mensaje) => {
-            console.log("MENSAJE RECIBIDO EN RANKING (WebSocket):", mensaje);
-            if (Array.isArray(mensaje)) {
-                actualizarRankingVisual(mensaje);
-            } else {
-                console.warn("El mensaje recibido no es un array:", mensaje);
+            anterior(mensaje);
+            if (mensaje.tipo == "RANKING") {
+                console.log("MENSAJE RECIBIDO EN RANKING (WebSocket):", mensaje);
+                if (Array.isArray(mensaje)) {
+                    actualizarRankingVisual(mensaje);
+                } else {
+                    console.warn("El mensaje recibido no es un array:", mensaje);
+                }
             }
         };
     } else {
@@ -29,7 +33,7 @@ function actualizarRankingVisual(nuevoRanking) {
             podioContainer.innerHTML += `
                 <div class="col-md-3 mb-3">
                     <div class="card bg-black border-secondary shadow-sm pt-4" style="border-radius: 15px;">
-                        <img src="/user/${u2.id}/pic" onerror="this.src='/img/user.png'" class="rounded-circle mx-auto border border-secondary" width="70" alt="2nd">
+                        <img src="/user/${u2.id}/pic" class="rounded-circle mx-auto border border-secondary" width="70" alt="2nd">
                         <div class="card-body">
                             <h4 class="card-title h5 text-uppercase text-white">${u2.username}</h4>
                             <span class="titulo-cervecero bg-dark text-secondary border border-secondary">[${u2.rango || 'Catador'} 🍻]</span>
@@ -50,7 +54,7 @@ function actualizarRankingVisual(nuevoRanking) {
                         <div class="position-absolute top-0 start-50 translate-middle">
                             <span class="fs-1">👑</span>
                         </div>
-                        <img src="/user/${u1.id}/pic" onerror="this.src='/img/user.png'" class="rounded-circle mx-auto border border-warning" width="100" alt="1st">
+                        <img src="/user/${u1.id}/pic" class="rounded-circle mx-auto border border-warning" width="100" alt="1st">
                         <div class="card-body">
                             <h4 class="card-title h4 text-uppercase text-warning">${u1.username}</h4>
                             <span class="titulo-cervecero bg-warning text-dark">[${u1.rango || 'Maestro'} 🏆]</span>
@@ -68,7 +72,7 @@ function actualizarRankingVisual(nuevoRanking) {
             podioContainer.innerHTML += `
                 <div class="col-md-3 mb-3">
                     <div class="card bg-black border-danger shadow-sm pt-4" style="border-radius: 15px;">
-                        <img src="/user/${u3.id}/pic" onerror="this.src='/img/user.png'" class="rounded-circle mx-auto border border-danger" width="70" alt="3rd">
+                        <img src="/user/${u3.id}/pic" class="rounded-circle mx-auto border border-danger" width="70" alt="3rd">
                         <div class="card-body">
                             <h4 class="card-title h5 text-uppercase text-white">${u3.username}</h4>
                             <span class="titulo-cervecero bg-dark text-danger border border-danger">[${u3.rango || 'Catador'} 🍻]</span>
@@ -95,7 +99,7 @@ function actualizarRankingVisual(nuevoRanking) {
                     <td class="ps-4 fw-bold">${i + 1}</td>
                     <td>
                         <div class="d-flex align-items-center">
-                            <img src="/user/${usuario.id}/pic" class="rounded-circle me-3" width="35" onerror="this.src='/img/user.png'">
+                            <img src="/user/${usuario.id}/pic" class="rounded-circle me-3" width="35">
                             <div>
                                 <span class="fw-bold text-uppercase text-white">${usuario.username}</span>
                                 <span class="titulo-cervecero text-info bg-dark border border-info">[${usuario.rango || 'Aprendiz'} 🍺]</span>

@@ -61,7 +61,7 @@
                 <!--segundo puesto-->
                 <div class="col-md-3 mb-3" th:if="${topUsuarios.size() > 1}">
                     <div class="card bg-black border-secondary shadow-sm pt-4" style="border-radius: 15px;">
-                        <img th:src="@{/user/{id}/pic(id=${topUsuarios[1].id})}" onerror="this.src='/img/user.png'"
+                        <img th:src="@{/user/{id}/pic(id=${topUsuarios[1].id})}"
                             class="rounded-circle mx-auto border border-secondary" width="70" alt="2nd">
                         <div class="card-body">
                             <h4 class="card-title h5 text-uppercase text-white" th:text="${topUsuarios[1].username}">LUCAS</h4>
@@ -80,7 +80,7 @@
                         <div class="position-absolute top-0 start-50 translate-middle">
                             <span class="fs-1">👑</span>
                         </div>
-                        <img th:src="@{/user/{id}/pic(id=${topUsuarios[0].id})}" onerror="this.src='/img/user.png'"
+                        <img th:src="@{/user/{id}/pic(id=${topUsuarios[0].id})}" 
                             class="rounded-circle mx-auto border border-warning" width="100" alt="1st">
                         <div class="card-body">
                             <h4 class="card-title h4 text-uppercase text-warning" th:text="${topUsuarios[0].username}">
@@ -95,7 +95,7 @@
                 <!--tercer puesto-->
                 <div class="col-md-3 mb-3" th:if="${topUsuarios.size() > 2}">
                     <div class="card bg-black border-danger shadow-sm pt-4" style="border-radius: 15px;">
-                        <img th:src="@{/user/{id}/pic(id=${topUsuarios[2].id})}" onerror="this.src='/img/user.png'"
+                        <img th:src="@{/user/{id}/pic(id=${topUsuarios[2].id})}" 
                             class="rounded-circle mx-auto border border-danger" width="70" alt="3rd">
                         <div class="card-body">
                             <h4 class="card-title h5 text-uppercase text-white" th:text="${topUsuarios[2].username}">ALICIA</h4>
@@ -125,7 +125,7 @@
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <img th:src="@{/user/{id}/pic(id=${usuario.id})}"
-                                            onerror="this.src='/img/user.png'" class="rounded-circle me-3" width="35">
+                                            class="rounded-circle me-3" width="35">
                                         <div>
                                             <span class="fw-bold text-uppercase"
                                                 th:text="${usuario.username}">JORGE</span>
