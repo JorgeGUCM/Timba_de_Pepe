@@ -65,7 +65,14 @@ public class RootController {
     }
 
     @GetMapping("/ranking")
+    @Transactional
     public String ranking(Model model) {
+        // Obtenemos los usuarios reales ordenados por cervezas totales
+        List<User> topUsuarios = entityManager.createNamedQuery("User.ranking", User.class)
+                .setMaxResults(10) // Limitamos a 10 por ahora para no recargar
+                .getResultList();
+
+        model.addAttribute("topUsuarios", topUsuarios);
         return "ranking";
     }
 

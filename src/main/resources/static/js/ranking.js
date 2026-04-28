@@ -1,0 +1,111 @@
+document.addEventListener("DOMContentLoaded", () => {
+    console.log("Ranking JS cargado. Config actual:", config);
+
+    // Sobrescribimos el comportamiento de recibir un mensaje por WebSocket
+    if (typeof ws !== 'undefined' && ws) {
+        console.log("WS detectado, configurando receive para ranking");
+        ws.receive = (mensaje) => {
+            console.log("MENSAJE RECIBIDO EN RANKING (WebSocket):", mensaje);
+            if (Array.isArray(mensaje)) {
+                actualizarRankingVisual(mensaje);
+            } else {
+                console.warn("El mensaje recibido no es un array:", mensaje);
+            }
+        };
+    } else {
+        console.error("WS no detectado al cargar ranking.js. Asegúrate de que iw.js se cargó antes.");
+    }
+});
+
+function actualizarRankingVisual(nuevoRanking) {
+    // 1. Actualizar el Podium (Top 3)
+    const podioContainer = document.getElementById("podio-container");
+    if (podioContainer) {
+        podioContainer.innerHTML = ''; // Vaciar
+
+        // Segundo Puesto
+        if (nuevoRanking.length > 1) {
+            let u2 = nuevoRanking[1];
+            podioContainer.innerHTML += `
+                <div class="col-md-3 mb-3">
+                    <div class="card bg-black border-secondary shadow-sm pt-4" style="border-radius: 15px;">
+                        <img src="/user/${u2.id}/pic" onerror="this.src='/img/user.png'" class="rounded-circle mx-auto border border-secondary" width="70" alt="2nd">
+                        <div class="card-body">
+                            <h4 class="card-title h5 text-uppercase text-white">${u2.username}</h4>
+                            <span class="titulo-cervecero bg-dark text-secondary border border-secondary">[${u2.rango || 'Catador'} 🍻]</span>
+                            <p class="badge bg-secondary d-block mt-2">2ª Posición</p>
+                            <p class="text-warning fw-bold mt-2">${u2.cervezas_totales} Cervezas 🍺</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Primer Puesto
+        if (nuevoRanking.length > 0) {
+            let u1 = nuevoRanking[0];
+            podioContainer.innerHTML += `
+                <div class="col-md-4 mb-3">
+                    <div class="card bg-black border-warning shadow-lg pt-4" style="border-radius: 20px; border-width: 2px;">
+                        <div class="position-absolute top-0 start-50 translate-middle">
+                            <span class="fs-1">👑</span>
+                        </div>
+                        <img src="/user/${u1.id}/pic" onerror="this.src='/img/user.png'" class="rounded-circle mx-auto border border-warning" width="100" alt="1st">
+                        <div class="card-body">
+                            <h4 class="card-title h4 text-uppercase text-warning">${u1.username}</h4>
+                            <span class="titulo-cervecero bg-warning text-dark">[${u1.rango || 'Maestro'} 🏆]</span>
+                            <p class="badge bg-warning text-dark d-block mt-2">1ª Posición</p>
+                            <p class="display-6 fw-bold text-warning mt-2">${u1.cervezas_totales} Cervezas 🍺</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Tercer Puesto
+        if (nuevoRanking.length > 2) {
+            let u3 = nuevoRanking[2];
+            podioContainer.innerHTML += `
+                <div class="col-md-3 mb-3">
+                    <div class="card bg-black border-danger shadow-sm pt-4" style="border-radius: 15px;">
+                        <img src="/user/${u3.id}/pic" onerror="this.src='/img/user.png'" class="rounded-circle mx-auto border border-danger" width="70" alt="3rd">
+                        <div class="card-body">
+                            <h4 class="card-title h5 text-uppercase text-white">${u3.username}</h4>
+                            <span class="titulo-cervecero bg-dark text-danger border border-danger">[${u3.rango || 'Catador'} 🍻]</span>
+                            <p class="badge bg-danger d-block mt-2">3ª Posición</p>
+                            <p class="text-warning fw-bold mt-2">${u3.cervezas_totales} Cervezas 🍺</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    // 2. Actualizar la tabla (resto de jugadores)
+    const tbody = document.getElementById("ranking-tbody");
+    if (tbody) {
+        tbody.innerHTML = '';
+        if (nuevoRanking.length <= 3) {
+            tbody.innerHTML = `<tr><td colspan="3" class="text-center text-muted py-3">No hay más maestros cerveceros.</td></tr>`;
+        } else {
+            for (let i = 3; i < nuevoRanking.length; i++) {
+                let usuario = nuevoRanking[i];
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="ps-4 fw-bold">${i + 1}</td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <img src="/user/${usuario.id}/pic" class="rounded-circle me-3" width="35" onerror="this.src='/img/user.png'">
+                            <div>
+                                <span class="fw-bold text-uppercase text-white">${usuario.username}</span>
+                                <span class="titulo-cervecero text-info bg-dark border border-info">[${usuario.rango || 'Aprendiz'} 🍺]</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="text-end pe-4 fw-bold text-warning">${usuario.cervezas_totales} 🍺</td>
+                `;
+                tbody.appendChild(tr);
+            }
+        }
+    }
+}
