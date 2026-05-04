@@ -243,18 +243,22 @@ img.preview {
 }
 
 /* ── Mensaje de estado ── */
+.title-juego{
+    position: relative;
+}
 .estado-juego {
     position: absolute;
     top: 0;
     left: 0;
-    padding: .6rem 1rem;
+    padding: 0;
     width: 100%;
 
     display: flex;
     justify-content: center;
+    align-items: center;
 
     border-radius: 10px;
-    font-weight: 600;
+    font-weight: bold;
     
     z-index: 2;
     visibility: hidden;

@@ -96,7 +96,7 @@ function mostrarCartera(fichas, cervezas) {
 }
 function mostrarMensaje(mensaje, tipo = "info") {
     elemMensaje.innerHTML = `
-        <p class="fs-5 badge bg-`+ tipo + ` text-black">` + mensaje + `</p>
+        <p class="fs-4 badge bg-`+ tipo + ` text-black">` + mensaje + `</p>
     `;
 
     if (tipo == "danger")
@@ -106,7 +106,7 @@ function mostrarMensaje(mensaje, tipo = "info") {
         elemMensaje.classList.add("show");
         setTimeout(() => {
             elemMensaje.classList.remove("show");
-        }, 5000);
+        }, 10000);
     }
 }
 
@@ -449,7 +449,9 @@ document.addEventListener("DOMContentLoaded", e => {
     entrarPartida();
 });
 
+let oldReceive = ws.receive;
 ws.receive = (respuesta) => {
+    oldReceive();
 
     info = (info == undefined) ? {} : info;
     info.ganadores = respuesta.ganadores;
