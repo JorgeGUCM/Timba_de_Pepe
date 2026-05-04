@@ -18,6 +18,7 @@ const REVERSO = IMG_BASE + 'reverso1.png';
         posJugador
         cartas
         puntos
+        apuesta
     }
     numJugadores
     jugadores: [{
@@ -237,17 +238,17 @@ function mostrarBtnListo() {
         document.querySelector("#btnListo").remove();
     }
 }
-function deshabilitarAcciones(deshabilitar = true, apostar = deshabilitar) {
+function deshabilitarAcciones(apostar = true, plantar = true, pedir = true) {
     document.querySelector("#btnApostar").onclick = e => { (!apostar) ? mostrarApostar() : console.log("Deshabilitado") };
     btnCancelApuesta.onclick = e => { (!apostar) ? ocultarApostar() : console.log("Deshabilitado") };
     btnConfirmApuesta.onclick = e => { (!apostar) ? confirmApuesta() : console.log("Deshabilitado") };
     document.querySelector("#btnApostar").disabled = apostar;
 
-    document.querySelector("#btnPlantarse").onclick = e => { (!deshabilitar) ? plantarse() : console.log("Deshabilitado") };
-    document.querySelector("#btnPlantarse").disabled = deshabilitar;
+    document.querySelector("#btnPlantarse").onclick = e => { (!plantar) ? plantarse() : console.log("Deshabilitado") };
+    document.querySelector("#btnPlantarse").disabled = plantar;
 
-    document.querySelector("#btnPedir").onclick = e => { (!deshabilitar) ? pedirCarta() : console.log("Deshabilitado") };
-    document.querySelector("#btnPedir").disabled = deshabilitar;
+    document.querySelector("#btnPedir").onclick = e => { (!pedir) ? pedirCarta() : console.log("Deshabilitado") };
+    document.querySelector("#btnPedir").disabled = pedir;
 }
 function actualizarEstadoJuego() {
     let titleDisplayElem = document.querySelectorAll("#title-display p");
@@ -280,10 +281,11 @@ function actualizarJuego() {
     if (info.jugadores[index].estado == ESTADO_JUGADOR.ACTIVO)
         mostrarBtnListo();
 
-    if (info.estadoJuego == ESTADO_JUEGO.JUGANDO && info.jugadores[info.jugadorAct.posJugador].estado == ESTADO_JUGADOR.PLANTADO)
-        deshabilitarAcciones(true, false);
-    else if (info.estadoJuego == ESTADO_JUEGO.JUGANDO && info.jugadores[info.jugadorAct.posJugador].estado != ESTADO_JUGADOR.SOBREPUNTOS)
+    else if (info.estadoJuego == ESTADO_JUEGO.JUGANDO && 
+                (info.jugadores[info.jugadorAct.posJugador].estado == ESTADO_JUGADOR.PLANTADO || info.jugadorAct.apuesta < info.minBet))
         deshabilitarAcciones(false);
+    else if (info.estadoJuego == ESTADO_JUEGO.JUGANDO && info.jugadores[info.jugadorAct.posJugador].estado != ESTADO_JUGADOR.SOBREPUNTOS)
+        deshabilitarAcciones(false, false, false);
     else
         deshabilitarAcciones();
 
@@ -372,7 +374,7 @@ function confirmApuesta() {
     const urlParams = new URLSearchParams(window.location.search);
     const idTablero = urlParams.get("id");
     const idJugador = info.jugadorAct.idJugador;
-    const cant = elemCantApuesta.value;
+    const cant = parseInt(elemCantApuesta.value, 10);
 
     if (info.estadoJuego != ESTADO_JUEGO.JUGANDO) {
         mostrarMensaje("No se ha iniciado la juego", "danger");
@@ -386,6 +388,9 @@ function confirmApuesta() {
     else if (cant > parseInt(elemFichas.innerHTML, 10)) {
         mostrarMensaje("No tienes suficientes fichas", "warning");
         return;
+    }else if (cant + info.jugadorAct.apuesta < info.minBet){
+        mostrarMensaje("Debes apostar como minimo: " + info.minBet);
+        return;
     }
 
     go(`/juego/${idTablero}/apostar`, 'POST', { idJugador, cant })
@@ -398,6 +403,7 @@ function confirmApuesta() {
             else {
                 mostrarApuestaActual(res.cant);
                 mostrarCartera(res.fichas, parseInt(elemCervezas.innerHTML, 10));
+                deshabilitarAcciones(false, false, false);
             }
         })
         .catch(error => console.log("No se ha podido actualizar la apuesta: ", error));

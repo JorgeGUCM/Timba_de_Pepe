@@ -13,6 +13,9 @@ document.querySelector("#postUser").onclick = e => {
     }
 
     go(document.querySelector("#registrar-form").action, 'POST', {username, password, repetir, firstName, lastName})
-        .then(d => window.location.replace("newlogin"))
+        .then(d => {
+            if(d.error == undefined )
+                window.location.replace("newlogin")
+        })
         .catch(e => muestraError(e))
 };

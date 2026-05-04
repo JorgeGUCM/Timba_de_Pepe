@@ -2,7 +2,6 @@ package es.ucm.fdi.iw.controller;
 
 import es.ucm.fdi.iw.LocalData;
 import es.ucm.fdi.iw.model.Message;
-import es.ucm.fdi.iw.model.Transferable;
 import es.ucm.fdi.iw.model.User;
 import es.ucm.fdi.iw.model.User.Role;
 
@@ -41,9 +40,7 @@ import java.io.*;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Base64;
-import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * User management.

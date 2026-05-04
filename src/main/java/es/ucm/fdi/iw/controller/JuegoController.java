@@ -98,7 +98,8 @@ public class JuegoController {
                         "idJugador", (j != null) ? j.getId() : -1,
                         "posJugador", (j != null) ? j.getPosicionMesa() : -1,
                         "cartas", (j != null) ? j.getCartas() : "[]",
-                        "puntos", (j != null) ? j.getPuntuacion() : "?"),
+                        "puntos", (j != null) ? j.getPuntuacion() : "?",
+                        "apuesta", (j != null) ? j.getApuesta() : "?"),
                 "numJugadores", juego.getNum_jugadores(),
                 "jugadores", jugadores));
 
@@ -118,7 +119,10 @@ public class JuegoController {
                         nombresGanadores.add(jug.getUser().getUsername());
                     }
                 }
-                estado.put("ganadores", "¡Ganadores: " + String.join(", ", nombresGanadores) + "!");
+                if (nombresGanadores.size() <= 1)
+                    estado.put("ganadores", "¡El Ganador: " + String.join(", ", nombresGanadores) + "!");
+                else
+                    estado.put("ganadores", "¡Los Ganadores: " + String.join(", ", nombresGanadores) + "!");
             } else {
                 estado.put("ganadores", "¡Nadie ha ganado! Todos se han pasado.");
             }
@@ -304,7 +308,7 @@ public class JuegoController {
 
         log.info((estaPartida) ? "Ya esta en partida" : "Creando nuevo Jugador");
 
-        if(user.getFichas() < juego.getMin_bet() && !estaPartida){
+        if (user.getFichas() < juego.getMin_bet() && !estaPartida) {
             return Map.of("error", "No tienes fichas.");
         }
 
@@ -369,8 +373,8 @@ public class JuegoController {
         if (cant > j.getUser().getFichas())
             return "{\"error\": \"No tienes suficientes fichas\"}";
 
-        if(cant < juego.getMin_bet())
-            return "{\"warning\": \"Debes apostar la minima apuesta que es: " + juego.getMin_bet() +".\"}";
+        if (cant + j.getApuesta() < juego.getMin_bet())
+            return "{\"warning\": \"Debes apostar la minima apuesta que es: " + juego.getMin_bet() + ".\"}";
 
         j.setApuesta(j.getApuesta() + cant);
         j.getUser().setFichas(j.getUser().getFichas() - cant);
@@ -400,7 +404,7 @@ public class JuegoController {
         if (comprobarJugador(session, j))
             return "{\"error\": \"Se ha detectado la manipulación de datos.\"}";
 
-        if(j.getUser().getFichas() < juego.getMin_bet())
+        if (j.getUser().getFichas() < juego.getMin_bet())
             return "{\"warning\": \"No tienes suficientes fichas para la apuesta minima.\"}";
 
         j.setCartas("[]");
@@ -464,8 +468,8 @@ public class JuegoController {
         if (j.getEstado() != estadoJugador.LISTO)
             return "{\"error\": \"El jugador debe de estar jugando.\"}";
 
-        if(j.getApuesta() < juego.getMin_bet())
-            return "{\"warning\": \"Debes apostar la minima apuesta que es: " + juego.getMin_bet() +".\"}";
+        if (j.getApuesta() < juego.getMin_bet())
+            return "{\"warning\": \"Debes apostar la minima apuesta que es: " + juego.getMin_bet() + ".\"}";
 
         List<String> cartas = new ArrayList<>();
         List<String> baraja = new ArrayList<>();
@@ -559,10 +563,10 @@ public class JuegoController {
         if (j.getEstado() != estadoJugador.LISTO)
             return "{\"error\": \"El jugador debe de estar jugando.\"}";
 
-        if(j.getApuesta() < juego.getMin_bet())
-            return "{\"warning\": \"Debes apostar la minima apuesta que es: " + juego.getMin_bet() +".\"}";
+        if (j.getApuesta() < juego.getMin_bet())
+            return "{\"warning\": \"Debes apostar la minima apuesta que es: " + juego.getMin_bet() + ".\"}";
 
-        if(j.getCartas().equals("[]")){
+        if (j.getCartas().equals("[]")) {
             return "{\"error\": \"El jugador debe tener al menos 1 carta.\"}";
         }
 
