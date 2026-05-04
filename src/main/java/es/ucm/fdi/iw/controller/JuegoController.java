@@ -101,8 +101,30 @@ public class JuegoController {
                         "puntos", (j != null) ? j.getPuntuacion() : "?"),
                 "numJugadores", juego.getNum_jugadores(),
                 "jugadores", jugadores));
-        log.info(estado);
 
+        if (juego.getEstado() == state.FINALIZADO) {
+            double maxPuntos = -1;
+            for (Jugador jug : juego.getJugadores()) {
+                if (jug.getEstado() != estadoJugador.SOBREPUNTOS && jug.getPuntuacion() <= 7.5) {
+                    if (jug.getPuntuacion() > maxPuntos) {
+                        maxPuntos = jug.getPuntuacion();
+                    }
+                }
+            }
+            if (maxPuntos != -1) {
+                List<String> nombresGanadores = new ArrayList<>();
+                for (Jugador jug : juego.getJugadores()) {
+                    if (jug.getEstado() != estadoJugador.SOBREPUNTOS && jug.getPuntuacion() == maxPuntos) {
+                        nombresGanadores.add(jug.getUser().getUsername());
+                    }
+                }
+                estado.put("ganadores", "¡Ganadores: " + String.join(", ", nombresGanadores) + "!");
+            } else {
+                estado.put("ganadores", "¡Nadie ha ganado! Todos se han pasado.");
+            }
+        }
+
+        log.info(estado);
         return estado;
     }
 
