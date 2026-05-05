@@ -14,16 +14,18 @@ Juega al clasico juego español SIETE Y MEDIO, donde hasta 4 jugadores podeis ap
 - **Autores**: Completado, muestra los integrantes del equipo que han realizado el proyecto, es estática.
 - **Perfil de usuario**: Completado, pagina donde puedes insegresar y sacar dinero, además de mostrar información sobre el perfil (como fichas, cervezas y posición en el ranking).
 - **Ajustes del perfil**: Completado, permite cambiar la información del usuario (como nombre de usuario, nombre real, contraseña...)
+- **Ranking**: Muestra los posiciones de los mejores jugadores. Se actualiza mediante webshockets, una vez una partida finaliza se envia un mensaje para actualizar el ranking.
+- **Administrar**: Se puden ver todos los usuario regstrados y puedes banearlos. Te permite ver y buscar los mensajes de todas las salas (o del chat global) para poder moderar.
+- **Chats**: Se pude chatear en 2 chats, uno global y otro por sala. Todos los chats funciona con webshockets, para mantener la estabilidad de la aplicación no se recuperan
+todos los mensajes solamente unos 50.
+- **Login**: Se puede loguear un usuario ya registrado, en caso de no haberse registrado podrá hacerlo en la ventanda de registro.
+- **Juego**: El juego funciona, ya se puede poner en listo el juego, apostar, pedir cartas, plantarse...
 
 ### Vistas parcialmente completas
-- **Salas de Juego**: En las salas ya se puede meter correctamente los jugadores y reconoce cuantos jugadores hay dentro de la sala, se deberia hacer un sistema de perder automaticamente (o plantarse automaticamente) si el jugador abandona una sala durante un juego iniciado
-- **Login**: La vista de registro funciona (rama de Registro) , pero no correctamente. Falta cambiar el código para que no use ajax y redirija directamente a login con un mensaje de que se a creado el usuario correctamente.
-- **Juego**: El funcionamiento del juego esta parcialmente implementado con webshockets, falta pulir y finalizar el comportamiento del juego y jugadores. Además de implentar un mejor sistema de mensajes.
+- **Salas de Juego**: En las salas ya se puede meter correctamente los jugadores y reconoce cuantos jugadores hay dentro de la sala, falta que se actualice mediante webshockets.
 
 ### Vistas incompletas
-- **Ranking**: Hecho de forma estática, para ver el ranking de los mejores jugadores.
-- **Administrar**: No se ha planteado nada sobre esta vista. Servirá para moderar a los usuarios y ver los chats de las salas, podrá eliminar o desabilitar a los usuarios.
-- **Chats**: Aplicado a la salas de juego, no esta implementado solo esta una demonstración de GUI.
+Ninguna, todas las vistas están completas o en proceso.
 
 ### Resumen
 Falta por terminar la lógica de la aplicación en el juego para completar el ~50% establecido. El resto de cosas como el chat o ranking se pueden dejar como segunda parte del proyecto.
