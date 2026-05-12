@@ -43,6 +43,7 @@ import jakarta.servlet.http.HttpSession;
 public class JuegoController {
     private static final Logger log = LogManager.getLogger(JuegoController.class);
 
+    // Atributos para el juego
     private static final List<Character> PALOS = List.of('B', 'C', 'E', 'O');
     private static final List<String> NUMS = List.of("1", "2", "3", "4", "5", "6", "7", "S", "C", "R");
     private static final List<Character> FIGURAS = List.of('S', 'C', 'R');
@@ -55,8 +56,9 @@ public class JuegoController {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
-    private ObjectMapper mapper = new ObjectMapper();
+    private ObjectMapper mapper = new ObjectMapper(); // Necesario para trnaformar mapas en strings
 
+    // Para las variables de sesion, se necesitan inicializar
     @ModelAttribute
     public void populateModel(HttpSession session, Model model) {
         for (String name : new String[] { "u", "url", "ws", "topics" }) {
@@ -64,10 +66,20 @@ public class JuegoController {
         }
     }
 
+    /**
+    * Comprueba que el usuario.id sea el mismo que el jugador (evita que un usuario juego como otro)
+    */
     private boolean comprobarJugador(HttpSession session, Jugador j) {
         return ((User) session.getAttribute("u")).getId() != j.getUser().getId();
     }
 
+    /**
+    * Genera el mapa (JSON) del estado del juego que se enviara al frontend, evita enviar informacion innecesaria
+    * del jugador.
+    * @param resultado - string que indica que accion se ha relizado (APOSTADO, PLANTADO...)
+    * @param j - entidad jugador que ha realizado la peticion (puede ser nulo)
+    * @param juego - entidad del juego
+    */
     private Map<String, Object> generarEstado(String resultado, Jugador j, Juego juego) {
         List<Map<String, Object>> jugadores = new ArrayList<>();
         juego.getJugadores().forEach((jugador) -> {
@@ -132,6 +144,10 @@ public class JuegoController {
         return estado;
     }
 
+    /**
+     * Baraja la baraja cogiendo las n cartas restantes y cambiado una carta por otra aleatoria
+     * @param baraja - Debe ser una lista de strings usa mapper para obtenerla
+     */
     private void barajarBaraja(List<String> baraja) {
         for (int i = baraja.size() - 1; i > 0; i--) {
             int j = (int) Math.floor(Math.random() * (i + 1));
@@ -139,6 +155,9 @@ public class JuegoController {
         }
     }
 
+    /**
+     * Crea la baraja usando las variables 'PALOS' y 'NUMS'
+     */
     private String crearBaraja() {
         List<String> baraja = new ArrayList<>();
 
@@ -161,6 +180,9 @@ public class JuegoController {
         return res;
     }
 
+    /**
+     * Dada una carta devuelve su valor
+     */
     private double puntosCarta(String carta) {
         if (FIGURAS.contains(carta.charAt(0)))
             return 0.5;
@@ -168,6 +190,10 @@ public class JuegoController {
             return Character.getNumericValue(carta.charAt(0));
     }
 
+    /**
+     * Retorna verdadero su el juego a acabado, mira si no hay ningun jugador listo, que significa que
+     * esta o "PLANTADO" o "SOBREPUNTOS"
+     */
     private boolean finJuego(Juego juego) {
         for (Jugador jugador : juego.getJugadores()) {
             if (jugador.getEstado() == estadoJugador.LISTO)
@@ -176,6 +202,13 @@ public class JuegoController {
         return true;
     }
 
+    /**
+     * Se encarga de repartir las fichas y cervezas, ademas de indicar quienes son los ganadores.<br>
+     * Hace una query de los usuarios para actualizar el ranking.
+     * @param juego - entidad juego, necesario para poner el nuevo estado del juego y acceder a los jughadores
+     * @param session - para poder actualizar la variable de sesion del usuario
+     * @param user - entidad usuario que ha terminado el juego 
+     */
     private void repartoDinero(Juego juego, HttpSession session, User user) {
         juego.setEstado(state.FINALIZADO);
         List<Jugador> jugadores = juego.getJugadores();
@@ -183,7 +216,6 @@ public class JuegoController {
         // Reparto de fichas
         int fichasTotales = 0;
         for (Jugador j : jugadores) {
-
             fichasTotales += j.getApuesta();
         }
 
@@ -254,6 +286,7 @@ public class JuegoController {
         }
     }
 
+    // Para cargar la vista del juego
     @GetMapping("")
     @Transactional
     public String juego(Model model, HttpSession session, @RequestParam("id") Long idTablero) {
@@ -281,6 +314,7 @@ public class JuegoController {
         return "juego";
     }
 
+    // Dado un tablero hace que el usuario cree un jugador en caso de no estar dentro del tablero ya y entra en el tablero
     @PostMapping("{idTablero}/entrar")
     @ResponseBody
     @Transactional
@@ -347,6 +381,7 @@ public class JuegoController {
         return estado;
     }
 
+    // Para apostar, usa min_Bet
     @PostMapping("{idTablero}/apostar")
     @ResponseBody
     @Transactional
@@ -384,6 +419,7 @@ public class JuegoController {
         return "{\"cant\": \"" + j.getApuesta() + "\", \"fichas\": \"" + j.getUser().getFichas() + "\"}";
     }
 
+    // Para cuando los jugadores le den a listo, se encarga de iniciar el juego y ponerlo a jugando
     @PostMapping("{idTablero}/listo")
     @ResponseBody
     @Transactional
@@ -445,6 +481,7 @@ public class JuegoController {
         return result;
     }
 
+    // Para cuando un jugador pide una carta, coge la ultima carta de la baraja (que esta barajada), pone al jugador en sobre-puntos si se pasa
     @PostMapping("{idTablero}/pedirCarta")
     @ResponseBody
     @Transactional
@@ -521,6 +558,7 @@ public class JuegoController {
         return estado;
     }
 
+    // Por lo que veo es meramente para debug y finalizar la partida cuando se llame a esta direccion
     @PostMapping("{idTablero}/finalizar")
     @ResponseBody
     @Transactional
@@ -541,6 +579,7 @@ public class JuegoController {
         return Map.of("result", "Partida Finalizada y Ranking Anunciado");
     }
 
+    // Planta al jugador
     @PostMapping("{idTablero}/plantar")
     @ResponseBody
     @Transactional
@@ -588,6 +627,8 @@ public class JuegoController {
         return estado;
     }
 
+    /* que el usuario pueda salir del tablero, ahora mismo no permite dejar vinculado al jugador por lo que no se 
+       puede recuperar los jugadores que jugaron en ciertas partidas, requiere un cambio de BD*/
     @PostMapping("/{idTablero}/salir")
     @ResponseBody
     @Transactional
@@ -612,7 +653,7 @@ public class JuegoController {
             return "{\"error\": \"No hay ningún jugador en la sala.\"}";
 
         // INFO: ahora mismo se desvincula el jugador del juego haciendo que no sea
-        // posible recuperar el juego en el que jugo
+        // posible recuperar el juego en el que juego
         juego.setNum_jugadores(juego.getNum_jugadores() - 1);
         j.setJuego(null);
 
@@ -632,6 +673,7 @@ public class JuegoController {
         return "{\"success\": \"true\"}";
     }
 
+    // Meramente actualiza las variables de sesion del usuario al que pertenzca esta sesion
     @PostMapping("/sessions")
     @ResponseBody
     @Transactional

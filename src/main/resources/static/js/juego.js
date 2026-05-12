@@ -1,3 +1,10 @@
+/*
+    Por lo general todas las funciones que hacen acciones y llaman a backend funcioinan igual:
+    1. Comprueban que la informacion a enviar sea correcta
+    2. mete la info en la url a llamar o en un json
+    3. hace un go (internamente un fetch) a la url del backend
+*/
+
 /* Cartas */
 const PALOS = ['B', 'C', 'E', 'O'];
 const PALO_NOMBRES = { B: 'Bastos', C: 'Copas', E: 'Espadas', O: 'Oros' };
