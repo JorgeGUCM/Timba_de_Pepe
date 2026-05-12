@@ -2,6 +2,14 @@
 
 Juega al clasico juego español SIETE Y MEDIO, donde hasta 4 jugadores podeis apostar y ganar. En la aplicación se podran crear salas para jugar al siete y medio con otras 3 personas. Por cada partida ganada, no solo ganreis fichas (moneda de la aplicación), si no tambien ganareis cervezas que se podrán gastar en efectos para la sala y otros eventos que mantendrán el entretenimiento. Además, hay un ranking de los mejores jugadores que se evalua en base a la cantidad total ganada de cervezas.
 
+## Para el feedback
+Para probar loas usuarios que has son (usuario : contraseña):
+- a : aa
+- b : aa
+- pablo : aa
+
+La IA se usado principalmente para forntend (principalmente siendo css y bootstrap la razon de su uso), se ha usado antigravity. 
+
 ## Estructura de la BD
 
 <img width="1809" height="1218" alt="image" src="https://github.com/user-attachments/assets/252ce9d1-b7e4-43db-bc8e-b4b2f2bed554" />
