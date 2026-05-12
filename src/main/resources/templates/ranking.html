@@ -65,7 +65,7 @@
                             class="rounded-circle mx-auto border border-secondary" width="70" alt="2nd">
                         <div class="card-body">
                             <h4 class="card-title h5 text-uppercase text-white" th:text="${topUsuarios[1].username}">LUCAS</h4>
-                            <span class="titulo-cervecero bg-dark text-secondary border border-secondary">[Catador
+                            <span class="titulo-cervecero bg-dark text-secondary border border-secondary" th:text="${topUsuarios[1].titulo}+'🍻'">[Catador
                                 🍻]</span>
                             <p class="badge bg-secondary d-block mt-2">2ª Posición</p>
                             <p class="text-warning fw-bold mt-2"><span
@@ -85,7 +85,7 @@
                         <div class="card-body">
                             <h4 class="card-title h4 text-uppercase text-warning" th:text="${topUsuarios[0].username}">
                                 Pepe</h4>
-                            <span class="titulo-cervecero bg-warning text-dark">[Maestro 🏆]</span>
+                            <span class="titulo-cervecero bg-warning text-dark" th:text="${topUsuarios[0].titulo}+'🏆'">[Maestro 🏆]</span>
                             <p class="badge bg-warning text-dark d-block mt-2">1ª Posición</p>
                             <p class="display-6 fw-bold text-warning mt-2"><span
                                     th:text="${topUsuarios[0].cervezas_totales}">0</span> Cervezas 🍺</p>
@@ -99,7 +99,7 @@
                             class="rounded-circle mx-auto border border-danger" width="70" alt="3rd">
                         <div class="card-body">
                             <h4 class="card-title h5 text-uppercase text-white" th:text="${topUsuarios[2].username}">ALICIA</h4>
-                            <span class="titulo-cervecero bg-dark text-danger border border-danger">[Catador 🍻]</span>
+                            <span class="titulo-cervecero bg-dark text-danger border border-danger" th:text="${topUsuarios[2].titulo}+'🍻'">[Catador 🍻]</span>
                             <p class="badge bg-danger d-block mt-2">3ª Posición</p>
                             <p class="text-warning fw-bold mt-2"><span
                                     th:text="${topUsuarios[2].cervezas_totales}">0</span> Cervezas 🍺</p>
@@ -115,7 +115,7 @@
                         <thead>
                             <tr>
                                 <th class="ps-4 text-secondary">#</th>
-                                <th class="text-secondary">Usuario y Rango</th>
+                                <th class="text-secondary">Usuario y titulo</th>
                                 <th class="text-end pe-4 text-secondary">Cervezas Ganadas</th>
                             </tr>
                         </thead>
@@ -129,7 +129,7 @@
                                         <div>
                                             <span class="fw-bold text-uppercase"
                                                 th:text="${usuario.username}">JORGE</span>
-                                            <span class="titulo-cervecero text-info bg-light">[Aprendiz 🍺]</span>
+                                            <span class="titulo-cervecero text-info bg-light" th:text="(${usuario.titulo} != '')?${usuario.titulo}: 'sin titulo'">[Aprendiz 🍺]</span>
                                         </div>
                                     </div>
                                 </td>

@@ -95,3 +95,9 @@ function sacar(e){
 function cancelar_ingreso(){
     pop_up.classList.remove("show");
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelector("#importe").onkeypress = (e) =>{
+        e.preventDefault();
+    } 
+})

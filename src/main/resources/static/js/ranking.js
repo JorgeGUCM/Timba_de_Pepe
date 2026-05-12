@@ -36,7 +36,7 @@ function actualizarRankingVisual(nuevoRanking) {
                         <img src="/user/${u2.id}/pic" class="rounded-circle mx-auto border border-secondary" width="70" alt="2nd">
                         <div class="card-body">
                             <h4 class="card-title h5 text-uppercase text-white">${u2.username}</h4>
-                            <span class="titulo-cervecero bg-dark text-secondary border border-secondary">[${u2.rango || 'Catador'} 🍻]</span>
+                            <span class="titulo-cervecero bg-dark text-secondary border border-secondary">[${u2.titulo || 'Catador'} 🍻]</span>
                             <p class="badge bg-secondary d-block mt-2">2ª Posición</p>
                             <p class="text-warning fw-bold mt-2">${u2.cervezas_totales} Cervezas 🍺</p>
                         </div>
@@ -57,7 +57,7 @@ function actualizarRankingVisual(nuevoRanking) {
                         <img src="/user/${u1.id}/pic" class="rounded-circle mx-auto border border-warning" width="100" alt="1st">
                         <div class="card-body">
                             <h4 class="card-title h4 text-uppercase text-warning">${u1.username}</h4>
-                            <span class="titulo-cervecero bg-warning text-dark">[${u1.rango || 'Maestro'} 🏆]</span>
+                            <span class="titulo-cervecero bg-warning text-dark">[${u1.titulo || 'Maestro'} 🏆]</span>
                             <p class="badge bg-warning text-dark d-block mt-2">1ª Posición</p>
                             <p class="display-6 fw-bold text-warning mt-2">${u1.cervezas_totales} Cervezas 🍺</p>
                         </div>
@@ -75,7 +75,7 @@ function actualizarRankingVisual(nuevoRanking) {
                         <img src="/user/${u3.id}/pic" class="rounded-circle mx-auto border border-danger" width="70" alt="3rd">
                         <div class="card-body">
                             <h4 class="card-title h5 text-uppercase text-white">${u3.username}</h4>
-                            <span class="titulo-cervecero bg-dark text-danger border border-danger">[${u3.rango || 'Catador'} 🍻]</span>
+                            <span class="titulo-cervecero bg-dark text-danger border border-danger">[${u3.titulo || 'Catador'} 🍻]</span>
                             <p class="badge bg-danger d-block mt-2">3ª Posición</p>
                             <p class="text-warning fw-bold mt-2">${u3.cervezas_totales} Cervezas 🍺</p>
                         </div>
@@ -102,7 +102,7 @@ function actualizarRankingVisual(nuevoRanking) {
                             <img src="/user/${usuario.id}/pic" class="rounded-circle me-3" width="35">
                             <div>
                                 <span class="fw-bold text-uppercase text-white">${usuario.username}</span>
-                                <span class="titulo-cervecero text-info bg-dark border border-info">[${usuario.rango || 'Aprendiz'} 🍺]</span>
+                                <span class="titulo-cervecero text-info bg-dark border border-info">[${usuario.titulo || 'Aprendiz'} 🍺]</span>
                             </div>
                         </div>
                     </td>
