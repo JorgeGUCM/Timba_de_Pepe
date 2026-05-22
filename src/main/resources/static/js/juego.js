@@ -421,6 +421,7 @@ function confirmApuesta() {
                 mostrarApuestaActual(res.cant);
                 mostrarCartera(res.fichas, parseInt(elemCervezas.innerHTML, 10));
                 deshabilitarAcciones(false, false, false);
+                info.jugadorAct.apuesta = res.cant;
             }
         })
         .catch(error => console.log("No se ha podido actualizar la apuesta: ", error));
