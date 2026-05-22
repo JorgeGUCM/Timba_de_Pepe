@@ -54,6 +54,8 @@ const ESTADO_JUGADOR = { ESPERANDO: "ESPERANDO", ACTIVO: "ACTIVO", LISTO: "LISTO
 let elemFichas = document.querySelector("#fichas");
 let elemCervezas = document.querySelector("#cervezas");
 let elemMensaje = document.querySelector("#mensaje");
+let elemBigMessage = document.querySelector("#big-message");
+const messageListo = `¡Todos los jugadores deben de dar a listo para comenzar!`;
 
 // Para los jugadores
 let playerEsperando = `<span class="badge bg-secondary">Esperando...</span>`;
@@ -116,6 +118,9 @@ function mostrarMensaje(mensaje, tipo = "info") {
             elemMensaje.classList.remove("show");
         }, 10000);
     }
+}
+function mostrarInfo(mensaje){
+    elemBigMessage.innerHTML = mensaje;
 }
 
 /* Para actualizar las sesiones de todos los jugadores necesario para que cuando se actualicen las fichas de varios jugadores a la vez se actualicen sus sesiones */
@@ -271,6 +276,11 @@ function actualizarEstadoJuego() {
     titleDisplayElem[0].innerHTML = info.estadoJuego;
 
     titleDisplayElem[1].innerHTML = info.numJugadores + " / 4";
+
+    if(info.estadoJuego == ESTADO_JUEGO.JUGANDO)
+        mostrarInfo(`La apuesta minima es: <strong>${info.minBet}</strong>`);
+    else
+        mostrarInfo(messageListo);
 }
 
 
