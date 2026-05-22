@@ -57,6 +57,7 @@
         <div class="pb-5 pt-5 mx-auto" style="width: 65%;">
             <h1 class="mb-2 text-white">🎮 Salas de Juego</h1>
             <p class="text-white-50 mb-4">Únete a una sala existente o crea la tuya propia.</p>
+            <div class="estado-juego mt-3 mx-auto alert" id="mensaje"></div>
 
             <div id="salas-cards" class="row g-4 mt-2">  <!-- tiene id para el jugador.feature -->
                 <!-- Lista Dinámica de Salas -->
@@ -66,7 +67,7 @@
                             <h5 class="mb-0" th:text="${sala.nombre}">Nombre de la Sala</h5>
                             <span class="badge bg-success" th:text="${sala.estado}">Disponible</span>
                         </div>
-                        <div class="card-body border-0">
+                        <div class="sala-body d-flex flex-column card-body border-0">
                             <p class="mb-1">
                                 <strong>Jugadores:</strong>
                                 <span class="badge bg-primary"
@@ -76,7 +77,9 @@
                                 <strong>Nivel:</strong>
                                 <span class="badge bg-danger px-3 py-2" th:text="${sala.dificultad}">Experto</span>
                             </p>
-                            <a th:href="@{/juego(id=${sala.id})}" class="btn btn-success w-100">Entrar a Jugar</a>
+                            <input type="hidden" class="id-sala" th:value="${sala.id}">
+                            <input type="hidden" class="apuesta-sala" th:value="${sala.min_bet}">
+                            <button type="button" class="btn-entrar btn btn-success fw-bold">Entrar a Jugar</button>
                         </div>
                     </div>
                 </div>
@@ -140,12 +143,7 @@
 
     <th:block th:replace="~{fragments/footer.html :: footer}" />
 
-    <script>
-        function crearSala() {
-            var myModal = new bootstrap.Modal(document.getElementById('modalCrearSala'));
-            myModal.show();
-        }
-    </script>
+    <script th:src="@{/js/salas.js}"></script>
 </body>
 
 </html>
